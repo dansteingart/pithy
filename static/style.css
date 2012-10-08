@@ -1,0 +1,151 @@
+body
+{
+	font-family: Helvetica;
+	font-size: 14px;
+	margin-left: auto;
+	margin-right: auto;
+	width: 800px;
+	text-rendering: optimizeLegibility;
+}
+
+
+
+/* scrollbar style from http://maxvoltar.com/, http://almaer.com/scrollbar/debug.html */
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track-piece {
+    background: #FFFFFF;
+}
+
+::-webkit-scrollbar-button:start:decrement,
+::-webkit-scrollbar-button:end:increment {
+    display: block;
+    height: 12px;
+    background-color: #FFFFFF;
+}
+
+::-webkit-scrollbar-thumb:vertical {
+    height: 25px;
+    background-color: #d5d9df;
+}
+
+
+
+.title
+{
+	font-family: Verdana;
+	font-size: 30px;
+	//background: rgb(200,200,200);
+	padding: 5px;
+	text-align: left;
+	font-weight:bold;
+	color: red;
+}
+.title a
+{
+	
+	color: gray;
+	text-decoration: none;
+}
+
+.title a:hover
+{
+	color: red;
+	text-decoration: none;
+}
+
+
+textarea
+{
+	outline: none;
+	background: rgb(220,220,220);
+	border-color: silver;
+}
+
+.tb2
+{
+	outline: none;
+	background: rgb(220,220,220);
+	border-color: silver 0px;
+}
+
+textarea:focus
+{
+	color:black;
+}
+
+textarea:focus
+{
+	color:black;
+}
+
+a
+{
+	
+	color: red;
+	text-decoration: none;
+}
+
+a:hover
+{
+	color: gray;
+	text-decoration: none;
+}
+.subtitle
+{
+	
+	font-family: Verdana;
+	font-size: 20px;
+	padding-top: 5px;
+	padding-left: 5px;
+	padding-bottom: 10px;
+	background: rgb(153,153,153);
+	text-align: left;
+	
+	color: white;
+}
+
+h3
+{
+	
+	font-family: Verdana;
+	font-size: 15px;
+}
+
+.links
+{
+	float: right;
+	width: 200px;
+	text-transform: uppercase;
+	padding-top: 10px;
+	font-family: "Futura";
+	text-align: right;
+	
+}
+
+.links a
+{
+	
+	text-decoration: none;
+	color: rgb(255,0,0);
+}
+
+.links a:hover
+{
+	
+	text-decoration: none;
+	color: silver;
+}
+
+
+.content
+{
+	
+	float:left;
+	width: 600px;
+	text-align: justify;
+}
