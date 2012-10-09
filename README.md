@@ -23,17 +23,13 @@ because pithy just runs from a directory, standard http authentication can be ap
 ###pithy requires 
 
 1. a fairly up to date (not 3.0 though) python installation
-2. [web.py](http://webpy.org/)   
+2. [node.js](http://nodejs.org/)   
 3. science stuff! I like to to use [EPD](http://www.enthought.com/products/epd_free.php), but scipy, numpy and matplotlib should be sufficient 
-4. some sort of web server (whatever web.py works with, or the internal web.py server)
 
 ###installation/usage
 
 1. clone repository to where you want stuff
-2. if running apache, make sure .htaccess is set to how you like it
-3. make sure these directories are writable/readable
-	1. code, 
-	2. code_stamped and 
-	3. images 
-4. navigate to http://[yoururl]/pithy  (or wherever you put stuff).  you should see a page, and the URL should have a random string of characters appened.  try some python.
-5.  now add whatever name you want to the URL (numbers,letters and (-,_) only.  Run some code here.  Share the url.  repeat.  now you're pithy.
+2. cd to that directory
+3. run "node index.js"
+4. navigate to http://localhost:3000  (or wherever you put stuff).  you should see a page, and the URL should have a random string of characters appened.  try some python.
+5.  now add whatever name you want to the URL (numbers,letters and (-,_) only.  Run some code here.  Share the url if you're running on an accessisible server.  repeat.  now you're pithy.
