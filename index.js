@@ -54,8 +54,8 @@ app.post('*/run', function(req, res)
 	{
 		if (data.search(b) > -1)
 		{
-			console.log(b)
-			console.log(settings.bad_words)	
+			//console.log(b)
+			//console.log(settings.bad_words)	
 			out = "Found '"+b+"', this is a BAD WORD"
 			res.json({'out':out,'images':image_list})
 			break
@@ -94,7 +94,7 @@ app.post('*/run', function(req, res)
 	fs.writeFileSync("code/temper.py",data)
 	
 	out = ""
-	fullcmd = settings.python_path+" "+__dirname+"/code/temper.py"
+	fullcmd = settings.python_path+" '"+__dirname+"/code/temper.py' "
 	
 	child = exec(fullcmd,
 	  function (error, stdout, stderr) {
@@ -128,7 +128,7 @@ app.post('*/history', function(req, res)
 {
 	//console.log(req.body)
 	x = req.body;
-	page_name = x['page_name']
+	page_name = x['page_name'].replace("/","")
 	length = "_1314970891000".length //get length of timestamp
 	structure = "code_stamped/"+page_name+"*"
 	thing_list = []
@@ -136,10 +136,32 @@ app.post('*/history', function(req, res)
 	fils  = fs.readdirSync("code_stamped")
 	for (i in fils)
 	{
-		if (fils[i].search(page_name+"_") > -1) thing_list.push((fils[i],i))
+		if (fils[i].search(page_name+"_") > -1) 
+		{
+			thing_list.push(fils[i])
+		}
 	}
 		
-	hist_list = thing_list
+	fils = thing_list
+	fils.sort()
+	fils.reverse()
+	hist_list = []
+	for (i in fils)
+	{
+		time_part = parseInt(fils[i].split("_")[1])
+		date = new Date(time_part)
+		hour = date.getHours()
+		min = date.getMinutes()
+		sec = date.getSeconds()
+		day = date.getDate()
+		month = date.getMonth()
+		year = date.getYear()
+		time_part = month+"/"+day+"/"+year+" "+hour+":"+min+":"+sec;
+		hist_list.push([fils[i],date.toISOString()])
+	}
+	
+	
+	//console.log(hist_list)
 	//hist_list = sorted(hist_list, key=lambda dater: dater[1])
 	//hist_list.reverse()
 	res.json({'out':hist_list})
@@ -158,7 +180,7 @@ app.post('*/read', function(req, res)
 	}
 	catch (e)
 	{
-		out = fs.readFileSync("code_stamped/"+page_name).toString()		
+		out = fs.readFileSync("code_stamped/"+page_name.split("/")[2]).toString()		
 	}
 
 	back_to_pith['script'] = out
