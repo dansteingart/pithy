@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Pithy by dansteingart</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Pithy</h1>
+        <p>scientiffic python wrapped in a clean web coat</p>
+
+        <p class="view"><a href="https://github.com/dansteingart/pithy">View the Project on GitHub <small>dansteingart/pithy</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/dansteingart/pithy/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/dansteingart/pithy/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/dansteingart/pithy">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>pithy</h1>
+
+<p>pithy is:  </p>
+
+<pre><code>1. concise and forcefully expressive, or
+2. containing much pith
+</code></pre>
+
+<p>code should be 1, not 2.  </p>
+
+<p>sometimes you want to share code and see what it does on the same page.  sometimes you want to do this for python with scientific computing.  enter pithy.  </p>
+
+<p>pithy has code on the left, and output on the right.  all changes are saved, and the url is freely shareable.  pithy has been tested against sophomores and juniors in chemical engineering successfully.  </p>
+
+<p>pithy is python for sharing plot and numerical output.  pithy runs arbitrary python on your machine and send the output back to the browser in a fairly clear manner.  this is convenient, this is also potentially SUPER DANGEROUS.  thus far there is an attempt at code scrubbing to stop people from writing local files, reading local files and rm -rfing your stuff, but it is most definitely not sandboxed nor bullet proof.  Thus, pithy should be run on a server </p>
+
+<ol>
+<li>that is routinely backed up (like all good servers should be)</li>
+<li>has nothing that you don't want the world to see that is not encrypted (ditto)</li>
+<li>that can suffer some downtime if someone does something stupid</li>
+</ol><p>because pithy just runs from a directory, standard http authentication can be applied to make stuff safe.</p>
+
+<h3>pithy requires</h3>
+
+<ol>
+<li>a fairly up to date (not 3.0 though) python installation</li>
+<li>
+<a href="http://nodejs.org/">node.js</a><br>
+</li>
+<li>science stuff! I like to to use <a href="http://www.enthought.com/products/epd_free.php">EPD</a>, but scipy, numpy and matplotlib should be sufficient </li>
+</ol><h3>installation/usage</h3>
+
+<ol>
+<li>clone repository to where you want stuff</li>
+<li>cd to that directory</li>
+<li>run "node index.js"</li>
+<li>navigate to http://localhost:3000  (or wherever you put stuff).  you should see a page, and the URL should have a random string of characters appened.  try some python.</li>
+<li> now add whatever name you want to the URL (numbers,letters and (-,_) only.  Run some code here.  Share the url if you're running on an accessisible server.  repeat.  now you're pithy.</li>
+</ol>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/dansteingart">dansteingart</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
