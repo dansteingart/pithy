@@ -19,7 +19,17 @@ app.use(express.bodyParser());
 app.use("/static", express.static(__dirname + '/static'));
 app.use("/images", express.static(__dirname + '/images'));
 
+//cribbed from http://stackoverflow.com/a/1349426/565514
+function makeid()
+{
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
+    for( var i=0; i < 5; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
 
 
 settings = 
@@ -32,7 +42,14 @@ settings =
 
 app.get('/*', function(req, res){
 	indexer = fs.readFileSync('static/index.html').toString()
-	res.send(indexer)
+	if (req.params[0] == "") 
+	{
+		res.redirect("/"+makeid());
+	}
+	else
+	{
+		res.send(indexer)
+	}
   	//console.log(req.params)
 });
 
@@ -71,8 +88,6 @@ app.post('*/run', function(req, res)
 	}
 	catch (e)
 	{
-		//console.log("flume")
-		//console.log(e)
 		temp = "dood"
 	}
 
@@ -93,16 +108,10 @@ app.post('*/run', function(req, res)
 	
 	fs.writeFileSync("code/temper.py",data)
 	
-	out = ""
 	fullcmd = settings.python_path+" '"+__dirname+"/code/temper.py' "
 	
 	child = exec(fullcmd,
 	  function (error, stdout, stderr) {
-	    //console.log('stdout: ' + stdout);
-	    //console.log('stderr: ' + stderr);
-	    if (error !== null) {
-	      //console.log('exec error: ' + error);
-	    }
 
 		fils = fs.readdirSync("images")
 		for (i in fils)
@@ -110,23 +119,15 @@ app.post('*/run', function(req, res)
 			if (fils[i].search(page_name+"_"+time) > -1) image_list.push("images/"+fils[i])
 		}
 		
-		
-		
 		res.json({'out':stdout,'outerr':stderr,'images':image_list})
 		
 	});
-	
-	
-	//console.log(prepend)
-	
-	//res.json({"foo":prepend})
 	
 	
 });
 
 app.post('*/history', function(req, res)
 {
-	//console.log(req.body)
 	x = req.body;
 	page_name = x['page_name'].replace("/","")
 	length = "_1314970891000".length //get length of timestamp
@@ -159,11 +160,7 @@ app.post('*/history', function(req, res)
 		time_part = month+"/"+day+"/"+year+" "+hour+":"+min+":"+sec;
 		hist_list.push([fils[i],date.toISOString()])
 	}
-	
-	
-	//console.log(hist_list)
-	//hist_list = sorted(hist_list, key=lambda dater: dater[1])
-	//hist_list.reverse()
+		
 	res.json({'out':hist_list})
 });
 
@@ -174,6 +171,7 @@ app.post('*/read', function(req, res)
 	back_to_pith = {}
 	out = "Fill Me Up"
 	page_name = x['page_name']
+	try{
 	try
 	{
 		out = fs.readFileSync("code/"+page_name).toString()		
@@ -181,6 +179,11 @@ app.post('*/read', function(req, res)
 	catch (e)
 	{
 		out = fs.readFileSync("code_stamped/"+page_name.split("/")[2]).toString()		
+	}
+	}
+	catch (e)
+	{
+		out = "fill me up"
 	}
 
 	back_to_pith['script'] = out
