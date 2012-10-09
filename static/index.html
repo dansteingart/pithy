@@ -166,7 +166,7 @@ function makeid()
 var changed = false;
 var status = $("#status");
 var pathname = window.location.pathname;
-if (pathname.split("/").length < 3 || pathname.split("/")[2] == "") 
+if (pathname == "/") 
 {
 	window.location.href = window.location.href + makeid()
 }
@@ -188,7 +188,7 @@ function build_output(data)
 	
 	outputdata = ""
 	//Build python stdout
-	data = JSON.parse(data)
+	//data = JSON.parse(data)
 	boots = data['out']
 	//while (boots.search("\n") > -1) boots = boots.replace("\n","<br>")
 	
@@ -221,7 +221,7 @@ function saver(bool,page)
 		//console.log("Changed!");
 		$.ajax(
 		{
-		  url: this_port+"runner/",
+		  url: this_port+"run/",
 		  type:"POST",
 		  async:bool,
 		  data:{page_name:page,script_name:script_name,value:editor.getSession().getValue(),csvlist:$("#csvselected").val()},
@@ -255,16 +255,17 @@ function loader(bool,page)
 	//console.log("loading!");
 
 	$.ajax({
-	  url: "arbread/",
+	  url: "read/",
 	  async:bool,
 	  type:"POST",
 	  data:{page_name:page,value:editor.getSession().getValue()},
 	  success: function(data){
-		data = JSON.parse(data)
+		console.log(data)
+		//data = JSON.parse(data)
 		
 		//$("#script_area").text(data['script']);
 		editor.getSession().setValue(data['script'])
-		if (data['dataset'].length > 0) $("#csvselected").val(data['dataset']);
+		//if (data['dataset'].length > 0) $("#csvselected").val(data['dataset']);
 		
 	  }
 	});
@@ -281,8 +282,9 @@ function history(page)
 	  type:"POST",
 	  data:{page_name:page,value:editor.getSession().getValue()},
 	  success: function(data){
-		data = JSON.parse(data);
+		//data = JSON.parse(data);
 		out = data['out']
+		if (out == undefined) out = []
 		//console.log(out)
 		if (out.length > 1)
 		{
