@@ -33,3 +33,29 @@ because pithy just runs from a directory, standard http authentication can be ap
 3. run "node index.js"
 4. navigate to http://localhost:3000  (or wherever you put stuff).  you should see a page, and the URL should have a random string of characters appened.  try some python.
 5.  now add whatever name you want to the URL (numbers,letters and (-,_) only.  Run some code here.  Share the url if you're running on an accessisible server.  repeat.  now you're pithy.
+
+
+###example
+
+pithy tries to plot things nicely, and in order.  best to learn by example here:
+
+paste this into your pithy page to generate a graph
+
+
+    a = linspace(0,1,100)
+    b = sqrt(a)
+    c = a**2
+
+    plot(a,b,'k')
+    plot(a,c,'k')
+    showme()
+    clf()
+
+    plot(a,b,'k')
+    plot(a,c,'k')
+    xlabel("x")
+    ylabel("y")
+    title("Now With Labels")
+    showme() 
+
+everything here is pure [pylab]() except for showme(), which does some behind the scenes magic to generate a plot and save the figure.  
