@@ -110,16 +110,20 @@ app.post('*/run', function(req, res)
 	
 	fullcmd = settings.python_path+" '"+__dirname+"/code/temper.py' "
 	
+	start_time = new Date().getTime()
+	
 	child = exec(fullcmd,
 	  function (error, stdout, stderr) {
 
+		end_time = new Date().getTime()
+		
 		fils = fs.readdirSync("images")
 		for (i in fils)
 		{
 			if (fils[i].search(page_name+"_"+time) > -1) image_list.push("images/"+fils[i])
 		}
-		
-		res.json({'out':stdout,'outerr':stderr,'images':image_list})
+		exec_time = end_time - start_time;
+		res.json({'out':stdout,'outerr':stderr,'images':image_list,'exec_time':exec_time})
 		
 	});
 	
