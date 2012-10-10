@@ -229,9 +229,9 @@ function saver(bool,page)
 		  	{
 				//Let know that we've saved stuff
 				changed = false;
-				$("#status").html("saved");
-				$("#status").fadeOut(1000,function(){$("#status").html("   ")});  
-				$("#status").fadeIn(100);
+				$("#status").html("saved, exec time = "+data['exec_time']+"ms");
+				$("#status").fadeOut(4000,function(){$("#status").html("   ")});  
+				$("#status").fadeIn(1000);
 
 				gotdata = data
 				build_output(gotdata)
