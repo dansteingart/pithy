@@ -9,6 +9,13 @@ var exec = require('child_process').exec,
 
 var glob
 
+
+var sharejs = require('share').server;
+var options = {db: {type: 'none'}}; 
+
+sharejs.attach(app, options);
+
+
 //Make Dirs if they don't exist
 fs.mkdir("code")
 fs.mkdir("code_stamped")

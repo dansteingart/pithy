@@ -5,6 +5,9 @@
 <script src="static/ace/build/src/ace.js" type="text/javascript" charset="utf-8"></script>
 <script src="static/ace/build/src/mode-python.js" type="text/javascript" charset="utf-8"></script>
 <script src="static/shortcut.js" type="text/javascript" charset="utf-8"></script>
+<script src="/channel/bcsocket.js"></script>
+<script src="/share/share.js"></script>
+<script src="/share/ace.js"></script>
 
 
 <style>
@@ -117,8 +120,10 @@ body
 </div>
 
 <div class="credit" id="credit">by <a href="http://steingart.ccny.cuny.edu/dan">Dan Steingart</a>, 2011  </div>
+<div id="hack"><textarea id="hidden_trick"></textarea></div> 
 
 <script>
+$("#hack").hide()
 height_factor = .7
 area = $("#script_area")
 var editor = ace.edit("script_area");
@@ -131,6 +136,8 @@ editor.getSession().setMode(new PythonMode());
 editor.setFadeFoldWidgets(false)
 editor.setShowPrintMargin(false)
 foo = editor.getSession()
+
+
 
 foo.setUseWrapMode(true)
 
@@ -151,6 +158,9 @@ shortcut.add("F2",function()
 	editor.setTheme("ace/theme/"+themes[themecycle]);
 })
 
+
+
+
 //cribbed from http://stackoverflow.com/a/1349426/565514
 function makeid()
 {
@@ -162,7 +172,7 @@ function makeid()
 
     return text;
 }
-
+console.log(page)
 var changed = false;
 var status = $("#status");
 var pathname = window.location.pathname;
@@ -172,6 +182,26 @@ if (pathname == "/")
 }
 var page = pathname;
 var scrollpos = 0;
+console.log(page)
+
+var foo = null
+sharejs.open(page.replace("/",""), 'text', function(error, doc) {
+	//console.log(doc)
+    //foo = doc
+ doc.attach_ace(editor);
+});
+
+var elem = document.getElementById('images');
+
+sharejs.open(page.replace("/","results"), 'text', function(error, doc) {
+	console.log(doc)
+	elem.innerHTML = doc.snapshot;
+	doc.on('change', function() {
+		console.log(doc.snapshot)
+		doc.snapshot = elem.innerHTML;
+	});
+});
+	
 
 document.title =  page.split("/")[1] +" - Python in Your Browser"
 //$("#droplink").html("<a href='/drops/"+page.split("/")[1]+"' target='_new'>Drop Page</a>")
@@ -181,7 +211,7 @@ var gotdata = ""
 var maxwidth = 800
 function build_output(data)
 {
-	
+	$("#hidden_trick").val(JSON.stringify(data))
 	imgout = "<center>"
 	widther = $("#images").width() - 1
 	if (widther > maxwidth) widther = maxwidth
