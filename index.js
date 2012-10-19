@@ -1,3 +1,4 @@
+var http = require("http"); //HTTP Server
 var url = require("url"); // URL Handling
 var fs = require('fs'); // Filesystem Access (writing files)
 var os = require("os"); //OS lib, used here for detecting which operating system we're using
@@ -9,10 +10,13 @@ var exec = require('child_process').exec,
 
 var glob
 
+server = http.createServer(app)
 
 var sharejs = require('share').server;
 var options = {db: {type: 'none'}}; 
-
+io = require('socket.io')
+io = io.listen(server); //Socket Creations
+io.set('log level', 1)
 sharejs.attach(app, options);
 
 
@@ -62,13 +66,14 @@ app.get('/*', function(req, res){
 
 app.post('*/run', function(req, res)
 {
-	//console.log(req.body)
 	x = req.body
-	page_name = x['page_name']
+	console.log(x)
+	page_name = x['page_name'].replace("/","")
 	script_name = x['script_name']
 	prepend = settings.prepend		
 	out = ""
 	image_list = []
+	io.sockets.emit(page_name,{'out':"waiting for output"})
 	
 	time = new Date().getTime().toString()
 	counter = 0
@@ -131,6 +136,8 @@ app.post('*/run', function(req, res)
 		}
 		exec_time = end_time - start_time;
 		res.json({'out':stdout,'outerr':stderr,'images':image_list,'exec_time':exec_time})
+		console.log({'out':stdout,'outerr':stderr,'images':image_list,'exec_time':exec_time})
+		io.sockets.emit(page_name,{'out':stdout,'outerr':stderr,'images':image_list,'exec_time':exec_time})
 		
 	});
 	
@@ -160,7 +167,9 @@ app.post('*/history', function(req, res)
 	hist_list = []
 	for (i in fils)
 	{
-		time_part = parseInt(fils[i].split("_")[1])
+		//time_part = parseInt(fils[i].split("_")[1])
+		time_part = parseInt(fils[i].substr(fils[i].length - length+1))
+		console.log(time_part)
 		date = new Date(time_part)
 		hour = date.getHours()
 		min = date.getMinutes()
@@ -203,6 +212,6 @@ app.post('*/read', function(req, res)
 });
 
 
-app.listen(process.argv[2]);
+server.listen(process.argv[2]);
 console.log('Listening on port '+process.argv[2]);
 

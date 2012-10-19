@@ -1,0 +1,3 @@
+echo Running JSLint
+find ./lib -name "*.js" -print0 | xargs -0 jslint
+find ./examples -name "*.js" -print0 | xargs -0 jslint

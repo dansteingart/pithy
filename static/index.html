@@ -6,6 +6,8 @@
 <script src="static/ace/build/src/mode-python.js" type="text/javascript" charset="utf-8"></script>
 <script src="static/shortcut.js" type="text/javascript" charset="utf-8"></script>
 <script src="/channel/bcsocket.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
 <script src="/share/share.js"></script>
 <script src="/share/ace.js"></script>
 
@@ -120,10 +122,17 @@ body
 </div>
 
 <div class="credit" id="credit">by <a href="http://steingart.ccny.cuny.edu/dan">Dan Steingart</a>, 2011  </div>
-<div id="hack"><textarea id="hidden_trick"></textarea></div> 
 
 <script>
-$("#hack").hide()
+var changed = false;
+var status = $("#status");
+var pathname = window.location.pathname;
+if (pathname == "/") 
+{
+	window.location.href = window.location.href + makeid()
+}
+var page = pathname;
+var scrollpos = 0;
 height_factor = .7
 area = $("#script_area")
 var editor = ace.edit("script_area");
@@ -158,7 +167,34 @@ shortcut.add("F2",function()
 	editor.setTheme("ace/theme/"+themes[themecycle]);
 })
 
+var socket = io.connect('/');
 
+socket.on(page.replace("/",""), function (data) {
+				//console.log(data)
+				//Let know that we've saved stuff
+				changed = false;
+				if (data['exec_time'] != undefined)
+				{
+				$("#status").html("saved, exec time = "+data['exec_time']+"ms");
+				//$("#status").fadeOut(1000,function(){$("#status").html("   ")});  
+				//$("#status").fadeIn(1000);
+			//	console.log("fader rader")
+				}
+				gotdata = data
+				build_output(gotdata)
+				history(page);
+				//console.log("should be stuffs here")
+				
+				dfd = $('#images').imagesLoaded(); 
+				dfd.always(
+					function(){
+						$("#images").scrollTop(scrollpos)
+						}
+				)
+				//socket.disconnect()
+				//socket = io.connect('/');
+
+});
 
 
 //cribbed from http://stackoverflow.com/a/1349426/565514
@@ -172,36 +208,16 @@ function makeid()
 
     return text;
 }
-console.log(page)
-var changed = false;
-var status = $("#status");
-var pathname = window.location.pathname;
-if (pathname == "/") 
-{
-	window.location.href = window.location.href + makeid()
-}
-var page = pathname;
-var scrollpos = 0;
-console.log(page)
+
 
 var foo = null
 sharejs.open(page.replace("/",""), 'text', function(error, doc) {
-	//console.log(doc)
-    //foo = doc
  doc.attach_ace(editor);
+ if (editor.getSession().getValue() == "") loader(false,page);
+
 });
 
-var elem = document.getElementById('images');
 
-sharejs.open(page.replace("/","results"), 'text', function(error, doc) {
-	console.log(doc)
-	elem.innerHTML = doc.snapshot;
-	doc.on('change', function() {
-		console.log(doc.snapshot)
-		doc.snapshot = elem.innerHTML;
-	});
-});
-	
 
 document.title =  page.split("/")[1] +" - Python in Your Browser"
 //$("#droplink").html("<a href='/drops/"+page.split("/")[1]+"' target='_new'>Drop Page</a>")
@@ -211,7 +227,8 @@ var gotdata = ""
 var maxwidth = 800
 function build_output(data)
 {
-	$("#hidden_trick").val(JSON.stringify(data))
+	//console.log("start build")
+	
 	imgout = "<center>"
 	widther = $("#images").width() - 1
 	if (widther > maxwidth) widther = maxwidth
@@ -237,6 +254,8 @@ function build_output(data)
 	outputdata += "<br><span style='color:red'>"+boots+"</span>"
 
 	$("#images").html(outputdata)
+	//console.log("end build")
+	
 }
 
 function saver(bool,page)
@@ -244,7 +263,7 @@ function saver(bool,page)
 
 	//editor.save()
 	script_name = $("#scriptname").val()
-	console.log(script_name)
+	//console.log(script_name)
 	//if ($.trim($("#script_area").text()) != "Fill Me Up")
 	if ($.trim(editor.getSession().getValue()) != "Fill Me Up")
 	{
@@ -255,26 +274,7 @@ function saver(bool,page)
 		  type:"POST",
 		  async:bool,
 		  data:{page_name:page,script_name:script_name,value:editor.getSession().getValue(),csvlist:$("#csvselected").val()},
-		  success: function(data)
-		  	{
-				//Let know that we've saved stuff
-				changed = false;
-				$("#status").html("saved, exec time = "+data['exec_time']+"ms");
-				$("#status").fadeOut(4000,function(){$("#status").html("   ")});  
-				$("#status").fadeIn(1000);
-
-				gotdata = data
-				build_output(gotdata)
-				history(page);
-				dfd = $('#images').imagesLoaded(); 
-				dfd.always(
-					function(){
-						$("#images").scrollTop(scrollpos)
-						console.log(scrollpos)
-						}
-				)
-								
-			}
+		 
 		})
 	}
 }
@@ -290,11 +290,11 @@ function loader(bool,page)
 	  type:"POST",
 	  data:{page_name:page,value:editor.getSession().getValue()},
 	  success: function(data){
-		console.log(data)
+	//	console.log(data)
 		//data = JSON.parse(data)
 		
 		//$("#script_area").text(data['script']);
-		editor.getSession().setValue(data['script'])
+	 		editor.getSession().setValue(data['script'])
 		//if (data['dataset'].length > 0) $("#csvselected").val(data['dataset']);
 		
 	  }
@@ -356,7 +356,7 @@ history(page);
 //What happens when you click run
 $("#run").click(function(){
 	scrollpos = $("#images").scrollTop()
-	$("#images").html("waiting for result");
+	//$("#images").html("waiting for result");
 	
 	saver(true,page);
 	
