@@ -112,7 +112,7 @@ body
 <h3>Code Here</h3>
 <div id="script_area"></div>
 <div id="code_enter" style="text-align: right;">
-<input id="scriptname" class="texterboxer"><button id="save">save</button><button id="run">run</button> (or hit F1)
+<input id="scriptname" class="texterboxer"><button id="kill">kill</button><button id="run">run</button> (or hit F1)
 </div>	
 <div id="status" style="height:10px;"></div>
 
@@ -170,15 +170,12 @@ shortcut.add("F2",function()
 var socket = io.connect('/');
 
 socket.on(page.replace("/",""), function (data) {
-				//console.log(data)
 				//Let know that we've saved stuff
 				changed = false;
 				if (data['exec_time'] != undefined)
 				{
-				$("#status").html("saved, exec time = "+data['exec_time']+"ms");
-				//$("#status").fadeOut(1000,function(){$("#status").html("   ")});  
-				//$("#status").fadeIn(1000);
-			//	console.log("fader rader")
+					waiting_for_output = false
+					$("#status").html("saved, exec time = "+data['exec_time']+"ms");
 				}
 				gotdata = data
 				build_output(gotdata)
@@ -191,8 +188,6 @@ socket.on(page.replace("/",""), function (data) {
 						$("#images").scrollTop(scrollpos)
 						}
 				)
-				//socket.disconnect()
-				//socket = io.connect('/');
 
 });
 
@@ -217,8 +212,6 @@ sharejs.open(page.replace("/",""), 'text', function(error, doc) {
 
 });
 
-
-
 document.title =  page.split("/")[1] +" - Python in Your Browser"
 //$("#droplink").html("<a href='/drops/"+page.split("/")[1]+"' target='_new'>Drop Page</a>")
 this_port = "/"+pathname.split("/")[1]+"/"
@@ -227,8 +220,6 @@ var gotdata = ""
 var maxwidth = 800
 function build_output(data)
 {
-	//console.log("start build")
-	
 	imgout = "<center>"
 	widther = $("#images").width() - 1
 	if (widther > maxwidth) widther = maxwidth
@@ -258,11 +249,17 @@ function build_output(data)
 	
 }
 
+waiting_for_output = false
 function saver(bool,page)
 {
 
 	//editor.save()
+	if (!waiting_for_output)
+	{ 
+	waiting_for_output = true
 	script_name = $("#scriptname").val()
+	$("#status").html("waiting for result");
+	
 	//console.log(script_name)
 	//if ($.trim($("#script_area").text()) != "Fill Me Up")
 	if ($.trim(editor.getSession().getValue()) != "Fill Me Up")
@@ -273,9 +270,10 @@ function saver(bool,page)
 		  url: this_port+"run/",
 		  type:"POST",
 		  async:bool,
-		  data:{page_name:page,script_name:script_name,value:editor.getSession().getValue(),csvlist:$("#csvselected").val()},
+		  data:{page_name:page,script_name:script_name,value:editor.getSession().getValue()},
 		 
 		})
+	}
 	}
 }
 
@@ -307,7 +305,7 @@ function history(page)
 	//console.log("loading!");
 
 	$.ajax({
-	  url: "history/",
+	  url: "/history/",
 	  async:true,
 	  type:"POST",
 	  data:{page_name:page,value:editor.getSession().getValue()},
@@ -334,11 +332,11 @@ function history(page)
 }
 
 
+
 function get_data()
-{
-	
-	loader(false,this_port+$("#histories").val());
-	console.log(this_port+$("#histories").val())
+{	
+	loader(false,$("#histories").val());
+	console.log($("#histories").val())
 	//editor.setValue($("#script_area").text());
 }
 
@@ -362,8 +360,19 @@ $("#run").click(function(){
 	
 	});
 	
-//Editor Stuff
+$("#kill").click(function(){
+		console.log("kill me please")
+		$.ajax(
+		{
+		  url: "/killer/",
+		  type:"POST",
+		  data:{page_name:page}
+		})
 
+		});
+
+
+//Editor Stuff
 
 
 $(window).resize(function(){
