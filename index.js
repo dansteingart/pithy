@@ -8,8 +8,11 @@ var express = require('express'); //App Framework (similar to web.py abstraction
 var app = express();
 var exec = require('child_process').exec,
     child;
+var spawn = require('child_process').spawn,
+	child;
 
 server = http.createServer(app)
+var execSync = require('execSync');
 
 var sharejs = require('share').server;
 var options = {db: {type: 'none'}}; 
@@ -48,6 +51,7 @@ app.get('/*', function(req, res){
 	if (req.params[0] == "") 
 	{
 		res.redirect("/"+makeid());
+
 	}
 
 	else if(req.params[0].search("shower/") > -1 )
@@ -96,7 +100,6 @@ app.post('*/run', function(req, res)
 	time = new Date().getTime().toString()
 	counter = 0
 	data = x['value']
-
 	for (b in settings.bad_words)
 	{
 		if (data.search(b) > -1)
@@ -129,7 +132,6 @@ app.post('*/run', function(req, res)
 	}
 	
 	data = prepend+data
-	
 	while (data.search("showme()")>-1)
 	{
 		data = data.replace("showme()","save_image('"+page_name+"_"+time+"')\n",1)
@@ -138,56 +140,85 @@ app.post('*/run', function(req, res)
 	
 	fs.writeFileSync("code/temper.py",data)
 	
-	fullcmd = settings.python_path+" '"+__dirname+"/code/temper.py' "
-	
+	//fullcmd = settings.python_path+" '"+__dirname+"/code/temper.py' "
 	start_time = new Date().getTime()
 	res.json({success:true})
-	
+	//ROUGH FUCKING EDGE YO: you need to anonomize this shit
+	//hack fails on syntax error (never gets to print)
+	//Fixed Below
+	/*
 	chill = exec(fullcmd,
-	  function (error, stdout, stderr) {
-		timers[pidder] = false
-		end_time = new Date().getTime()
-		
-		fils = fs.readdirSync("images")
-		for (i in fils)
+	function (error, stdout, stderr) {
+		//console.log(stdout)
+		//console.log(stderr)
+		//console.log(error)
+		console.log("this pid is " +this.pid)
+		if (stdout.length >0)
 		{
-			if (fils[i].search(page_name+"_"+time) > -1) image_list.push("/images/"+fils[i])
+			hacky_name = stdout.split("\n")[0]
+			timers[processes[hacky_name]] = false
+			console.log(hacky_name+" is done")
+			end_time = new Date().getTime()
+			delete processes[hacky_name];		
+			fils = fs.readdirSync("images")
+			for (i in fils)
+			{
+				if (fils[i].search(hacky_name+"_"+time) > -1) image_list.push("/images/"+fils[i])
+			}
+			exec_time = end_time - start_time;
+			big_out = {'out':stdout,'outerr':stderr,'images':image_list,'exec_time':exec_time}
+			send_list.push({'page_name':hacky_name,'data':big_out})
+			if (stderr.search("Terminated") == -1) fs.writeFileSync("results/"+hacky_name,JSON.stringify(big_out))
 		}
-		exec_time = end_time - start_time;
-		//res.json({'out':stdout,'outerr':stderr,'images':image_list,'exec_time':exec_time})
-		big_out = {'out':stdout,'outerr':stderr,'images':image_list,'exec_time':exec_time}
-		//io.sockets.emit(page_name,big_out)
-		send_list.push({'page_name':page_name,'data':big_out})
-		if (stderr.search("Terminated") == -1) fs.writeFileSync("results/"+page_name,JSON.stringify(big_out))
-
 	});
 	
-	pidder = chill.pid+1
-	processes[page_name] = pidder
-	//console.log(pidder)
-	//console.log(processes) 
-	timers[pidder] = true
-	fooer = 0
-	setInterval(function() {
-    if (timers[pidder]==false) clearInterval(this);
-	else
+	*/
+	
+	spawn_list[page_name] = spawn(settings.python_path,[__dirname+"/code/temper.py"])
+	//spawn_list[page_name] = spawn(fullcmd)
+	processes[page_name] = spawn_list[page_name].pid
+	results[processes[page_name]] = {}
+	results[processes[page_name]]['page_name'] = page_name
+	results[processes[page_name]]['stdout'] = ""
+	results[processes[page_name]]['stderr'] = ""
+	results[processes[page_name]]['error'] = ""
+	results[processes[page_name]]['start_time'] = start_time
+	
+	spawn_list[page_name].stdout.on('data',function(data){results[processes[page_name]]['stdout'] += data})
+	spawn_list[page_name].stderr.on('data',function(data){results[processes[page_name]]['stderr'] += data})
+	spawn_list[page_name].on('error',function(data){results[processes[page_name]]['error'] += data;console.log(data)})
+	
+	spawn_list[page_name].on('exit',function(code)
 	{
-		exec("top -b -n 1 -p "+pidder,
-		function (error, stdout, stderr)
-		{
-			outer = stdout; 
-			//io.sockets.emit(page_name,{out:outer})
-			//Double check to see if process is alive.  If not, don't push!
-			if (stdout.search(pidder) > 1)send_list.push({'page_name':page_name,'data':{out:outer}})
-		})
-	}
-  	
-	}, 2000);
-  
-
+		this_pid = this.pid
+		console.log(this_pid)
+		console.log(code)
+		stdout = results[this_pid]['stdout']
+		stderr = results[this_pid]['stderr']
+		panana = results[this_pid]['page_name']
+		end_time = new Date().getTime()
+		exec_time= end_time - results[this_pid]['start_time']
+		big_out = {'out':stdout,'outerr':stderr,'images':[],'exec_time':exec_time}
+		console.log(big_out)
+		send_list.push({'page_name':panana,'data':big_out})
+		if (stderr.search("Terminated") == -1) fs.writeFileSync("results/"+panana,JSON.stringify(big_out))
+		
+		//Clean up, clean up, everybody clean up
+		delete processes[panana];		
+		delete spawn_list[panana];
+		delete results[this_pid];		
+		
+		
+	})
+	
+	
+	timers[processes[page_name]] = true
 	
 });
 
+spawn_list = {}
+intervalers = {}
+results = {}
 app.post('*/history', function(req, res)
 {
 	x = req.body;
@@ -234,11 +265,13 @@ app.post('*/read', function(req, res)
 	x = req.body
 	back_to_pith = {}
 	out = "Fill Me Up"
-	page_name = x['page_name']
+	page_name = x['page_name'].replace("/","")
 	try{
 	try
 	{
-		out = fs.readFileSync("code/"+page_name+".py").toString()		
+		out = fs.readFileSync("code/"+page_name+".py").toString()
+		
+		
 	}
 	catch (e)
 	{
@@ -252,6 +285,23 @@ app.post('*/read', function(req, res)
 
 	back_to_pith['script'] = out
 	res.json(back_to_pith)
+	
+	try
+	{
+		results = fs.readFileSync("results/"+page_name).toString()
+		results = JSON.parse(results)	
+		setTimeout(function()
+		{
+			send_list.push({'page_name':page_name,'data':results})
+		},1000);
+		//console.log(page_name)
+		//console.log(results)
+		
+	}
+	catch (e)
+	{	
+		console.log(e)
+	}
 	
 });
 
@@ -296,9 +346,34 @@ function makeid()
 }
 
 //Queue to prevent socket race conditions, fires a message from the buffer every 50 ms
+//TODO: Figure out how to reduce interval time without 
 setInterval(function(){
 	this_send = send_list.splice(0,1)[0]
 	if (this_send != undefined) 
 	{
-		io.sockets.emit(this_send['page_name'],this_send['data'])};
-},50)
+		
+		//console.log(send_list.length + " message(s) in queue")
+		io.sockets.emit(this_send['page_name'],this_send['data'])
+	};
+},500)
+
+
+
+
+//Process Checker
+setInterval(function() {
+	for (p in processes)
+	{
+		//console.log(processes)
+		//console.log(processes[p] )
+		//exec("top -b -n 1 -p "+processes[p] ,
+		//function (error, stdout, stderr)
+		//{
+			outer = execSync.stdout("top -b -n 1 -p "+processes[p]); 
+			//Double check to see if process is alive.  If not, don't push!
+			if (outer.search(processes[p]) > 1)send_list.push({'page_name':p,'data':{out:outer}})
+		//})
+	}
+}, 2000);
+
+

@@ -127,10 +127,7 @@ body
 var changed = false;
 var status = $("#status");
 var pathname = window.location.pathname;
-if (pathname == "/") 
-{
-	window.location.href = window.location.href + makeid()
-}
+
 var page = pathname;
 var scrollpos = 0;
 height_factor = .7
@@ -145,7 +142,6 @@ editor.getSession().setMode(new PythonMode());
 editor.setFadeFoldWidgets(false)
 editor.setShowPrintMargin(false)
 foo = editor.getSession()
-
 
 
 foo.setUseWrapMode(true)
@@ -171,6 +167,8 @@ var socket = io.connect('/');
 
 socket.on(page.replace("/",""), function (data) {
 				//Let know that we've saved stuff
+				
+				//console.log(data)
 				changed = false;
 				if (data['exec_time'] != undefined)
 				{
@@ -229,6 +227,8 @@ function build_output(data)
 	//data = JSON.parse(data)
 	boots = data['out']
 	//while (boots.search("\n") > -1) boots = boots.replace("\n","<br>")
+	
+	if (boots.search("top") == 0) ($("#status").html("waiting for result"))
 	
 	foots = boots.split("\n")
 	for (i in foots)
@@ -347,7 +347,7 @@ function make_option(word)
 }
 
 
-loader(false,page);
+loader(true,page);
 history(page);
 //getscsvs(page)
 
