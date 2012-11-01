@@ -104,8 +104,6 @@ app.post('*/run', function(req, res)
 	{
 		if (data.search(b) > -1)
 		{
-			//console.log(b)
-			//console.log(settings.bad_words)	
 			out = "Found '"+b+"', this is a BAD WORD"
 			res.json({'out':out,'images':image_list})
 			break
@@ -140,42 +138,10 @@ app.post('*/run', function(req, res)
 	
 	fs.writeFileSync("code/temper.py",data)
 	
-	//fullcmd = settings.python_path+" '"+__dirname+"/code/temper.py' "
 	start_time = new Date().getTime()
 	res.json({success:true})
-	//ROUGH FUCKING EDGE YO: you need to anonomize this shit
-	//hack fails on syntax error (never gets to print)
-	//Fixed Below
-	/*
-	chill = exec(fullcmd,
-	function (error, stdout, stderr) {
-		//console.log(stdout)
-		//console.log(stderr)
-		//console.log(error)
-		console.log("this pid is " +this.pid)
-		if (stdout.length >0)
-		{
-			hacky_name = stdout.split("\n")[0]
-			timers[processes[hacky_name]] = false
-			console.log(hacky_name+" is done")
-			end_time = new Date().getTime()
-			delete processes[hacky_name];		
-			fils = fs.readdirSync("images")
-			for (i in fils)
-			{
-				if (fils[i].search(hacky_name+"_"+time) > -1) image_list.push("/images/"+fils[i])
-			}
-			exec_time = end_time - start_time;
-			big_out = {'out':stdout,'outerr':stderr,'images':image_list,'exec_time':exec_time}
-			send_list.push({'page_name':hacky_name,'data':big_out})
-			if (stderr.search("Terminated") == -1) fs.writeFileSync("results/"+hacky_name,JSON.stringify(big_out))
-		}
-	});
-	
-	*/
 	
 	spawn_list[page_name] = spawn(settings.python_path,[__dirname+"/code/temper.py"])
-	//spawn_list[page_name] = spawn(fullcmd)
 	processes[page_name] = spawn_list[page_name].pid
 	results[processes[page_name]] = {}
 	results[processes[page_name]]['page_name'] = page_name
@@ -369,7 +335,8 @@ setInterval(function() {
 		//exec("top -b -n 1 -p "+processes[p] ,
 		//function (error, stdout, stderr)
 		//{
-			outer = execSync.stdout("top -b -n 1 -p "+processes[p]); 
+			outer = execSync.stdout("top -b -n 1 -p "+processes[p]);
+			outer += "\n"+results[processes[p]]['stdout'] 
 			//Double check to see if process is alive.  If not, don't push!
 			if (outer.search(processes[p]) > 1)send_list.push({'page_name':p,'data':{out:outer}})
 		//})
