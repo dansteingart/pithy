@@ -39,6 +39,9 @@ settings = {
 var timers = []
 var processes = {}
 var send_list = []
+var spawn_list = {}
+var intervalers = {}
+var results = {}
 
 //Set Static Directories
 app.use(express.bodyParser());
@@ -156,12 +159,15 @@ app.post('*/run', function(req, res)
 	
 	spawn_list[page_name].on('exit',function(code)
 	{
+		try
+		{
 		this_pid = this.pid
-		console.log(this_pid)
-		console.log(code)
+		
+		console.log("exiting "+this_pid+" with code "+code)
 		stdout = results[this_pid]['stdout']
 		stderr = results[this_pid]['stderr']
 		panana = results[this_pid]['page_name']
+		console.log(panana)
 		end_time = new Date().getTime()
 		exec_time= end_time - results[this_pid]['start_time']
 		big_out = {'out':stdout,'outerr':stderr,'images':[],'exec_time':exec_time}
@@ -173,7 +179,11 @@ app.post('*/run', function(req, res)
 		delete processes[panana];		
 		delete spawn_list[panana];
 		delete results[this_pid];		
-		
+		}
+		catch(e){
+			console.log("On Exit")
+			console.log(e)
+			}
 		
 	})
 	
@@ -182,9 +192,6 @@ app.post('*/run', function(req, res)
 	
 });
 
-spawn_list = {}
-intervalers = {}
-results = {}
 app.post('*/history', function(req, res)
 {
 	x = req.body;
@@ -254,14 +261,12 @@ app.post('*/read', function(req, res)
 	
 	try
 	{
-		results = fs.readFileSync("results/"+page_name).toString()
-		results = JSON.parse(results)	
+		resulters = fs.readFileSync("results/"+page_name).toString()
+		resulters = JSON.parse(resulters)	
 		setTimeout(function()
 		{
-			send_list.push({'page_name':page_name,'data':results})
+			send_list.push({'page_name':page_name,'data':resulters})
 		},1000);
-		//console.log(page_name)
-		//console.log(results)
 		
 	}
 	catch (e)
@@ -330,16 +335,19 @@ setInterval(function(){
 setInterval(function() {
 	for (p in processes)
 	{
-		//console.log(processes)
-		//console.log(processes[p] )
-		//exec("top -b -n 1 -p "+processes[p] ,
-		//function (error, stdout, stderr)
-		//{
+
+		try{
 			outer = execSync.stdout("top -b -n 1 -p "+processes[p]);
 			outer += "\n"+results[processes[p]]['stdout'] 
 			//Double check to see if process is alive.  If not, don't push!
 			if (outer.search(processes[p]) > 1)send_list.push({'page_name':p,'data':{out:outer}})
-		//})
+		}
+		catch(e){
+			console.log(processes[p]);
+			console.log(results)
+			console.log(e)
+		}
+	
 	}
 }, 2000);
 
