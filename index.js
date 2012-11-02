@@ -140,59 +140,8 @@ app.post('*/run', function(req, res)
 	}
 	
 	fs.writeFileSync("code/temper.py",data)
-	
-	start_time = new Date().getTime()
-	res.json({success:true})
-	
-	//spawn_list[page_name] = spawn(settings.python_path,[__dirname+"/code/temper.py"])
+	res.json({success:true})	
 	processes[page_name] = betterexec(page_name)+1
-	
-	/*
-	results[processes[page_name]] = {}
-	results[processes[page_name]]['page_name'] = page_name
-	results[processes[page_name]]['stdout'] = ""
-	results[processes[page_name]]['stderr'] = ""
-	results[processes[page_name]]['error'] = ""
-	results[processes[page_name]]['result'] = undefined
-	results[processes[page_name]]['start_time'] = start_time
-	
-	spawn_list[page_name].stdout.on('data',function(data){
-		console.log("data gotten"+data)
-		results[processes[page_name]]['stdout'] += data
-		})
-	spawn_list[page_name].stderr.on('data',function(data){results[processes[page_name]]['stderr'] += data})
-	spawn_list[page_name].on('error',function(data){results[processes[page_name]]['error'] += data})
-	
-	spawn_list[page_name].on('exit',function(code)
-	{
-		try
-		{
-		this_pid = this.pid
-		console.log("exiting "+this_pid+" with code "+code)
-		stdout = results[this_pid]['stdout']
-		stderr = results[this_pid]['stderr']
-		panana = results[this_pid]['page_name']
-		console.log(panana)
-		end_time = new Date().getTime()
-		exec_time= end_time - results[this_pid]['start_time']
-		big_out = {'out':stdout,'outerr':stderr,'images':[],'exec_time':exec_time}
-		console.log(big_out)
-		send_list.push({'page_name':panana,'data':big_out})
-		if (stderr.search("Terminated") == -1) fs.writeFileSync("results/"+panana,JSON.stringify(big_out))
-		
-		//Clean up, clean up, everybody clean up
-		//delete processes[panana];		
-		//delete spawn_list[panana];
-		//results[this_pid];		
-		}
-		catch(e){
-			console.log("On Exit")
-			console.log(e)
-			}
-		
-	})
-	*/
-	
 	timers[processes[page_name]] = true
 	
 });
@@ -308,7 +257,7 @@ console.log('Listening on port '+process.argv[2]);
 
 //----------Helper Functions----------------------------
 
-
+//big ups to http://stackoverflow.com/questions/13162136/node-js-is-there-a-way-for-the-callback-function-of-child-process-exec-to-ret/13166437#13166437
 function betterexec(nameo)
 {
 	fullcmd = settings.python_path+" '"+__dirname+"/code/temper.py' "
