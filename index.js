@@ -144,25 +144,30 @@ app.post('*/run', function(req, res)
 	start_time = new Date().getTime()
 	res.json({success:true})
 	
-	spawn_list[page_name] = spawn(settings.python_path,[__dirname+"/code/temper.py"])
-	processes[page_name] = spawn_list[page_name].pid
+	//spawn_list[page_name] = spawn(settings.python_path,[__dirname+"/code/temper.py"])
+	processes[page_name] = betterexec(page_name)+1
+	
+	/*
 	results[processes[page_name]] = {}
 	results[processes[page_name]]['page_name'] = page_name
 	results[processes[page_name]]['stdout'] = ""
 	results[processes[page_name]]['stderr'] = ""
 	results[processes[page_name]]['error'] = ""
+	results[processes[page_name]]['result'] = undefined
 	results[processes[page_name]]['start_time'] = start_time
 	
-	spawn_list[page_name].stdout.on('data',function(data){results[processes[page_name]]['stdout'] += data})
+	spawn_list[page_name].stdout.on('data',function(data){
+		console.log("data gotten"+data)
+		results[processes[page_name]]['stdout'] += data
+		})
 	spawn_list[page_name].stderr.on('data',function(data){results[processes[page_name]]['stderr'] += data})
-	spawn_list[page_name].on('error',function(data){results[processes[page_name]]['error'] += data;console.log(data)})
+	spawn_list[page_name].on('error',function(data){results[processes[page_name]]['error'] += data})
 	
 	spawn_list[page_name].on('exit',function(code)
 	{
 		try
 		{
 		this_pid = this.pid
-		
 		console.log("exiting "+this_pid+" with code "+code)
 		stdout = results[this_pid]['stdout']
 		stderr = results[this_pid]['stderr']
@@ -176,9 +181,9 @@ app.post('*/run', function(req, res)
 		if (stderr.search("Terminated") == -1) fs.writeFileSync("results/"+panana,JSON.stringify(big_out))
 		
 		//Clean up, clean up, everybody clean up
-		delete processes[panana];		
-		delete spawn_list[panana];
-		delete results[this_pid];		
+		//delete processes[panana];		
+		//delete spawn_list[panana];
+		//results[this_pid];		
 		}
 		catch(e){
 			console.log("On Exit")
@@ -186,7 +191,7 @@ app.post('*/run', function(req, res)
 			}
 		
 	})
-	
+	*/
 	
 	timers[processes[page_name]] = true
 	
@@ -303,6 +308,33 @@ console.log('Listening on port '+process.argv[2]);
 
 //----------Helper Functions----------------------------
 
+
+function betterexec(nameo)
+{
+	fullcmd = settings.python_path+" '"+__dirname+"/code/temper.py' "
+	
+	start_time = new Date().getTime()
+	chill = exec(fullcmd,
+	function (error, stdout, stderr) {
+		this_pid = chill.pid+1
+		console.log("this pid is " +this_pid)
+		if (stdout.length >0)
+		{
+			hacky_name = nameo
+			timers[processes[hacky_name]] = false
+			console.log(hacky_name+" is done")
+			end_time = new Date().getTime()
+			delete processes[hacky_name];		
+			//fils = fs.readdirSync("images")
+			exec_time = end_time - start_time;
+			big_out = {'out':stdout,'outerr':stderr,'images':[],'exec_time':exec_time}
+			send_list.push({'page_name':hacky_name,'data':big_out})
+			if (stderr.search("Terminated") == -1) fs.writeFileSync("results/"+hacky_name,JSON.stringify(big_out))
+		}
+	})
+	return chill.pid
+}
+
 //Makes random page
 //cribbed from http://stackoverflow.com/a/1349426/565514
 function makeid()
@@ -338,8 +370,8 @@ setInterval(function() {
 
 		try{
 			outer = execSync.stdout("top -b -n 1 -p "+processes[p]);
-			outer += "\n"+results[processes[p]]['stdout'] 
 			//Double check to see if process is alive.  If not, don't push!
+			//console.log(outer)
 			if (outer.search(processes[p]) > 1)send_list.push({'page_name':p,'data':{out:outer}})
 		}
 		catch(e){
