@@ -35,6 +35,26 @@ settings = {
 	'prepend' : fs.readFileSync('static/prepend.txt').toString()
 }
 
+
+//Clean Up Via: http://stackoverflow.com/a/9918524/565514
+var clients = {}
+io.sockets.on('connection', function(socket) {
+  	console.log(socket.id +" Connected")
+  	var count = 0;
+	for (var k in clients) {if (clients.hasOwnProperty(k)) {++count;}}
+	console.log("Clients Connected:"+count)
+	clients[socket.id] = socket;
+
+  socket.on('disconnect', function() {
+	console.log(socket.id +" Disconnected")
+  	var count = 0;
+	for (var k in clients) {if (clients.hasOwnProperty(k)) {++count;}}
+	console.log("Clients Connected:"+count)
+    delete clients[socket.id];
+  });
+});
+
+
 //Process Management variables
 var timers = []
 var processes = {}
@@ -217,10 +237,11 @@ app.post('*/read', function(req, res)
 	{
 		resulters = fs.readFileSync("results/"+page_name).toString()
 		resulters = JSON.parse(resulters)	
-		setTimeout(function()
-		{
-			send_list.push({'page_name':page_name,'data':resulters})
-		},1000);
+		//setTimeout(function()
+		//{
+		//Don't send saved results if this script is running
+		if (!processes.hasOwnProperty(page_name)) send_list.push({'page_name':page_name,'data':resulters})
+		//},1000);
 		
 	}
 	catch (e)
@@ -267,19 +288,17 @@ function betterexec(nameo)
 	function (error, stdout, stderr) {
 		this_pid = chill.pid+1
 		console.log("this pid is " +this_pid)
-		if (stdout.length >0)
-		{
-			hacky_name = nameo
-			timers[processes[hacky_name]] = false
-			console.log(hacky_name+" is done")
-			end_time = new Date().getTime()
-			delete processes[hacky_name];		
-			//fils = fs.readdirSync("images")
-			exec_time = end_time - start_time;
-			big_out = {'out':stdout,'outerr':stderr,'images':[],'exec_time':exec_time}
-			send_list.push({'page_name':hacky_name,'data':big_out})
-			if (stderr.search("Terminated") == -1) fs.writeFileSync("results/"+hacky_name,JSON.stringify(big_out))
-		}
+		hacky_name = nameo
+		timers[processes[hacky_name]] = false
+		console.log(hacky_name+" is done")
+		end_time = new Date().getTime()
+		delete processes[hacky_name];		
+		//fils = fs.readdirSync("images")
+		exec_time = end_time - start_time;
+		big_out = {'out':stdout,'outerr':stderr,'images':[],'exec_time':exec_time}
+		send_list.push({'page_name':hacky_name,'data':big_out})
+		if (stderr.search("Terminated") == -1) fs.writeFileSync("results/"+hacky_name,JSON.stringify(big_out))
+		
 	})
 	return chill.pid
 }
