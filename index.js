@@ -272,6 +272,19 @@ app.post('*/readresults', function(req, res)
 	
 });
 
+app.post('*/copyto',function(req,res)
+{
+	x = req.body
+	page_name = x['page_name'].replace("/","")
+	script_name = x['script_name']
+	data = x['value']
+	full_name = script_name+".py"
+	fs.writeFileSync("code/"+full_name,data);
+	res.json({success:true,redirect:script_name})	
+
+})
+
+
 //Start It Up!
 server.listen(process.argv[2]);
 console.log('Listening on port '+process.argv[2]);
