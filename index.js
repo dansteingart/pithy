@@ -12,8 +12,6 @@ var spawn = require('child_process').spawn,
 	child;
 
 server = http.createServer(app)
-var execSync = require('execSync');
-
 var sharejs = require('share').server;
 var options = {db: {type: 'none'}}; 
 io = require('socket.io')
@@ -350,10 +348,18 @@ setInterval(function() {
 	{
 
 		try{
-			outer = execSync.stdout("top -b -n 1 -p "+processes[p]);
+			//outer = execSync.stdout("top -b -n 1 -p "+processes[p]);
+			exec("top -b -n 1 -p "+processes[p],function(stdout,stderr)
+			{
+				console.log("this out is "+stderr)
+				outer = stderr
+				if (outer.search(processes[p]) > 1)send_list.push({'page_name':p,'data':{out:outer}})
+				
+			})
+			
 			//Double check to see if process is alive.  If not, don't push!
 			//console.log(outer)
-			if (outer.search(processes[p]) > 1)send_list.push({'page_name':p,'data':{out:outer}})
+			//if (outer.search(processes[p]) > 1)send_list.push({'page_name':p,'data':{out:outer}})
 		}
 		catch(e){
 			console.log(processes[p]);
