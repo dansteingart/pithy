@@ -346,28 +346,32 @@ setInterval(function(){
 setInterval(function() {
 	for (p in processes)
 	{
-
-		try{
-			//outer = execSync.stdout("top -b -n 1 -p "+processes[p]);
-			exec("top -b -n 1 -p "+processes[p],function(stdout,stderr)
-			{
-				console.log("this out is "+stderr)
-				outer = stderr
-				if (outer.search(processes[p]) > 1)send_list.push({'page_name':p,'data':{out:outer}})
-				
-			})
-			
-			//Double check to see if process is alive.  If not, don't push!
-			//console.log(outer)
-			//if (outer.search(processes[p]) > 1)send_list.push({'page_name':p,'data':{out:outer}})
-		}
-		catch(e){
-			console.log(processes[p]);
-			console.log(results)
-			console.log(e)
-		}
+		bettertop(p)
 	
 	}
 }, 2000);
 
 
+function bettertop(p)
+{
+	try{
+		//outer = execSync.stdout("top -b -n 1 -p "+processes[p]);
+		exec("top -b -n 1 -p "+processes[p],function(stdout,stderr)
+		{
+			//console.log("this out is "+stderr)
+			outer = stderr
+			if (outer.search(processes[p]) > 1)send_list.push({'page_name':p,'data':{out:outer}})
+			
+		})
+		
+		//Double check to see if process is alive.  If not, don't push!
+		//console.log(outer)
+		//if (outer.search(processes[p]) > 1)send_list.push({'page_name':p,'data':{out:outer}})
+	}
+	catch(e){
+		console.log(processes[p]);
+		console.log(results)
+		console.log(e)
+	}
+	
+}
