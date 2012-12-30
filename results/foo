@@ -1,1 +1,0 @@
-{"out":"","outerr":"Traceback (most recent call last):\n  File \"/home/dan/sandbox/pithy/code/temper.py\", line 21, in <module>\n    print foo\nNameError: name 'foo' is not defined\n","images":[],"exec_time":470}
