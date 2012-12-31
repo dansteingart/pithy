@@ -56,4 +56,4 @@ paste this into your pithy page to generate a graph
     title("Now With Labels")
     showme() 
 
-everything here is pure [pylab]() except for showme(), which does some behind the scenes magic to generate a plot and save the figure.  
+everything here is pure [pylab](http://www.scipy.org/PyLab) except for showme(), which does some behind the scenes magic to generate a plot and save the figure.  
