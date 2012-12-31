@@ -21,12 +21,6 @@ io.set('log level', 1)
 sharejs.attach(app, options);
 
 
-//Make Dirs if they don't exist
-fs.mkdir("code")
-fs.mkdir("code_stamped")
-fs.mkdir("images")
-fs.mkdir("results")
-
 //big hack to make killing working
 var os_offset = 1
 if (os.platform() == 'darwin') os_offset = 2
@@ -47,11 +41,25 @@ for (d in dirs)
 	}
 }
 
+
+//create pithy.py lib if it doesn't already exist
+try
+{
+	checkface = fs.readFileSync('code/pithy.py').toString()
+}
+catch (e)
+{
+	console.log("making a pithy library")
+	fs.writeFileSync('code/pithy.py',fs.readFileSync('static/prepend.txt').toString())
+}
+
 //Basic Settings
 settings = {
 	//"bad_words" : ["rm ","write","while True:","open "],
 	"python_path" : "python",
-	'prepend' : fs.readFileSync('static/prepend.txt').toString()
+	//'prepend' : "fs.readFileSync('static/prepend.txt').toString()"
+	'prepend' : ""
+	
 }
 
 

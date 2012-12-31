@@ -38,7 +38,8 @@ pithy tries to plot things nicely, and in order.  best to learn by example here:
 
 paste this into your pithy page to generate a graph
 
-
+	from pithy import *
+	
     a = linspace(0,1,100)
     b = sqrt(a)
     c = a**2
