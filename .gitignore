@@ -2,5 +2,6 @@ images/*
 code/*
 code_stamped/*
 results/*
+temp_results/*
 .DS_Store
 

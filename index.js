@@ -10,6 +10,7 @@ var exec = require('child_process').exec,
     child;
 var spawn = require('child_process').spawn,
 	child;
+var os = require("os")
 
 server = http.createServer(app)
 var sharejs = require('share').server;
@@ -25,6 +26,26 @@ fs.mkdir("code")
 fs.mkdir("code_stamped")
 fs.mkdir("images")
 fs.mkdir("results")
+
+//big hack to make killing working
+var os_offset = 1
+if (os.platform() == 'darwin') os_offset = 2
+
+//make required directories
+dirs = ['temp_results','code','code_stamped','results','images']
+for (d in dirs)
+{
+	try
+	{
+		fs.mkdirSync(dirs[d]); 
+		console.log(dirs[d]+" has been made")
+		
+	}
+	catch (e) 
+	{
+		console.log(dirs[d]+" is in place")
+	}
+}
 
 //Basic Settings
 settings = {
@@ -94,6 +115,7 @@ app.post("*/killer",function(req,res)
 		x = req.body;
 		page_name = x['page_name'].replace("/","");
 		thispid = processes[page_name];
+		console.log(thispid)
 		delete processes[page_name];
 		timers[thispid] = false
 		if (thispid != undefined)
@@ -101,6 +123,7 @@ app.post("*/killer",function(req,res)
 			console.log("killing "+thispid)
 			exec("kill "+thispid,function(stdout,stderr)
 			{
+				console.log(stdout+","+stderr)
 			})
 		}
 	res.json({success:true})	
@@ -159,7 +182,8 @@ app.post('*/run', function(req, res)
 	
 	fs.writeFileSync("code/temper.py",data)
 	res.json({success:true})	
-	processes[page_name] = betterexec(page_name)+1
+	processes[page_name] = betterexec(page_name)
+	console.log(processes[page_name])
 	timers[processes[page_name]] = true
 	
 });
@@ -289,29 +313,34 @@ console.log('Listening on port '+process.argv[2]);
 
 //----------Helper Functions----------------------------
 
+times = {}
 //big ups to http://stackoverflow.com/questions/13162136/node-js-is-there-a-way-for-the-callback-function-of-child-process-exec-to-ret/13166437#13166437
 function betterexec(nameo)
 {
-	fullcmd = settings.python_path+" '"+__dirname+"/code/temper.py' "
+	fullcmd = "touch temp_results/"+nameo +"; " +settings.python_path+" -u '"+__dirname+"/code/temper.py' > 'temp_results/"+nameo+"'"
 	
 	start_time = new Date().getTime()
+	lastcheck[nameo] = start_time
+	times[nameo] = start_time
 	chill = exec(fullcmd,
 	function (error, stdout, stderr) {
-		this_pid = chill.pid+1
+		this_pid = chill.pid
 		console.log("this pid is " +this_pid)
 		hacky_name = nameo
 		timers[processes[hacky_name]] = false
 		console.log(hacky_name+" is done")
 		end_time = new Date().getTime()
-		delete processes[hacky_name];		
+		delete processes[hacky_name];
+		delete times[hacky_name];		
 		//fils = fs.readdirSync("images")
 		exec_time = end_time - start_time;
-		big_out = {'out':stdout,'outerr':stderr,'images':[],'exec_time':exec_time}
+		foost = fs.readFileSync('temp_results/'+nameo).toString()
+		big_out = {'out':stdout+foost,'outerr':stderr,'images':[],'exec_time':exec_time}
 		send_list.push({'page_name':hacky_name,'data':big_out})
 		if (stderr.search("Terminated") == -1) fs.writeFileSync("results/"+hacky_name,JSON.stringify(big_out))
 		
 	})
-	return chill.pid
+	return chill.pid + os_offset
 }
 
 //Makes random page
@@ -327,7 +356,7 @@ function makeid()
     return text;
 }
 
-//Queue to prevent socket race conditions, fires a message from the buffer every 50 ms
+//Queue to prevent socket race conditions, fires a message from the buffer every 500 ms
 //TODO: Figure out how to reduce interval time without 
 setInterval(function(){
 	this_send = send_list.splice(0,1)[0]
@@ -349,24 +378,25 @@ setInterval(function() {
 		bettertop(p)
 	
 	}
-}, 2000);
+}, 100);
 
+lastcheck = {}
 
 function bettertop(p)
 {
 	try{
 		//outer = execSync.stdout("top -b -n 1 -p "+processes[p]);
-		exec("top -b -n 1 -p "+processes[p],function(stdout,stderr)
+		now = new Date().getTime()
+		diff = now - times[p]
+		filemtime = new Date(fs.statSync('temp_results/'+p)['mtime']).getTime()
+		diff2 = filemtime - lastcheck[p]
+		if ((diff2) > 100)
 		{
-			//console.log("this out is "+stderr)
-			outer = stderr
-			if (outer.search(processes[p]) > 1)send_list.push({'page_name':p,'data':{out:outer}})
-			
-		})
+			lastcheck[p] = now
+			outer = fs.readFileSync('temp_results/'+p).toString() + "<br><i>been working for " + diff + " ms</i>" 
+			send_list.push({'page_name':p,'data':{out:outer}})
+		}	
 		
-		//Double check to see if process is alive.  If not, don't push!
-		//console.log(outer)
-		//if (outer.search(processes[p]) > 1)send_list.push({'page_name':p,'data':{out:outer}})
 	}
 	catch(e){
 		console.log(processes[p]);
