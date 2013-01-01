@@ -27,7 +27,7 @@ because pithy just runs from a directory, standard http authentication can be ap
 
 1. clone repository to where you want stuff
 2. cd to that directory
-3. run "node index.js <port number>" where port number is something like 8000 or 80 or whatever
+3. run "node index.js _port number_" where port number is something like 8000 or 80 or whatever
 4. navigate to http://localhost:<port number>  (or wherever you put stuff).  you should see a page, and the URL should have a random string of characters appened.  try some python.
 5.  now add whatever name you want to the URL (numbers,letters and (-,_) only.  Run some code here.  Share the url if you're running on an accessisible server.  repeat.  now you're pithy.
 
