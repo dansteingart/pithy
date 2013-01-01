@@ -20,7 +20,7 @@ because pithy just runs from a directory, standard http authentication can be ap
 ###pithy requires 
 
 1. a fairly up to date (not 3.0 though) python installation
-2. [node.js](http://nodejs.org/)   
+2. [node.js](http://nodejs.org/)  (0.8.16 or better)
 3. science stuff! I like to to use [EPD](http://www.enthought.com/products/epd_free.php), but scipy, numpy and matplotlib should be sufficient 
 
 ###installation/usage
