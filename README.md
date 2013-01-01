@@ -9,11 +9,13 @@ sometimes you want to share code and see what it does on the same page.  sometim
 
 pithy has code on the left, and output on the right.  all changes are saved, and the url is freely shareable.  pithy has been tested against sophomores and juniors in chemical engineering successfully.  
 
-pithy is python for sharing plot and numerical output.  pithy runs arbitrary python on your machine and send the output back to the browser in a fairly clear manner.  this is convenient, this is also potentially SUPER DANGEROUS.  thus far there is an attempt at code scrubbing to stop people from writing local files, reading local files and rm -rfing your stuff, but it is most definitely not sandboxed nor bullet proof.  Thus, pithy should be run on a server 
+pithy is python for sharing plots and numerical output.  pithy runs arbitrary python on your machine and sends the output back to the browser in a fairly clear manner.  this is convenient, this is also potentially SUPER DANGEROUS.  thus far there is an optional attempt at code scrubbing to stop people from writing local files, reading local files and rm -rfing your stuff, but it is most definitely not sandboxed nor bullet proof.  Thus, pithy should be run on a server 
 
 1. that is routinely backed up (like all good servers should be)
 2. has nothing that you don't want the world to see that is not encrypted (ditto)
 3. that can suffer some downtime if someone does something stupid
+
+the [raspberry pi](http://www.raspberrypi.org/) is an awesome server for this very thing
 
 because pithy just runs from a directory, standard http authentication can be applied to make stuff safe.
 
@@ -38,7 +40,8 @@ pithy tries to plot things nicely, and in order.  best to learn by example here:
 
 paste this into your pithy page to generate a graph
 
-	from pithy import *
+
+    from pithy import *
 	
     a = linspace(0,1,100)
     b = sqrt(a)
