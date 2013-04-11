@@ -10,7 +10,9 @@
 <script src="share/share.js"></script>
 <script src="share/ace.js"></script>
 
-<script src="static/jquery.js" type="text/javascript" charset="utf-8"></script> 
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+
 <script src="static/jquery.imagesloaded.js" type="text/javascript" charset="utf-8"></script> 
 
 
@@ -118,7 +120,7 @@ input:focus {outline: none; }
 </div>	
 
 </div>	
-<div class="right">
+<div id="right-side" class="right">
 	<div class="menu_bar">
 		<span id="status" style="height:10px;"></span>
 		<input id="scriptname" class="texterboxer">
@@ -128,8 +130,6 @@ input:focus {outline: none; }
 	</div>
 	<div id="images" class="images"></div>
 </div>
-
-<div class="credit" id="credit">by <a href="http://steingart.ccny.cuny.edu/dan">Dan Steingart</a>, 2011  </div>
 
 <script>
 
@@ -156,13 +156,15 @@ foo.setUseWrapMode(true)
 editor.setTheme("ace/theme/"+getCookie('theme'));
 
 
-$("#credit").html($("#credit").html()+(" (<a target='_new' href='/shower/"+page.split("/")[1]+"'>results</a>)"))
+//$("#credit").html($("#credit").html()+(" (<a target='_new' href='/shower/"+page.split("/")[1]+"'>results</a>)"))
 
 //hacks for now
 $("#save").hide()
 //$("#scriptname").hide()
 //F1 to run script
 shortcut.add("F1",function() {$("#run").click()})
+
+
 
 //F2 to cycle themes
 themes = ['textmate','twilight','clouds','dawn','midnight','cobalt']
@@ -231,6 +233,58 @@ shortcut.add("F2",function(){
 	editor.setTheme("ace/theme/"+themes[themecycle]);
 	setCookie('theme',themes[themecycle]);
 })
+
+alltext = false;
+allres = false;
+
+function textall()
+{
+	if (alltext)
+	{
+		$("#right-side").hide()
+		$("#left-side").width('100%')
+		areagrower()	
+		alltext = false
+	}
+	else
+	{
+		$("#right-side").show()
+		$("#left-side").width('50%')
+		areagrower()	
+		alltext = true
+		
+	}
+}
+
+function resall()
+{
+	if (allres)
+	{
+		$("#left-side").hide()
+		$("#right-side").width('100%')
+		areagrower()	
+		allres = false
+	}
+	else
+	{
+		$("#left-side").show()
+		$("#right-side").width('50%')
+		areagrower()	
+		allres = true
+		
+	}
+
+}
+
+
+shortcut.add("F5",function(){
+	textall()
+})
+
+shortcut.add("F6",function(){
+	resall()
+})
+
 
 /////////////Socket Foo/////////
 doo = null
@@ -403,6 +457,11 @@ function make_option(word){
   return foo.replace(/Milk/gi,word)
 }
 
+function areagrower()
+{
+	area.width($("#left-side").width())
+	area.height($(document).height()*height_factor)
+}
 //Editor Stuff
 $(window).resize(function(){
 	try
@@ -413,9 +472,7 @@ $(window).resize(function(){
 	{
 		//console.log(err)
 	}
-	area.width($("#left-side").width())
-	area.height($(document).height()*height_factor)
-	
+	areagrower()	
 })
 
 //store editor prefs per browser

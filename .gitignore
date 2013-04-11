@@ -5,3 +5,5 @@ results/*
 temp_results/*
 .DS_Store
 
+crufts/*
+scratch/*
