@@ -1,14 +1,18 @@
 <LINK REL=StyleSheet HREF="static/style.css" TYPE="text/css" MEDIA=screen>
 	
+<script src="static/shortcut.js" type="text/javascript" charset="utf-8"></script>
+<script src="channel/bcsocket.js"></script>
+<script src="socket.io/socket.io.js"></script>
+
+<script src="http://rawgithub.com/ajaxorg/ace-builds/master/src/ace.js" type="text/javascript" charset="utf-8"></script>
+
+<script src="http://rawgithub.com/ajaxorg/ace-builds/master/src/mode-python.js" type="text/javascript" charset="utf-8"></script>
+<script src="share/share.js"></script>
+<script src="share/ace.js"></script>
+
 <script src="static/jquery.js" type="text/javascript" charset="utf-8"></script> 
 <script src="static/jquery.imagesloaded.js" type="text/javascript" charset="utf-8"></script> 
-<script src="static/ace/build/src/ace.js" type="text/javascript" charset="utf-8"></script>
-<script src="static/ace/build/src/mode-python.js" type="text/javascript" charset="utf-8"></script>
-<script src="static/shortcut.js" type="text/javascript" charset="utf-8"></script>
-<script src="/channel/bcsocket.js"></script>
-<script src="/socket.io/socket.io.js"></script>
-<script src="/share/share.js"></script>
-<script src="/share/ace.js"></script>
+
 
 
 <style>
@@ -51,14 +55,17 @@ textarea
 
 body
 {
+	margin: 0px 0px;
+	padding: 0px 0px;
+	
 	width: 100%;
 }
 
 .texterboxer
 {
 	border: 1px solid silver;
-	background: silver;
-	width:200px
+	background: white;
+	width:150px
 	
 }
 
@@ -67,7 +74,7 @@ input:focus {outline: none; }
 .left
 {
 	float:left;
-	width:48%;
+	width:50%;
 }
 .right
 {
@@ -103,46 +110,51 @@ input:focus {outline: none; }
 	text-align:right;
 }
 
-.csvcontainer
-{
-	height: 10%;
-}
 </style>
 
-<div class="menu_bar"><span id="history_box"></span> <span id="droplink"></span></div>
 <div id="left-side" class="left">
-<h3>Code Here</h3>
 <div id="script_area"></div>
 <div id="code_enter" style="text-align: right;">
-<input id="scriptname" class="texterboxer"><-<button id="copyto">copy to</button><button id="kill">kill</button><button id="run">run</button> (or hit F1)
 </div>	
-<div id="status" style="height:10px;"></div>
 
 </div>	
 <div class="right">
-<h3>Output/Errors/Plots Here</h3><div id="images" class="images"></div>
+	<div class="menu_bar">
+		<span id="status" style="height:10px;"></span>
+		<input id="scriptname" class="texterboxer">
+		<button id="copyto">copy to</button><button id="kill">kill</button>
+		<button id="run">run</button>
+		<span id="history_box"></span> 
+	</div>
+	<div id="images" class="images"></div>
 </div>
 
 <div class="credit" id="credit">by <a href="http://steingart.ccny.cuny.edu/dan">Dan Steingart</a>, 2011  </div>
 
 <script>
+
+
+
 var changed = false;
 var status = $("#status");
 var pathname = window.location.pathname;
 var page = pathname;
 var scrollpos = 0;
-height_factor = .85
+height_factor = 1
 area = $("#script_area")
 var editor = ace.edit("script_area");
 area.width($("#left-side").width())
 area.height($(document).height()*height_factor)
 editor.setPrintMarginColumn(0)
-var PythonMode = require("ace/mode/python").Mode;
-editor.getSession().setMode(new PythonMode());
+//var PythonMode = require().Mode;
+editor.getSession().setMode("ace/mode/python");
 editor.setFadeFoldWidgets(false)
 editor.setShowPrintMargin(false)
 foo = editor.getSession()
 foo.setUseWrapMode(true)
+
+editor.setTheme("ace/theme/"+getCookie('theme'));
+
 
 $("#credit").html($("#credit").html()+(" (<a target='_new' href='/shower/"+page.split("/")[1]+"'>results</a>)"))
 
@@ -160,7 +172,7 @@ var socket = io.connect('/');
 
 var foo = null
 
-document.title =  page.split("/")[1] +" - Python in Your Browser"
+document.title =  page.split("/")[1] +" - pithy"
 this_port = "/"+pathname.split("/")[1]+"/"
 
 var gotdata = ""
@@ -217,11 +229,14 @@ shortcut.add("F2",function(){
 	themecycle ++;
 	if (themecycle > (themes.length -1)) themecycle=0;
 	editor.setTheme("ace/theme/"+themes[themecycle]);
+	setCookie('theme',themes[themecycle]);
 })
 
 /////////////Socket Foo/////////
+doo = null
+err = null
 sharejs.open(page.replace("/",""), 'text', function(error, doc) {
- doc.attach_ace(editor);
+doc.attach_ace(editor);
  if (editor.getSession().getValue() == "") loader(false,page);
 });
 
@@ -402,5 +417,30 @@ $(window).resize(function(){
 	area.height($(document).height()*height_factor)
 	
 })
+
+//store editor prefs per browser
+function setCookie(c_name,value)
+{
+	exdays = null
+	var exdate=new Date();
+	exdate.setDate(exdate.getDate() + exdays);
+	var c_value=escape(value) + ((exdays==null) ? "" : "; 	expires="+exdate.toUTCString());
+	document.cookie=c_name + "=" + c_value;
+}
+
+function getCookie(c_name)
+{
+var i,x,y,ARRcookies=document.cookie.split(";");
+for (i=0;i<ARRcookies.length;i++)
+{
+  x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
+  y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
+  x=x.replace(/^\s+|\s+$/g,"");
+  if (x==c_name)
+    {
+    return unescape(y);
+    }
+  }
+}
 
 </script>

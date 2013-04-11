@@ -1,4 +1,6 @@
 //NodeJS Imports to Make Everything Just Work
+var sharejs = require('share').server;
+
 var http = require("http"); //HTTP Server
 var url = require("url"); // URL Handling
 var fs = require('fs'); // Filesystem Access (writing files)
@@ -12,13 +14,16 @@ var spawn = require('child_process').spawn,
 	child;
 var os = require("os")
 
+
+var options = {db: {type: 'none'}};
+ 
 server = http.createServer(app)
-var sharejs = require('share').server;
-var options = {db: {type: 'none'}}; 
+sharejs.attach(app, options);
+
 io = require('socket.io')
 io = io.listen(server); //Socket Creations
 io.set('log level', 1)
-sharejs.attach(app, options);
+
 
 
 //big hack to make killing working
@@ -180,14 +185,15 @@ app.post('*/run', function(req, res)
 		fs.writeFileSync("code/"+full_name,data);
 		fs.writeFileSync("code_stamped/"+page_name+"_"+time,data);
 	}
-	
+
+/*	
 	data = prepend+data
 	while (data.search("showme()")>-1)
 	{
 		data = data.replace("showme()","save_image('"+page_name+"_"+time+"')\n",1)
 		counter ++;
 	}
-	
+*/	
 	fs.writeFileSync("code/temper.py",data)
 	res.json({success:true})	
 	processes[page_name] = betterexec(page_name)

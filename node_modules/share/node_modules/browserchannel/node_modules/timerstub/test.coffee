@@ -42,8 +42,8 @@ module.exports = testCase
 		setTimeout (-> called++), 0
 
 		test.strictEqual called, 0, 'Method called immediately'
-		process.nextTick ->
-			test.strictEqual called, 1, 'Method not called after nextTick'
+		setImmediate ->
+			test.strictEqual called, 1, 'Method not called after a setImmediate'
 			test.done()
 	
 	'setTimeout() calls methods at the right time': (test) ->
