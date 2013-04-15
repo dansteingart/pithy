@@ -236,6 +236,21 @@ shortcut.add("F2",function(){
 
 alltext = false;
 allres = false;
+folded = false;
+function folder()
+{
+	if (!folded)
+	{
+		editor.getSession().foldAll()
+		folded = true
+	}
+	else
+	{
+		editor.getSession().unfold()
+		folded = false
+	}
+	
+}
 
 function textall()
 {
@@ -266,6 +281,8 @@ function resall()
 		allres = true
 }
 
+
+shortcut.add("F4",function(){ folder() })
 
 shortcut.add("F5",function(){
 	if (!allres & !alltext) textall()
