@@ -82,7 +82,7 @@ input:focus {outline: none; }
 {
 	float:right;
 	width:50%;
-	height:85%;
+	height:95%;
 	
 }
 
@@ -239,50 +239,42 @@ allres = false;
 
 function textall()
 {
-	if (alltext)
-	{
-		$("#right-side").hide()
-		$("#left-side").width('100%')
-		areagrower()	
-		alltext = false
-	}
-	else
-	{
-		$("#right-side").show()
-		$("#left-side").width('50%')
-		areagrower()	
-		alltext = true
-		
-	}
+	$("#right-side").hide()
+	$("#left-side").width('100%')
+	areagrower()
+	alltext = true
+	editor.resize()
+}
+
+function splitview()
+{
+	$("#left-side").show()
+	$("#right-side").show()
+	$("#left-side").width('50%')	
+	$("#right-side").width('50%')
+	areagrower()	
+	allres = false
+	alltext = false
+	editor.resize()
 }
 
 function resall()
 {
-	if (allres)
-	{
 		$("#left-side").hide()
 		$("#right-side").width('100%')
 		areagrower()	
-		allres = false
-	}
-	else
-	{
-		$("#left-side").show()
-		$("#right-side").width('50%')
-		areagrower()	
 		allres = true
-		
-	}
-
 }
 
 
 shortcut.add("F5",function(){
-	textall()
+	if (!allres & !alltext) textall()
+	else splitview()
 })
 
 shortcut.add("F6",function(){
-	resall()
+	if (!allres & !alltext) resall()
+	else splitview()
 })
 
 
