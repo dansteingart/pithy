@@ -9,7 +9,7 @@ var util = require("util");
 var express = require('express'); //App Framework (similar to web.py abstraction)
 var app = express();
 var exec = require('child_process').exec,
-    child;
+  child;
 var spawn = require('child_process').spawn,
 	child;
 var os = require("os")
@@ -24,10 +24,14 @@ io = require('socket.io')
 io = io.listen(server); //Socket Creations
 io.set('log level', 1)
 
+app.use(express.basicAuth(function(user, pass, callback) {
+ var result = (user === 'dan' && pass === 'nad');
+ callback(null /* error */, result);
+}));
 
 
 //big hack to make killing working
-var os_offset = 1
+var os_offset = 2
 if (os.platform() == 'darwin') os_offset = 2
 
 //make required directories
@@ -125,18 +129,22 @@ app.get('/*', function(req, res){
 
 app.post("*/killer",function(req,res)
 	{
-		x = req.body;
-		page_name = x['page_name'].replace("/","");
 		thispid = processes[page_name];
-		console.log(thispid)
-		delete processes[page_name];
-		timers[thispid] = false
+		x = req.body;
 		if (thispid != undefined)
 		{
 			console.log("killing "+thispid)
 			exec("kill "+thispid,function(stdout,stderr)
 			{
-				console.log(stdout+","+stderr)
+				outer = stdout+","+stderr
+				console.log(outer)
+				if (outer.search("No such process") == -1)
+				{
+					page_name = x['page_name'].replace("/","");
+					console.log(thispid)
+					delete processes[page_name];
+					timers[thispid] = false
+				}
 			})
 		}
 	res.json({success:true})	
@@ -392,7 +400,7 @@ setInterval(function() {
 		bettertop(p)
 	
 	}
-}, 100);
+}, 1000);
 
 lastcheck = {}
 
@@ -404,12 +412,12 @@ function bettertop(p)
 		diff = now - times[p]
 		filemtime = new Date(fs.statSync('temp_results/'+p)['mtime']).getTime()
 		diff2 = filemtime - lastcheck[p]
-		if ((diff2) > 100)
-		{
+		//if ((diff2) > 100)
+		//{
 			lastcheck[p] = now
 			outer = fs.readFileSync('temp_results/'+p).toString() + "<br><i>been working for " + diff + " ms</i>" 
 			send_list.push({'page_name':p,'data':{out:outer}})
-		}	
+	//	}	
 		
 	}
 	catch(e){
