@@ -25,7 +25,7 @@ io = io.listen(server); //Socket Creations
 io.set('log level', 1)
 
 app.use(express.basicAuth(function(user, pass, callback) {
- var result = (user === 'dan' && pass === 'nad');
+ var result = (user === 'user' && pass === 'pass');
  callback(null /* error */, result);
 }));
 
