@@ -12,9 +12,21 @@ from PIL import ImageOps
 #from freesteam import *
 from glob import glob
 import time
+import os
+import sys
 
-def save_image(imname):
-	tim = str(int(time.time()))	
-	image = 'images/'+imname+'_img_'+str(int(time.time()*1000))+'.png'
-	print '##_holder_##:',image
-	savefig(image)
+#hack to make things worth from PIL
+def showimg(im,tip=".png"):
+    tim = str(int(time.time()))    
+    #imname = imname.replace("/","-")
+    image = 'images/pithy_img_'+str(int(time.time()*1000))+tip
+    print '##_holder_##:',"/"+image
+    im.save(image)
+    
+#Hack to get thigns to work from matplotlib
+def showme(tip=".png"):
+    tim = str(int(time.time()))	
+    #imname = imname.replace("/","-")
+    image = 'images/pithy_img_'+str(int(time.time()*1000))+tip
+    print '##_holder_##:',"/"+image
+    savefig(image)
