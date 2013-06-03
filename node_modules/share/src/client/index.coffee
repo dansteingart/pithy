@@ -10,7 +10,18 @@
 # Note that anything declared in the global scope here is shared with other files
 # built by closure. Be careful what you put in this namespace.
 
-unless WEB?
+
+if WEB?
+  hasBCSocket = window.BCSocket isnt undefined
+  hasSockJS = window.SockJS isnt undefined
+  if hasBCSocket
+    socketImpl = 'channel'
+  else
+    if hasSockJS
+      socketImpl = 'sockjs'
+    else
+      socketImpl = 'websocket'
+else
   Connection = require('./connection').Connection
 
 # Open a document with the given name. The connection is created implicitly and reused.
@@ -22,19 +33,20 @@ exports.open = do ->
   # This is a private connection pool for implicitly created connections.
   connections = {}
 
-  getConnection = (origin) ->
-    if WEB?
+  getConnection = (origin, authentication) ->
+    if WEB? and !origin?
       location = window.location
-      origin ?= "#{location.protocol}//#{location.host}/channel"
-    
+      protocol = if socketImpl == 'websocket' then 'ws:' else location.protocol
+      origin = "#{protocol}//#{location.host}/#{socketImpl}"
+
     unless connections[origin]
-      c = new Connection origin
+      c = new Connection origin, authentication
 
       del = -> delete connections[origin]
-      c.on 'disconnecting', del
+      c.on 'disconnected', del
       c.on 'connect failed', del
       connections[origin] = c
-    
+
     connections[origin]
 
   # If you're using the bare API, connections are cleaned up as soon as there's no
@@ -46,23 +58,30 @@ exports.open = do ->
 
     if numDocs == 0
       c.disconnect()
- 
-  (docName, type, origin, callback) ->
-    if typeof origin == 'function'
-      callback = origin
-      origin = null
 
-    c = getConnection origin
-    c.numDocs++
+  (docName, type, options, callback) ->
+    if typeof options == 'function'
+      callback = options
+      options = {}
+
+    if typeof options == 'string'
+      options = {
+        'origin': options
+      }
+
+    origin = options.origin
+    authentication = options.authentication
+
+    c = getConnection origin, authentication
     c.open docName, type, (error, doc) ->
       if error
         callback error
         maybeClose c
       else
         doc.on 'closed', -> maybeClose c
-       
+
         callback null, doc
-    
+
     c.on 'connect failed'
     return c
 

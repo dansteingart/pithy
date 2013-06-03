@@ -24,5 +24,8 @@ module.exports = (options) ->
       when 'redis' then require './redis'
       when 'couchdb' then require './couchdb'
       when 'pg' then require './pg'
+      when 'mysql' then require './mysql'  
+      when 'amazon' then require './amazon'
+      when 'mongo' then require './mongo'
       else throw new Error "Invalid or unsupported database type: '#{type}'"
     new Db options

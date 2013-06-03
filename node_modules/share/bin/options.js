@@ -34,6 +34,12 @@ module.exports = {
     //type: 'pg',
     //uri: 'tcp://josephg:@localhost/postgres',
 
+    // To use mysql uncomment this section then run bin/setup_mysql
+    //database:'db_name',
+    //host:'localhost',
+    //user:'foo',
+    //password:'bar',
+
     // By default, sharejs will create its tables in a schema called 'sharejs'.
     //schema: 'sharejs',
     //operations_table: 'ops',
@@ -42,6 +48,15 @@ module.exports = {
     // sharejs will automatically try and create the DB tables if they don't exist. You
     // can create the database tables manually using bin/setup_pg.
     //create_tables_automatically: true,
+
+    // To use amazon uncomment this section then run bin/setup_amazon
+    //type: 'amazon',
+    //amazon_region: 'us-east-1',
+    //amazon_access_key: '',
+    //amazon_secret_key: '',
+    //amazon_s3_snapshots_bucket_name: '',
+    //amazon_dynamo_snapshots_table_name: '',
+    //amazon_dynamo_operations_table_name: '',
 	},
 
 	// The server will statically host webclient/ directory at /share/*.

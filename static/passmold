@@ -1,7 +1,5 @@
 {
 	"things":[
-			{"user":"user","pass":"pass"} //,
-			//		{"user":"user","pass":"pass"}//,
-			//etc,etc
+			{"user":"user","pass":"pass"} 
 			]
 }

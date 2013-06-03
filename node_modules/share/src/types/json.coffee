@@ -1,6 +1,8 @@
 # This is the implementation of the JSON OT type.
 #
 # Spec is here: https://github.com/josephg/ShareJS/wiki/JSON-Operations
+#
+# Note: This is obsolete, and will be replaced by the JSON2 type.
 
 if WEB?
   text = exports.types.text
@@ -177,20 +179,22 @@ json.normalize = (op) ->
 # http://jsperf.com/cloning-an-object/12
 clone = (o) -> JSON.parse(JSON.stringify o)
 
-json.commonPath = (p1, p2) ->
-  p1 = p1.slice()
-  p2 = p2.slice()
-  p1.unshift('data')
-  p2.unshift('data')
-  p1 = p1[...p1.length-1]
-  p2 = p2[...p2.length-1]
-  return -1 if p2.length == 0
-  i = 0
-  while p1[i] == p2[i] && i < p1.length
-    i++
-    if i == p2.length
-      return i-1
-  return
+# Returns true if an op at otherPath may affect an op at path
+json.canOpAffectOp = (otherPath, path) ->
+  return true if otherPath.length == 0
+  return false if path.length == 0
+
+  path = path[...path.length-1]
+  otherPath = otherPath[...otherPath.length-1]
+
+  for p,i in otherPath
+    if i >= path.length
+      return false
+    if p != path[i]
+      return false
+
+  # Same
+  return true
 
 # transform c so it applies to a document with otherC applied.
 json.transformComponent = (dest, c, otherC, type) ->
@@ -198,8 +202,8 @@ json.transformComponent = (dest, c, otherC, type) ->
   c.p.push(0) if c.na != undefined
   otherC.p.push(0) if otherC.na != undefined
 
-  common = json.commonPath c.p, otherC.p
-  common2 = json.commonPath otherC.p, c.p
+  common = otherC.p.length - 1 if json.canOpAffectOp otherC.p, c.p
+  common2 = c.p.length - 1 if json.canOpAffectOp c.p, otherC.p
 
   cplength = c.p.length
   otherCplength = otherC.p.length
@@ -220,8 +224,10 @@ json.transformComponent = (dest, c, otherC, type) ->
     json.append dest, c
     return dest
 
+  # if c is deleting something, and that thing is changed by otherC, we need to
+  # update c to reflect that change for invertibility.
+  # TODO this is probably not needed since we don't have invertibility
   if common2? && otherCplength > cplength && c.p[common2] == otherC.p[common2]
-    # transform based on c
     if c.ld != undefined
       oc = clone otherC
       oc.p = oc.p[cplength..]
@@ -230,7 +236,6 @@ json.transformComponent = (dest, c, otherC, type) ->
       oc = clone otherC
       oc.p = oc.p[cplength..]
       c.od = json.apply clone(c.od), [oc]
-
 
   if common?
     commonOperand = cplength == otherCplength
@@ -245,7 +250,7 @@ json.transformComponent = (dest, c, otherC, type) ->
         # Convert an op component to a text op component
         convert = (component) ->
           newC = p:component.p[component.p.length - 1]
-          if component.si
+          if component.si?
             newC.i = component.si
           else
             newC.d = component.sd
