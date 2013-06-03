@@ -70,11 +70,26 @@ for (d in dirs)
 try
 {
 	checkface = fs.readFileSync('code/pithy.py').toString()
+	console.log("pithy.py is in place")
+	
 }
 catch (e)
 {
 	console.log("making a pithy library")
 	fs.writeFileSync('code/pithy.py',fs.readFileSync('static/prepend.txt').toString())
+}
+
+//create pass.json file if it doesn't already exist
+try
+{
+	checkface = fs.readFileSync('pass.json').toString()
+	console.log("pass.json is in place")
+	
+}
+catch (e)
+{
+	console.log("making a password file")
+	fs.writeFileSync('pass.json',fs.readFileSync('static/passmold').toString())
 }
 
 //Basic Settings
