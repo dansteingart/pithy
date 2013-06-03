@@ -24,9 +24,23 @@ io = require('socket.io')
 io = io.listen(server); //Socket Creations
 io.set('log level', 1)
 
+
 app.use(express.basicAuth(function(user, pass, callback) {
- var result = (user === 'dan' && pass === 'nad');
- callback(null /* error */, result);
+ 
+	raw = fs.readFileSync("pass.json").toString();
+	things = JSON.parse(raw);
+	names = things['things']
+	var result = null;
+	for (i in names)
+	{
+		nuser = names[i]['user'];
+		npass = names[i]['pass'];
+		if (user == nuser & pass == npass )
+		{
+			result = (user === nuser && pass === pass);
+		} 
+	}
+ 	callback(null /* error */, result);
 }));
 
 
@@ -204,7 +218,7 @@ app.post('*/run', function(req, res)
 */	
 	fs.writeFileSync("code/temper.py",data)
 	res.json({success:true})	
-	processes[page_name] = betterexec(page_name)
+	processes[page_name] = betterexec(page_name,x)
 	console.log(processes[page_name])
 	timers[processes[page_name]] = true
 	
@@ -337,9 +351,21 @@ console.log('Listening on port '+process.argv[2]);
 
 times = {}
 //big ups to http://stackoverflow.com/questions/13162136/node-js-is-there-a-way-for-the-callback-function-of-child-process-exec-to-ret/13166437#13166437
-function betterexec(nameo)
+function betterexec(nameo,fff)
 {
-	fullcmd = "touch temp_results/"+nameo +"; " +settings.python_path+" -u '"+__dirname+"/code/temper.py' > 'temp_results/"+nameo+"'"
+	//fullcmd = "touch temp_results/"+nameo +"; " +settings.python_path+" -u '"+__dirname+"/code/"+namemo+".py' > 'temp_results/"+nameo+"'"
+	
+	
+	console.log()
+	parts = []
+	if (fff['args'] != undefined) parts = fff['args']
+	estring = "";
+	for (var i=0; i < parts.length;i++) 
+	{
+		estring += parts[i]+" ";
+	}
+	console.log(estring)
+	fullcmd = "touch temp_results/"+parts[1] +"; " +settings.python_path+" -u '"+__dirname+"/code/"+nameo+".py' "+estring+" > 'temp_results/"+nameo+"'"
 	
 	start_time = new Date().getTime()
 	lastcheck[nameo] = start_time

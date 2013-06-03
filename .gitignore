@@ -4,6 +4,8 @@ code_stamped/*
 results/*
 temp_results/*
 .DS_Store
+pass.json
 
 crufts/*
 scratch/*
+static/scratch/*
