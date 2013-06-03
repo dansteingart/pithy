@@ -26,21 +26,10 @@ io.set('log level', 1)
 
 
 app.use(express.basicAuth(function(user, pass, callback) {
- 
-	raw = fs.readFileSync("pass.json").toString();
-	things = JSON.parse(raw);
-	names = things['things']
-	var result = null;
-	for (i in names)
-	{
-		nuser = names[i]['user'];
-		npass = names[i]['pass'];
-		if (user == nuser & pass == npass )
-		{
-			result = (user === nuser && pass === pass);
-		} 
-	}
- 	callback(null /* error */, result);
+
+ var result = (user === 'user' && pass === 'pass');
+ callback(null /* error */, result);
+
 }));
 
 
