@@ -1,119 +1,27 @@
-<LINK REL=StyleSheet HREF="static/style.css" TYPE="text/css" MEDIA=screen>
+<html>
+<head>
+
+<LINK REL=StyleSheet HREF="/static/style.css" TYPE="text/css" MEDIA=screen>
 	
-<script src="static/shortcut.js" type="text/javascript" charset="utf-8"></script>
-<script src="channel/bcsocket.js"></script>
-<script src="socket.io/socket.io.js"></script>
+<script src="/static/shortcut.js" type="text/javascript" charset="utf-8"></script>
+<script src="/channel/bcsocket.js"></script>
+<script src="/socket.io/socket.io.js"></script>
 
 <script src="http://rawgithub.com/ajaxorg/ace-builds/master/src/ace.js" type="text/javascript" charset="utf-8"></script>
 
 <script src="http://rawgithub.com/ajaxorg/ace-builds/master/src/mode-python.js" type="text/javascript" charset="utf-8"></script>
-<script src="share/share.js"></script>
-<script src="share/ace.js"></script>
+<script src="/share/share.js"></script>
+<script src="/share/ace.js"></script>
 
 <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
 <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
 
-<script src="static/jquery.imagesloaded.js" type="text/javascript" charset="utf-8"></script> 
+<script src="/static/jquery.imagesloaded.js" type="text/javascript" charset="utf-8"></script> 
+<script src="/static/flot/jquery.flot.js"></script>
 
+</head>
 
-
-<style>
-textarea
-{
-    margin: auto auto;
-	width:100%;
-	font-size: 14px;
-}
-
-
-
-#script_area {
-     position: relative;
-     width: 500px;
-     height: 400px;
-	font-family: "Courier New",monospace;
-	font-size: 15px;
-	
- }
-
-
-.selectig
-{
-	outline: none;
-}
-
-.code
-{
-	width:100%;
-}
-
-.output
-{
-    margin: auto auto;
-	width:100%;
-	height:50%;
-	font-size: 15px;
-}
-
-body
-{
-	margin: 0px 0px;
-	padding: 0px 0px;
-	
-	width: 100%;
-}
-
-.texterboxer
-{
-	border: 1px solid silver;
-	background: white;
-	width:150px
-	
-}
-
-input:focus {outline: none; }
-
-.left
-{
-	float:left;
-	width:50%;
-}
-.right
-{
-	float:right;
-	width:50%;
-	height:95%;
-	
-}
-
-.images
-{
-		width:100%;
-		overflow: auto;
-		overflow-y: auto;
-		overflow-x:hidden;		
-		height:100%;
-
-
-}
-
-.credit
-{
-	color: silver;
-	size: 10px;
-	text-align: right;
-	position:absolute; 
-	bottom:10;
-	right:100;
-}
-
-.menu_bar
-{
-	text-align:right;
-}
-
-</style>
-
+<html>
 <div id="left-side" class="left">
 <div id="script_area"></div>
 <div id="code_enter" style="text-align: right;">
@@ -134,11 +42,11 @@ input:focus {outline: none; }
 <script>
 
 
-
 var changed = false;
 var status = $("#status");
 var pathname = window.location.pathname;
 var page = pathname;
+page = page.split("/")[1]
 var scrollpos = 0;
 height_factor = 1
 area = $("#script_area")
@@ -174,7 +82,7 @@ var socket = io.connect('/');
 
 var foo = null
 
-document.title =  page.split("/")[1] +" - pithy"
+document.title =  page +" - pithy"
 this_port = "/"+pathname.split("/")[1]+"/"
 
 var gotdata = ""
@@ -227,6 +135,7 @@ $("#copyto").click(function(){
 
 });
 
+//Shortest of Cuts
 shortcut.add("F2",function(){
 	themecycle ++;
 	if (themecycle > (themes.length -1)) themecycle=0;
@@ -298,7 +207,7 @@ shortcut.add("F6",function(){
 /////////////Socket Foo/////////
 doo = null
 err = null
-sharejs.open(page.replace("/",""), 'text', function(error, doc) {
+sharejs.open(page, 'text', function(error, doc) {
 doc.attach_ace(editor);
  if (editor.getSession().getValue() == "") loader(false,page);
 });
@@ -403,8 +312,8 @@ function loader(bool,page){
 }
 
 function saver(bool,page){
-
-	//editor.save()
+	args = pathname.split("/").slice(2,1000)
+	
 	if (!waiting_for_output)
 	{ 
 	waiting_for_output = true
@@ -419,7 +328,7 @@ function saver(bool,page){
 		  url: this_port+"run/",
 		  type:"POST",
 		  async:bool,
-		  data:{page_name:page,script_name:script_name,value:editor.getSession().getValue()},
+		  data:{page_name:page,script_name:script_name,value:editor.getSession().getValue(),args:args},
 		 
 		})
 	}
@@ -441,10 +350,14 @@ function history(page){
 		//console.log(out)
 		if (out.length > 1)
 		{
+			out = out.sort()
+			out = out.reverse()
 			selecters = "<select id='histories' class='selectig'>"
 			for (i in out)
 			{
-				selecters += '<option value="'+out[i][0]+'">'+out[i][1]+'</option>'
+				ttt = out[i][0]
+				ttt = ttt.substr(0,ttt.length-14)
+				if (ttt == page) selecters += '<option value="'+out[i][0]+'">'+out[i][1]+'</option>'
 			}
 			selecters += "</select>"
 			$("#history_box").html(selecters)
@@ -510,3 +423,4 @@ for (i=0;i<ARRcookies.length;i++)
 }
 
 </script>
+</html>
