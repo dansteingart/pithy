@@ -352,8 +352,9 @@ function history(page){
 			for (i in out)
 			{
 			    ttt = out[i][0]
-			    ttt = ttt.substr(0,ttt.length-14)
-			    if (ttt == page) selecters += '<option value="'+out[i][0]+'">'+out[i][1]+'</option>'			}
+			    ttt = "/"+ttt.substr(0,ttt.length-14)
+			    if (ttt == page) selecters += '<option value="'+out[i][0]+'">'+out[i][1]+'</option>'			
+			}
 			selecters += "</select>"
 			$("#history_box").html(selecters)
 			$("#histories").change(
