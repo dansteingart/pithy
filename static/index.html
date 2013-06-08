@@ -1,6 +1,5 @@
 <html>
 <head>
-
 <LINK REL=StyleSheet HREF="/static/style.css" TYPE="text/css" MEDIA=screen>
 	
 <script src="/static/shortcut.js" type="text/javascript" charset="utf-8"></script>
@@ -17,11 +16,11 @@
 <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
 
 <script src="/static/jquery.imagesloaded.js" type="text/javascript" charset="utf-8"></script> 
-<script src="/static/flot/jquery.flot.js"></script>
+
 
 </head>
+<body>
 
-<html>
 <div id="left-side" class="left">
 <div id="script_area"></div>
 <div id="code_enter" style="text-align: right;">
@@ -42,11 +41,11 @@
 <script>
 
 
+
 var changed = false;
 var status = $("#status");
 var pathname = window.location.pathname;
 var page = pathname;
-page = page.split("/")[1]
 var scrollpos = 0;
 height_factor = 1
 area = $("#script_area")
@@ -82,7 +81,7 @@ var socket = io.connect('/');
 
 var foo = null
 
-document.title =  page +" - pithy"
+document.title =  page.split("/")[1] +" - pithy"
 this_port = "/"+pathname.split("/")[1]+"/"
 
 var gotdata = ""
@@ -135,7 +134,6 @@ $("#copyto").click(function(){
 
 });
 
-//Shortest of Cuts
 shortcut.add("F2",function(){
 	themecycle ++;
 	if (themecycle > (themes.length -1)) themecycle=0;
@@ -207,7 +205,7 @@ shortcut.add("F6",function(){
 /////////////Socket Foo/////////
 doo = null
 err = null
-sharejs.open(page, 'text', function(error, doc) {
+sharejs.open(page.replace("/",""), 'text', function(error, doc) {
 doc.attach_ace(editor);
  if (editor.getSession().getValue() == "") loader(false,page);
 });
@@ -312,8 +310,8 @@ function loader(bool,page){
 }
 
 function saver(bool,page){
-	args = pathname.split("/").slice(2,1000)
-	
+
+	//editor.save()
 	if (!waiting_for_output)
 	{ 
 	waiting_for_output = true
@@ -328,7 +326,7 @@ function saver(bool,page){
 		  url: this_port+"run/",
 		  type:"POST",
 		  async:bool,
-		  data:{page_name:page,script_name:script_name,value:editor.getSession().getValue(),args:args},
+		  data:{page_name:page,script_name:script_name,value:editor.getSession().getValue()},
 		 
 		})
 	}
@@ -350,15 +348,12 @@ function history(page){
 		//console.log(out)
 		if (out.length > 1)
 		{
-			out = out.sort()
-			out = out.reverse()
 			selecters = "<select id='histories' class='selectig'>"
 			for (i in out)
 			{
-				ttt = out[i][0]
-				ttt = ttt.substr(0,ttt.length-14)
-				if (ttt == page) selecters += '<option value="'+out[i][0]+'">'+out[i][1]+'</option>'
-			}
+			    ttt = out[i][0]
+			    ttt = ttt.substr(0,ttt.length-14)
+			    if (ttt == page) selecters += '<option value="'+out[i][0]+'">'+out[i][1]+'</option>'			}
 			selecters += "</select>"
 			$("#history_box").html(selecters)
 			$("#histories").change(
@@ -423,4 +418,5 @@ for (i=0;i<ARRcookies.length;i++)
 }
 
 </script>
+</body>
 </html>
