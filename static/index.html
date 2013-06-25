@@ -17,6 +17,8 @@
 
 <script src="/static/jquery.imagesloaded.js" type="text/javascript" charset="utf-8"></script> 
 
+<script src="/static/flot/jquery.flot.js" type="text/javascript" charset="utf-8"></script> 
+
 
 
 </head>
@@ -259,6 +261,9 @@ function makeid(){
     return text;
 }
 
+
+flot_structure = "<div id='flotter' class='flotter'></div>"
+
 function build_output(data){
 
 	//Resize Max Size
@@ -268,12 +273,32 @@ function build_output(data){
 	outputdata = ""
 	boots = data['out']	
 	foots = boots.split("\n")
+		
 	for (i in foots)
 	{
-		if (foots[i].search("##_holder_##")==0) outputdata += "<img width='" + widther+"px'src='"+foots[i].replace("##_holder_##:","")+"'><br>"
-			else outputdata += foots[i]+"<br>"
+		
+		
+		if (foots[i].search("##_holder_##")==0) 
+		{
+			outputdata += "<img width='" + widther+"px'src='"+foots[i].replace("##_holder_##:","")+"'><br>"
+		}	
+		else if (foots[i].search("##__json__##")==0)
+		{ 
+			if (outputdata.search(flot_structure) == -1) outputdata = flot_structure + outputdata
+			foo = foots[i].replace("##__json__##","")
+			foo = JSON.parse(foo)
+			s = []
+			for (i in foo)
+			{
+				s[s.length] = foo[i]
+			}
+		}
+		else 
+		{
+			outputdata += foots[i]+"<br>"
+		}
+		
 	}
-
 
 	//Build python stderr
 	boots = data['outerr']
@@ -281,6 +306,9 @@ function build_output(data){
 	while (boots.search("\n") > -1) boots = boots.replace("\n","<br>")
 	outputdata += "<br><span style='color:red'>"+boots+"</span>"
 	$("#images").html(outputdata)
+	
+	if (s.length > 0) $.plot("#flotter", s)
+	
 }
 
 
