@@ -18,6 +18,7 @@
 <script src="/static/jquery.imagesloaded.js" type="text/javascript" charset="utf-8"></script> 
 
 
+
 </head>
 <body>
 
@@ -99,7 +100,8 @@ $("#run").click(function(){
 	saver(true,page);
 	
 });
-	
+
+//Kill The Script	
 $("#kill").click(function(){
 		console.log("kill me please")
 		$.ajax(
@@ -111,7 +113,7 @@ $("#kill").click(function(){
 
 });
 
-
+//Forker The Script
 $("#copyto").click(function(){
 		console.log("copy me please")
 		script_name = $("#scriptname").val()
@@ -134,6 +136,7 @@ $("#copyto").click(function(){
 
 });
 
+//Choose Theme
 shortcut.add("F2",function(){
 	themecycle ++;
 	if (themecycle > (themes.length -1)) themecycle=0;
@@ -141,6 +144,7 @@ shortcut.add("F2",function(){
 	setCookie('theme',themes[themecycle]);
 })
 
+//Fold everything
 alltext = false;
 allres = false;
 folded = false;
@@ -159,6 +163,7 @@ function folder()
 	
 }
 
+//Textview
 function textall()
 {
 	$("#right-side").hide()
@@ -168,6 +173,7 @@ function textall()
 	editor.resize()
 }
 
+//Default View
 function splitview()
 {
 	$("#left-side").show()
@@ -180,6 +186,7 @@ function splitview()
 	editor.resize()
 }
 
+//Output View
 function resall()
 {
 		$("#left-side").hide()
@@ -189,13 +196,16 @@ function resall()
 }
 
 
+//Folder Toggle
 shortcut.add("F4",function(){ folder() })
 
+//AllText/Splitview Toggle
 shortcut.add("F5",function(){
 	if (!allres & !alltext) textall()
 	else splitview()
 })
 
+//Output/Splitview Toggle
 shortcut.add("F6",function(){
 	if (!allres & !alltext) resall()
 	else splitview()
@@ -203,6 +213,7 @@ shortcut.add("F6",function(){
 
 
 /////////////Socket Foo/////////
+//Share JS Stuff
 doo = null
 err = null
 sharejs.open(page.replace("/",""), 'text', function(error, doc) {
@@ -210,6 +221,7 @@ doc.attach_ace(editor);
  if (editor.getSession().getValue() == "") loader(false,page);
 });
 
+//Socket PushStuff
 socket.on(page.replace("/",""), function (data) {
 				//Let know that we've saved stuff
 				
@@ -229,13 +241,13 @@ socket.on(page.replace("/",""), function (data) {
 				dfd.always(
 					function(){
 						$("#images").scrollTop(scrollpos)
-						}
+					}
 				)
 
 });
 
-/////////////Functions///////////
 
+/////////////Functions///////////
 //cribbed from http://stackoverflow.com/a/1349426/565514
 function makeid(){
     var text = "";
@@ -248,44 +260,21 @@ function makeid(){
 }
 
 function build_output(data){
-	imgout = "<center>"
+
+	//Resize Max Size
 	widther = $("#images").width() - 1
 	if (widther > maxwidth) widther = maxwidth
 
 	outputdata = ""
 	boots = data['out']	
 	foots = boots.split("\n")
-	if (boots.search("top") == 0) 
+	for (i in foots)
 	{
-		$("#status").html("waiting for result")
-		for (var f=0; f <foots.length;f++)
-		{
-			if (foots[f].search("PID")>-1)
-			{ 
-				headers =foots[f].trim().replace(/\s+/g,' ').split(" ")
-				things = foots[f+1].trim().replace(/\s+/g,' ').split(" ")
-			}
-		}
-		
-		outputdata+='<table>'
-		
-		for (i in headers)
-		{
-			outputdata+='<tr><td>'+headers[i]+"</td><td>"+ things[i]+"</td></tr>"
-		} 
-		outputdata+='</table>'
-		
-		
-	}
-	else
-	{
-		for (i in foots)
-		{
-			if (foots[i].search("##_holder_##")==0) outputdata += "<img width='" + widther+"px'src='"+foots[i].replace("##_holder_##:","")+"'><br>"
+		if (foots[i].search("##_holder_##")==0) outputdata += "<img width='" + widther+"px'src='"+foots[i].replace("##_holder_##:","")+"'><br>"
 			else outputdata += foots[i]+"<br>"
-		}
-
 	}
+
+
 	//Build python stderr
 	boots = data['outerr']
 	if (boots == null) boots = ""
@@ -293,6 +282,8 @@ function build_output(data){
 	outputdata += "<br><span style='color:red'>"+boots+"</span>"
 	$("#images").html(outputdata)
 }
+
+
 
 function loader(bool,page){
 
