@@ -63,7 +63,9 @@ editor.setShowPrintMargin(false)
 foo = editor.getSession()
 foo.setUseWrapMode(true)
 
-editor.setTheme("ace/theme/"+getCookie('theme'));
+thematic = getCookie('theme')
+if (thematic == undefined) editor.setTheme("ace/theme/"+themes[themecycle]);
+editor.setTheme("ace/theme/"+thematic);
 
 
 //$("#credit").html($("#credit").html()+(" (<a target='_new' href='/shower/"+page.split("/")[1]+"'>results</a>)"))
@@ -78,7 +80,7 @@ shortcut.add("F1",function() {$("#run").click()})
 
 //F2 to cycle themes
 themes = ['textmate','twilight','clouds','dawn','midnight','cobalt']
-themecycle = 0
+themecycle = 4
 
 var socket = io.connect('/');
 
