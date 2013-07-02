@@ -430,7 +430,7 @@ setInterval(function(){
 		//console.log(send_list.length + " message(s) in queue")
 		io.sockets.emit(this_send['page_name'],this_send['data'])
 	};
-},500)
+},50)
 
 
 
@@ -442,7 +442,7 @@ setInterval(function() {
 		bettertop(p)
 	
 	}
-}, 1000);
+}, 100);
 
 lastcheck = {}
 

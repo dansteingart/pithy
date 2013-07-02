@@ -63,9 +63,6 @@ editor.setShowPrintMargin(false)
 foo = editor.getSession()
 foo.setUseWrapMode(true)
 
-thematic = getCookie('theme')
-if (thematic == undefined) editor.setTheme("ace/theme/"+themes[themecycle]);
-editor.setTheme("ace/theme/"+thematic);
 
 
 //$("#credit").html($("#credit").html()+(" (<a target='_new' href='/shower/"+page.split("/")[1]+"'>results</a>)"))
@@ -76,11 +73,16 @@ $("#save").hide()
 //F1 to run script
 shortcut.add("F1",function() {$("#run").click()})
 
+thematic = getCookie('theme')
+if (thematic == undefined) editor.setTheme("ace/theme/"+themes[themecycle]);
+editor.setTheme("ace/theme/"+thematic);
 
 
 //F2 to cycle themes
 themes = ['textmate','twilight','clouds','dawn','midnight','cobalt']
 themecycle = 4
+
+
 
 var socket = io.connect('/');
 
@@ -275,7 +277,7 @@ function build_output(data){
 	outputdata = ""
 	boots = data['out']	
 	foots = boots.split("\n")
-		
+	flotz = false
 	for (i in foots)
 	{
 		
@@ -286,6 +288,7 @@ function build_output(data){
 		}	
 		else if (foots[i].search("##__json__##")==0)
 		{ 
+			flotz = true
 			if (outputdata.search(flot_structure) == -1) outputdata = flot_structure + outputdata
 			foo = foots[i].replace("##__json__##","")
 			foo = JSON.parse(foo)
@@ -309,7 +312,7 @@ function build_output(data){
 	outputdata += "<br><span style='color:red'>"+boots+"</span>"
 	$("#images").html(outputdata)
 	
-	if (s.length > 0) $.plot("#flotter", s)
+	if (flotz){if (s.length > 0) $.plot("#flotter", s) } 
 	
 }
 
