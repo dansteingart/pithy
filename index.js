@@ -184,7 +184,7 @@ app.post('*/run', function(req, res)
 {
 	x = req.body
 	//console.log(x)
-	page_name = x['page_name'].replace("/","")
+	page_name = x['page_name'].replace("/","").split("/")[0]
 	script_name = x['script_name']
 	prepend = settings.prepend		
 	out = ""
@@ -286,7 +286,9 @@ app.post('*/read', function(req, res)
 	x = req.body
 	back_to_pith = {}
 	out = "Fill Me Up"
-	page_name = x['page_name'].replace("/","")
+	//page_name = x['page_name'].replace("/","")
+	page_name = x['page_name'].replace("/","").split("/")[0]
+	
 	try{
 	try
 	{
@@ -371,15 +373,13 @@ function betterexec(nameo,fff)
 {
 	//fullcmd = "touch temp_results/"+nameo +"; " +settings.python_path+" -u '"+__dirname+"/code/"+namemo+".py' > 'temp_results/"+nameo+"'"
 	
-	
-	console.log()
-	parts = []
-	if (fff['args'] != undefined) parts = fff['args']
+	parts = fff['page_name'].split("/")
 	estring = "";
-	for (var i=0; i < parts.length;i++) 
+	for (var i=2; i < parts.length;i++) 
 	{
 		estring += parts[i]+" ";
 	}
+	console.log(parts)
 	console.log(estring)
 	fullcmd = "touch temp_results/"+parts[1] +"; " +settings.python_path+" -u '"+__dirname+"/code/"+nameo+".py' "+estring+" > 'temp_results/"+nameo+"'"
 	

@@ -48,7 +48,7 @@
 var changed = false;
 var status = $("#status");
 var pathname = window.location.pathname;
-var page = pathname;
+var page = pathname.split("/")[1] //pathname;
 var scrollpos = 0;
 height_factor = 1
 area = $("#script_area")
@@ -73,15 +73,14 @@ $("#save").hide()
 //F1 to run script
 shortcut.add("F1",function() {$("#run").click()})
 
-thematic = getCookie('theme')
-if (thematic == undefined) editor.setTheme("ace/theme/"+themes[themecycle]);
-editor.setTheme("ace/theme/"+thematic);
 
 
 //F2 to cycle themes
 themes = ['textmate','twilight','clouds','dawn','midnight','cobalt']
 themecycle = 4
-
+thematic = getCookie('theme')
+if (thematic == undefined) editor.setTheme("ace/theme/"+themes[themecycle]);
+editor.setTheme("ace/theme/"+thematic);
 
 
 var socket = io.connect('/');
@@ -103,7 +102,7 @@ $("#run").click(function(){
 	scrollpos = $("#images").scrollTop()
 	//$("#images").html("waiting for result");
 	
-	saver(true,page);
+	saver(true,pathname); //was page
 	
 });
 
