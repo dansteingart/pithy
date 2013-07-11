@@ -243,7 +243,7 @@ app.post('*/run', function(req, res)
 app.post('*/history', function(req, res)
 {
 	x = req.body;
-	page_name = x['page_name'].replace("/","")
+	page_name = x['page_name']
 	length = "_1314970891000".length //get length of timestamp
 	structure = "code_stamped/"+page_name+"*"
 	thing_list = []
