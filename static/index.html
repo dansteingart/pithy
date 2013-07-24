@@ -6,10 +6,11 @@
 <script src="/channel/bcsocket.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 
-<script src="http://rawgithub.com/ajaxorg/ace-builds/master/src/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/ace.js" type="text/javascript" charset="utf-8"></script>
 
-<script src="http://rawgithub.com/ajaxorg/ace-builds/master/src/mode-python.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/mode-python.js" type="text/javascript" charset="utf-8"></script>
 <script src="/share/share.js"></script>
+<script src="/share/ace.js"></script>
 <script src="/share/ace.js"></script>
 
 <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
@@ -76,7 +77,7 @@ shortcut.add("F1",function() {$("#run").click()})
 
 
 //F2 to cycle themes
-themes = ['textmate','twilight','clouds','dawn','midnight','cobalt']
+themes = ['textmate','twilight','clouds','dawn','cobalt','clouds_midnight']
 themecycle = 4
 thematic = getCookie('theme')
 if (thematic == undefined) editor.setTheme("ace/theme/"+themes[themecycle]);
@@ -279,6 +280,8 @@ function build_output(data){
 	boots = data['out']
 	thislen = data['out'].search("been")
 	
+	imlist = {}
+	
 	foots = boots.split("\n")
 	flotz = false
 	for (i in foots)
@@ -287,6 +290,7 @@ function build_output(data){
 		
 		if (foots[i].search("##_holder_##")>-1) 
 		{
+			img.src
 			outputdata[outputdata.length] = "<img width='" + widther+"px'src='"+foots[i].replace("##_holder_##:","")+"'><br>"
 		}
 		else if (foots[i].search("##_dynamic_##")>-1) 
@@ -301,6 +305,7 @@ function build_output(data){
 				if (outputdata[o].search(holder)>-1) 
 				{ 
 					swap = o;
+					imlist[holder] = imloc
 				}
 			}
 			
@@ -335,6 +340,11 @@ function build_output(data){
 		
 	}
 
+	//collect images
+	
+
+	
+
 	//Build python stderr
 	boots = data['outerr']
 	if (boots == null) boots = ""
@@ -343,16 +353,19 @@ function build_output(data){
 	
 	
 	//console.log(thislen)
-
 	this_stuff = outputdata.join("")
 	if (this_stuff != old_stuff)
 	{
-		$("#images").html(this_stuff)
+		
+
 		old_stuff = this_stuff	
+		
+		$("#images").html(this_stuff);
 	}
 	if (flotz){if (s.length > 0) $.plot("#flotter", s) } 
 	
 }
+
 old_stuff = ""
 oldlen = 0
 
