@@ -285,11 +285,11 @@ function build_output(data){
 	{
 		
 		
-		if (foots[i].search("##_holder_##")==0) 
+		if (foots[i].search("##_holder_##")>-1) 
 		{
 			outputdata[outputdata.length] = "<img width='" + widther+"px'src='"+foots[i].replace("##_holder_##:","")+"'><br>"
 		}
-		else if (foots[i].search("##_dynamic_##")==0) 
+		else if (foots[i].search("##_dynamic_##")>-1) 
 		{
 			things = foots[i].split(":")
 			holder = things[1]
@@ -343,16 +343,17 @@ function build_output(data){
 	
 	
 	//console.log(thislen)
-	if (thislen != oldlen)
+
+	this_stuff = outputdata.join("")
+	if (this_stuff != old_stuff)
 	{
-		
-		 $("#images").html(outputdata.join(" "))
+		$("#images").html(this_stuff)
+		old_stuff = this_stuff	
 	}
-	oldlen = thislen
 	if (flotz){if (s.length > 0) $.plot("#flotter", s) } 
 	
 }
-
+old_stuff = ""
 oldlen = 0
 
 function loader(bool,page){

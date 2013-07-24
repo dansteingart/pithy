@@ -422,15 +422,17 @@ function makeid()
 
 //Queue to prevent socket race conditions, fires a message from the buffer every x ms
 //TODO: Figure out how to reduce interval time without 
+//buffer?
+oldsend = ""
 setInterval(function(){
 	this_send = send_list.splice(0,1)[0]
 	if (this_send != undefined) 
 	{
+			//console.log(send_list.length + " message(s) in queue")
+			io.sockets.emit(this_send['page_name'],this_send['data'])
 		
-		//console.log(send_list.length + " message(s) in queue")
-		io.sockets.emit(this_send['page_name'],this_send['data'])
 	};
-},200)
+},50)
 
 
 
@@ -442,7 +444,7 @@ setInterval(function() {
 		bettertop(p)
 	
 	}
-}, 100);
+}, 200);
 
 
 //flush images
@@ -470,7 +472,7 @@ function bettertop(p)
 		//if ((diff2) > 100)
 		//{
 			lastcheck[p] = now
-			outer = fs.readFileSync('temp_results/'+p).toString() + "<br><i>been working for " + diff + " ms</i>" 
+			outer = fs.readFileSync('temp_results/'+p).toString() + "\n<i>been working for " + diff + " ms</i>" 
 			send_list.push({'page_name':p,'data':{out:outer}})
 	//	}	
 		
