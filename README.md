@@ -13,7 +13,7 @@ pithy is python for sharing plots and numerical output, among other things.  it'
 
 ###you might say
 
-pithy is just like [ipython notebook](http://ipython.org/notebook.html), or the [adafruit learning system IDE](http://learn.adafruit.com/), or `<insert your favoriate web ide here>`, and I'd be flattered.  but it's got subtle differences, and the best way to understand them is this:
+pithy is just like [ipython notebook](http://ipython.org/notebook.html), or the [adafruit learning system IDE](http://learn.adafruit.com/), or `<insert your favorite web ide here>`, and I'd be flattered.  but it's got subtle differences, and the best way to understand them is this:
 
 the incomparable [aaron swartz](http://en.wikipedia.org/wiki/Aaron_Swartz) made a couple of web page/wiki/blog/information engines that were awesome and (imho) radically underappreciated.  there were/are [jottit](https://www.jottit.com/) and [infogami](https://github.com/infogami/infogami).  The beauty of these programs is the expansiveness of what they can do couple with the minimal overhead of what you need to get something done.  
 
