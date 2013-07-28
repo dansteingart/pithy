@@ -13,20 +13,20 @@ pithy is python for sharing plots and numerical output, among other things.  it'
 
 ###you might say
 
-pithy is just like [ipython notebook](http://ipython.org/notebook.html), or the [adafruit learning system IDE](http://learn.adafruit.com/), or `<insert your favorite web ide here>`, and I'd be flattered.  but it's got subtle differences, and the best way to understand them is this:
+pithy is just like [ipython notebook](http://ipython.org/notebook.html), or the [adafruit learning system IDE](http://learn.adafruit.com/), or `<insert your favorite web ide here>`, and i'd be flattered.  but it's got subtle differences, and the best way to understand them is this:
 
-the incomparable [aaron swartz](http://en.wikipedia.org/wiki/Aaron_Swartz) made a couple of web page/wiki/blog/information engines that were awesome and (imho) radically underappreciated.  there were/are [jottit](https://www.jottit.com/) and [infogami](https://github.com/infogami/infogami).  The beauty of these programs is the expansiveness of what they can do couple with the minimal overhead of what you need to get something done.  
+the incomparable [aaron swartz](http://en.wikipedia.org/wiki/Aaron_Swartz) made a couple of web page/wiki/blog/information engines that are awesome and (imho) radically underappreciated.  they are [jottit](https://www.jottit.com/) and [infogami](https://github.com/infogami/infogami).  The beauty of these programs is the expansiveness of what they can do coupled with the minimal overhead of what you need to get something done.  
 
 here's why they're great: you go to a url.  if the url exists, you can read what's there.  you might be able to add to it.  if the url doesn't exist, then within 5 seconds you can make it exist.  minimal (if any) logging in, and close to zero friction between you and new content.  no laborious wizards nor setup queues.  no "file menu".  no "really?".  just writing.  if you needed to go back, you could.  
 
-i learned python because aaron spoke highly of it, and pithy is inspired by aaron's approach to adding content to the web, but rather than content its for scientific analysis.  
+i learned python because aaron spoke highly of it, and pithy is inspired by aaron's approach to adding content to the web, but rather than prosaic content this is intended for quantitative analyses.  
 
-why is this useful?  imagine you write an anlysis of a dynamic dataset in r, or matlab, or whatever.  now imagine if that analysis could be viewed, editted non-destructively, rolled back and/or forked instanteously by anyone without a login or cumbersome sign in steps.  now imagine that this analysis is also a standalone web page that can be automatically refreshed.
+why is this useful?  imagine you write an analysis of a dynamic dataset in r, or matlab, or whatever.  now imagine if that analysis could be viewed, edited non-destructively, rolled back and/or forked instantaneously by anyone without a login or cumbersome sign-in steps.  now imagine that this analysis is also a standalone web page that can be automatically refreshed.
 
 this is pithy.  it does that.
 
 ###big warning
-pithy runs arbitrary python on your machine and sends the output back to the browser in a fairly clear manner.  this is convenient, this is also potentially SUPER DANGEROUS.  thus far there is an optional attempt at code scrubbing to stop people from writing local files, reading local files and rm -rfing your stuff, but it is most definitely not sandboxed nor bullet proof.  it's currently _not enabled_.  thus, pithy should be run on a server:
+pithy runs arbitrary python on your machine and sends the output back to the browser in a fairly clear manner.  this is convenient, this is also potentially SUPER DANGEROUS.  thus far there is an optional attempt at code scrubbing to stop people from writing local files, reading local files and `rm -rf`-ing your stuff, but it is most definitely not sandboxed nor bullet proof.  it is currently _not enabled_.  thus, pithy should be run on a server:
 
 1. that is routinely backed up (like all good servers should be)
 2. has nothing that you don't want the world to see that is not encrypted (ditto)
