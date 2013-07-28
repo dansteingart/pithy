@@ -1,4 +1,4 @@
-pithy is:  
+###pithy is:  
 
 	1. concise and forcefully expressive, or
 	2. containing much pith
@@ -9,7 +9,10 @@ sometimes you want to share code and see what it does on the same page.  sometim
 
 pithy has code on the left, and output on the right.  all changes are saved, and the url is freely shareable.  pithy has been tested against sophomores and juniors in chemical engineering successfully.  
 
-pithy is python for sharing plots and numerical output.  pithy runs arbitrary python on your machine and sends the output back to the browser in a fairly clear manner.  this is convenient, this is also potentially SUPER DANGEROUS.  thus far there is an optional attempt at code scrubbing to stop people from writing local files, reading local files and rm -rfing your stuff, but it is most definitely not sandboxed nor bullet proof.  it's currently _not enabled_.  thus, pithy should be run on a server:
+pithy is python for sharing plots and numerical output, amoung other things.  it's really pretty cool, but you have to play with it for a bit to see why.  go to the [wiki](https://github.com/dansteingart/pithy/wiki) to get a sense of what it can do.
+
+###big warning
+pithy runs arbitrary python on your machine and sends the output back to the browser in a fairly clear manner.  this is convenient, this is also potentially SUPER DANGEROUS.  thus far there is an optional attempt at code scrubbing to stop people from writing local files, reading local files and rm -rfing your stuff, but it is most definitely not sandboxed nor bullet proof.  it's currently _not enabled_.  thus, pithy should be run on a server:
 
 1. that is routinely backed up (like all good servers should be)
 2. has nothing that you don't want the world to see that is not encrypted (ditto)
@@ -61,3 +64,4 @@ paste this into your pithy page to generate a graph
     showme() 
 
 everything here is pure [pylab](http://www.scipy.org/PyLab) except for showme(), which does some behind the scenes magic to generate a plot and save the figure.  
+
