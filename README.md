@@ -9,7 +9,17 @@ sometimes you want to share code and see what it does on the same page.  sometim
 
 pithy has code on the left, and output on the right.  all changes are saved, and the url is freely shareable.  pithy has been tested against sophomores and juniors in chemical engineering successfully.  
 
-pithy is python for sharing plots and numerical output, amoung other things.  it's really pretty cool, but you have to play with it for a bit to see why.  go to the [wiki](https://github.com/dansteingart/pithy/wiki) to get a sense of what it can do.
+pithy is python for sharing plots and numerical output, among other things.  it's really pretty cool, but you have to play with it for a bit to see why.  go to the [wiki](https://github.com/dansteingart/pithy/wiki) to get a sense of what it can do.
+
+###you might say
+
+pithy is just like [ipython notebook](http://ipython.org/notebook.html), or the [adafruit learning system IDE](http://learn.adafruit.com/), or <insert your favoriate web ide here>, and I'd be flattered.  but it's got subtle differences, and the best way to understand them is this:
+
+the incomparable [aaron swartz](http://en.wikipedia.org/wiki/Aaron_Swartz) made a couple of web page/wiki/blog/information engines that were awesome and (imho) radically underappreciated.  there were/are [jottit](https://www.jottit.com/) and [infogami](https://github.com/infogami/infogami).  The beauty of these programs is the expansiveness of what they can do couple with the minimal overhead of what you need to get something done.  
+
+here's why they're great: you go to a url.  if the url exists, you can read what's there.  you might be able to add to it.  if the url doesn't exist, then within 5 seconds you can make it exist.  minimal (if any) logging in, and close to zero friction between you and new content.  no laborious wizards nor setup queues.  no "file menu".  no "really?".  just writing.  if you needed to go back, you could.  
+
+pithy is inspired by aaron's approach to adding content to the web, but rather than content its for scientific analysis.  
 
 ###big warning
 pithy runs arbitrary python on your machine and sends the output back to the browser in a fairly clear manner.  this is convenient, this is also potentially SUPER DANGEROUS.  thus far there is an optional attempt at code scrubbing to stop people from writing local files, reading local files and rm -rfing your stuff, but it is most definitely not sandboxed nor bullet proof.  it's currently _not enabled_.  thus, pithy should be run on a server:
@@ -28,7 +38,7 @@ because pithy just runs from a directory, standard http authentication can be ap
 2. [node.js](http://nodejs.org/)  (0.8.16 or better)
 3. science stuff! I like to to use [EPD](http://www.enthought.com/products/epd_free.php), but scipy, numpy and matplotlib should be sufficient 
 
-###installation/usage
+###installation/usage 
 
 1. clone repository to where you want stuff
 2. cd to that directory
