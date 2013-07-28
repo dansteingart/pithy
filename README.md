@@ -1,4 +1,4 @@
-###pithy is:  
+###pithy is
 
 	1. concise and forcefully expressive, or
 	2. containing much pith
