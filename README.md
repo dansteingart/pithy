@@ -19,7 +19,11 @@ the incomparable [aaron swartz](http://en.wikipedia.org/wiki/Aaron_Swartz) made 
 
 here's why they're great: you go to a url.  if the url exists, you can read what's there.  you might be able to add to it.  if the url doesn't exist, then within 5 seconds you can make it exist.  minimal (if any) logging in, and close to zero friction between you and new content.  no laborious wizards nor setup queues.  no "file menu".  no "really?".  just writing.  if you needed to go back, you could.  
 
-pithy is inspired by aaron's approach to adding content to the web, but rather than content its for scientific analysis.  
+i learned python because aaron spoke highly of it, and pithy is inspired by aaron's approach to adding content to the web, but rather than content its for scientific analysis.  
+
+why is this useful?  imagine you write an anlysis of a dynamic dataset in r, or matlab, or whatever.  now imagine if that analysis could be viewed, editted non-destructively, rolled back and/or forked instanteously by anyone without a login or cumbersome sign in steps.  now imagine that this analysis is also a standalone web page that can be automatically refreshed.
+
+this is pithy.  it does that.
 
 ###big warning
 pithy runs arbitrary python on your machine and sends the output back to the browser in a fairly clear manner.  this is convenient, this is also potentially SUPER DANGEROUS.  thus far there is an optional attempt at code scrubbing to stop people from writing local files, reading local files and rm -rfing your stuff, but it is most definitely not sandboxed nor bullet proof.  it's currently _not enabled_.  thus, pithy should be run on a server:
