@@ -95,7 +95,7 @@ var gotdata = ""
 var maxwidth = 800
 waiting_for_output = false
 loader(true,page);
-history(pathname);
+history(page);
 
 ///////////Jquery Foo/////////////
 //What happens when you click run
@@ -290,7 +290,6 @@ function build_output(data){
 		
 		if (foots[i].search("##_holder_##")>-1) 
 		{
-			img.src
 			outputdata[outputdata.length] = "<img width='" + widther+"px'src='"+foots[i].replace("##_holder_##:","")+"'><br>"
 		}
 		else if (foots[i].search("##_dynamic_##")>-1) 
