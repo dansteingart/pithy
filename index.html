@@ -1,34 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
-
     <title>Pithy by dansteingart</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
   </head>
-
   <body>
-
-    <header>
-      <div class="container">
+    <div class="wrapper">
+      <header>
         <h1>Pithy</h1>
-        <h2>scientiffic python wrapped in a clean web coat</h2>
+        <p>scientiffic python wrapped in a clean web coat</p>
 
-        <section id="downloads">
-          <a href="https://github.com/dansteingart/pithy/zipball/master" class="btn">Download as .zip</a>
-          <a href="https://github.com/dansteingart/pithy/tarball/master" class="btn">Download as .tar.gz</a>
-          <a href="https://github.com/dansteingart/pithy" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
-        </section>
-      </div>
-    </header>
+        <p class="view"><a href="https://github.com/dansteingart/pithy">View the Project on GitHub <small>dansteingart/pithy</small></a></p>
 
-    <div class="container">
-      <section id="main_content">
-        <p>pithy is:  </p>
+
+        <ul>
+          <li><a href="https://github.com/dansteingart/pithy/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/dansteingart/pithy/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/dansteingart/pithy">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h3>
+<a name="pithy-is" class="anchor" href="#pithy-is"><span class="octicon octicon-link"></span></a>pithy is</h3>
 
 <pre><code>1. concise and forcefully expressive, or
 2. containing much pith
@@ -40,13 +41,35 @@
 
 <p>pithy has code on the left, and output on the right.  all changes are saved, and the url is freely shareable.  pithy has been tested against sophomores and juniors in chemical engineering successfully.  </p>
 
-<p>pithy is python for sharing plot and numerical output.  pithy runs arbitrary python on your machine and send the output back to the browser in a fairly clear manner.  this is convenient, this is also potentially SUPER DANGEROUS.  thus far there is an attempt at code scrubbing to stop people from writing local files, reading local files and rm -rfing your stuff, but it is most definitely not sandboxed nor bullet proof.  Thus, pithy should be run on a server </p>
+<p>pithy is python for sharing plots and numerical output, among other things.  it's really pretty cool, but you have to play with it for a bit to see why.  go to the <a href="https://github.com/dansteingart/pithy/wiki">wiki</a> to get a sense of what it can do.</p>
+
+<h3>
+<a name="you-might-say" class="anchor" href="#you-might-say"><span class="octicon octicon-link"></span></a>you might say</h3>
+
+<p>pithy is just like <a href="http://ipython.org/notebook.html">ipython notebook</a>, or the <a href="http://learn.adafruit.com/">adafruit learning system IDE</a>, or <code>&lt;insert your favorite web ide here&gt;</code>, and i'd be flattered.  but it's got subtle differences, and the best way to understand them is this:</p>
+
+<p>the incomparable <a href="http://en.wikipedia.org/wiki/Aaron_Swartz">aaron swartz</a> made a couple of web page/wiki/blog/information engines that are awesome and (imho) radically underappreciated.  they are <a href="https://www.jottit.com/">jottit</a> and <a href="https://github.com/infogami/infogami">infogami</a>.  The beauty of these programs is the expansiveness of what they can do coupled with the minimal overhead of what you need to get something done.  </p>
+
+<p>here's why they're great: you go to a url.  if the url exists, you can read what's there.  you might be able to add to it.  if the url doesn't exist, then within 5 seconds you can make it exist.  minimal (if any) logging in, and close to zero friction between you and new content.  no laborious wizards nor setup queues.  no "file menu".  no "really?".  just writing.  if you needed to go back, you could.  </p>
+
+<p>i learned python because aaron spoke highly of it, and pithy is inspired by aaron's approach to adding content to the web, but rather that verbally expressive content this is intended for quantitative analyses.  </p>
+
+<p>why is this useful?  imagine you write an analysis of a dynamic dataset in r, or matlab, or whatever.  now imagine if that analysis could be viewed, edited non-destructively, rolled back and/or forked instantaneously by anyone without a login or cumbersome sign-in steps.  now imagine that this analysis is also a standalone web page that can be automatically refreshed.</p>
+
+<p>this is pithy.  it does that.</p>
+
+<h3>
+<a name="big-warning" class="anchor" href="#big-warning"><span class="octicon octicon-link"></span></a>big warning</h3>
+
+<p>pithy runs arbitrary python on your machine and sends the output back to the browser in a fairly clear manner.  this is convenient, this is also potentially SUPER DANGEROUS.  thus far there is an optional attempt at code scrubbing to stop people from writing local files, reading local files and <code>rm -rf</code>-ing your stuff, but it is most definitely not sandboxed nor bullet proof.  it is currently <em>not enabled</em>.  thus, pithy should be run on a server:</p>
 
 <ol>
 <li>that is routinely backed up (like all good servers should be)</li>
 <li>has nothing that you don't want the world to see that is not encrypted (ditto)</li>
 <li>that can suffer some downtime if someone does something stupid</li>
-</ol><p>because pithy just runs from a directory, standard http authentication can be applied to make stuff safe.</p>
+</ol><p>the <a href="http://www.raspberrypi.org/">raspberry pi</a> is an awesome server for this very thing</p>
+
+<p>because pithy just runs from a directory, standard http authentication can be applied to make stuff safe.</p>
 
 <h3>
 <a name="pithy-requires" class="anchor" href="#pithy-requires"><span class="octicon octicon-link"></span></a>pithy requires</h3>
@@ -54,8 +77,7 @@
 <ol>
 <li>a fairly up to date (not 3.0 though) python installation</li>
 <li>
-<a href="http://nodejs.org/">node.js</a><br>
-</li>
+<a href="http://nodejs.org/">node.js</a>  (0.8.16 or better)</li>
 <li>science stuff! I like to to use <a href="http://www.enthought.com/products/epd_free.php">EPD</a>, but scipy, numpy and matplotlib should be sufficient </li>
 </ol><h3>
 <a name="installationusage" class="anchor" href="#installationusage"><span class="octicon octicon-link"></span></a>installation/usage</h3>
@@ -63,9 +85,10 @@
 <ol>
 <li>clone repository to where you want stuff</li>
 <li>cd to that directory</li>
-<li>run "node index.js " where port number is something like 8000 or 80 or whatever</li>
-<li>navigate to http://localhost:  (or wherever you put stuff).  you should see a page, and the URL should have a random string of characters appened.  try some python.</li>
-<li> now add whatever name you want to the URL (numbers,letters and (-,_) only.  Run some code here.  Share the url if you're running on an accessisible server.  repeat.  now you're pithy.</li>
+<li>run "node index.js 8001" where 8001 is the port number (change to whatever you want)</li>
+<li>navigate to http://localhost:8001  (or wherever you put stuff).  you should see a page, and the URL should have a random string of characters appened.  try some python.</li>
+<li>the default user is "user" and pass is "pass" (no quotes, change this in the index.js file right now, line </li>
+<li> now add whatever name you want to the URL (numbers,letters and (-,_) only.  run some code here.  share the url if you're running on an accessisible server.  repeat.  now you're pithy.</li>
 </ol><h3>
 <a name="example" class="anchor" href="#example"><span class="octicon octicon-link"></span></a>example</h3>
 
@@ -73,7 +96,9 @@
 
 <p>paste this into your pithy page to generate a graph</p>
 
-<pre><code>a = linspace(0,1,100)
+<pre><code>from pithy import *
+
+a = linspace(0,1,100)
 b = sqrt(a)
 c = a**2
 
@@ -92,8 +117,12 @@ showme()
 
 <p>everything here is pure <a href="http://www.scipy.org/PyLab">pylab</a> except for showme(), which does some behind the scenes magic to generate a plot and save the figure.  </p>
       </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/dansteingart">dansteingart</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
     </div>
-
+    <script src="javascripts/scale.fix.js"></script>
     
   </body>
 </html>
