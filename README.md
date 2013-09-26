@@ -79,3 +79,9 @@ paste this into your pithy page to generate a graph
 
 everything here is pure [pylab](http://www.scipy.org/PyLab) except for showme(), which does some behind the scenes magic to generate a plot and save the figure.  
 
+###acknowledgements
+
+Pithy was made possible in part with support from NSF Grant CMMI 1031208.
+
+Pithy was made better with feedback from many students at CCNY and Princeton.  Thanks.
+
