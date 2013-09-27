@@ -185,9 +185,12 @@ app.get('/*', function(req, res){
 
 app.post("*/killer",function(req,res)
 	{
-		thispid = processes[page_name];
-		x = req.body;
-		console.log("trying to kill " + page_name)
+		
+		x = req.body.page_name;
+		console.log(x)
+		thispid = processes[x];
+		
+		console.log("trying to kill " + x)
 		if (thispid != undefined)
 		{
 			console.log("killing "+thispid)
@@ -199,9 +202,8 @@ app.post("*/killer",function(req,res)
 				console.log(outer)
 				if (outer.search("No such process") == -1)
 				{
-					page_name = x['page_name'].replace("/","");
 					console.log(thispid)
-					delete processes[page_name];
+					delete processes[x];
 					timers[thispid] = false
 				}
 			})
@@ -264,11 +266,12 @@ app.post('*/run', function(req, res)
 	
 	fs.writeFileSync(codebase+"temper.py",data)
 	res.json({success:true})	
-	gofer = betterexec(page_name,x)
+	if (processes[page_name] == undefined) gofer = betterexec(page_name,x)
 	console.log(gofer)
 	//processes[page_name] = gofer['id']
 	processes[page_name] = gofer['name']
 	//console.log(processes[page_name])
+	console.log(processes)
 	timers[processes[page_name]] = true
 	
 });
