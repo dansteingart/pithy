@@ -146,12 +146,98 @@ app.use("/static", express.static(__dirname + '/static'));
 app.use("/images", express.static(__dirname + '/images'));
 app.use("/"+filebase, express.static(__dirname + "/"+filebase));
 
+//http://stackoverflow.com/a/4698083/565514
+function sJAP(objArray, prop, direction){
+    if (arguments.length<2) throw new Error("sortJsonArrayByProp requires 2 arguments");
+    var direct = arguments.length>2 ? arguments[2] : 1; //Default to ascending
+
+    if (objArray && objArray.constructor===Array){
+        var propPath = (prop.constructor===Array) ? prop : prop.split(".");
+        objArray.sort(function(a,b){
+            for (var p in propPath){
+                if (a[propPath[p]] && b[propPath[p]]){
+                    a = a[propPath[p]];
+                    b = b[propPath[p]];
+                }
+            }
+            // convert numeric strings to integers
+            a = a.match(/^\d+$/) ? +a : a;
+            b = b.match(/^\d+$/) ? +b : b;
+            return ( (a < b) ? -1*direct : ((a > b) ? 1*direct : 0) );
+        });
+    }
+}
+
+
 
 app.get('/*', function(req, res){
 
 	if (req.params[0] == "") 
 	{
-		res.redirect("/"+makeid());
+		//res.redirect("/"+makeid());
+		if (req.params[0] == "") 
+		{
+			indexer = fs.readFileSync('static/homepage.html').toString()
+
+			//New Files
+			//get file list
+			out = fs.readdirSync(codebase)
+			//sort files (ht to http://stackoverflow.com/a/10559790)
+			out.sort(function(a, b) {
+			               return fs.statSync(codebase + a).ctime - 
+			                      fs.statSync(codebase + b).ctime;
+			           });
+	 		out.reverse()
+			lts = "" //list to send
+		
+			for (i in out)
+			{	foo = out[i].replace(".py","")
+				dater = fs.statSync(codebase + out[i]).ctime.toDateString()
+				if (foo != "temper") lts += "<span class='leftin'><a href='/"+foo+"'>"+foo+ "</a></span><span class='rightin'> " + dater+"</span><br>";
+			}
+
+			base_case = 
+
+			indexer = indexer.replace("##_newthings_##",lts)
+			activefiles = out
+		
+		
+			//Hist Files
+			//get file list
+			out = fs.readdirSync(histbase)
+		
+			hist_dict = []
+			for (i in activefiles)
+			{
+			
+				its = activefiles[i].replace(".py","")
+				things = activefiles[i].replace(".py","_1*")
+				globs = glob.sync(histbase+"/"+things)
+				hist_dict[hist_dict.length] = {'fil':its,'hits':globs.length}
+			}
+		
+			//sort files (ht to http://stackoverflow.com/a/10559790)
+			hist_dict.sort(function(a, b) {
+			               return a.hits - b.hits;
+			           });
+	 		hist_dict.reverse()
+			lts = "" //list to send
+		
+			for (j in hist_dict)
+			{	
+				i = hist_dict[j]['fil']
+				k = hist_dict[j]['hits']
+			
+				if (i != "temper") lts += "<span class='leftin'><a href='/"+i+"'>"+i+ "</a></span><span class='rightin'> " + k+" edits</span><br>";
+			}
+
+			base_case = "0"
+
+			indexer = indexer.replace("##_changethings_##",lts)
+
+			res.send(indexer)
+
+		}
 
 	}
 
@@ -484,7 +570,7 @@ setInterval(function() {
 		bettertop(p)
 	
 	}
-}, 500);
+}, 1000);
 
 
 //flush images
