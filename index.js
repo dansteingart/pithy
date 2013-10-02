@@ -13,8 +13,7 @@ var exec = require('child_process').exec,
 var spawn = require('child_process').spawn,
 	child;
 var os = require("os")
-var moment = require('moment'); //timestamp handling thanks
-
+var glob = require('glob')
 var options = {db: {type: 'none'}};
  
 server = http.createServer(app)
