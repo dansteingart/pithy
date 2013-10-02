@@ -189,13 +189,18 @@ app.get('/*', function(req, res){
 	 		out.reverse()
 			lts = "" //list to send
 		
-			for (i in out)
+			count_limit = 20;
+			
+			count = 0 
+			for (var i in out)
 			{	foo = out[i].replace(".py","")
 				dater = fs.statSync(codebase + out[i]).ctime.toDateString()
 				if (foo != "temper") lts += "<span class='leftin'><a href='/"+foo+"'>"+foo+ "</a></span><span class='rightin'> " + dater+"</span><br>";
+				count +=1
+				if (count > count_limit) break; 
 			}
 
-			base_case = 
+			base_case = 0
 
 			indexer = indexer.replace("##_newthings_##",lts)
 			activefiles = out
@@ -222,17 +227,49 @@ app.get('/*', function(req, res){
 	 		hist_dict.reverse()
 			lts = "" //list to send
 		
+			count = 0 
+			
 			for (j in hist_dict)
 			{	
 				i = hist_dict[j]['fil']
 				k = hist_dict[j]['hits']
 			
 				if (i != "temper") lts += "<span class='leftin'><a href='/"+i+"'>"+i+ "</a></span><span class='rightin'> " + k+" edits</span><br>";
+				count +=1
+				if (count > count_limit) break; 
 			}
 
 			base_case = "0"
 
 			indexer = indexer.replace("##_changethings_##",lts)
+
+
+			//New Files
+			//get file list
+			out = fs.readdirSync(filebase)
+			//sort files (ht to http://stackoverflow.com/a/10559790)
+			out.sort(function(a, b) {
+			               return fs.statSync(filebase + a).ctime - 
+			                      fs.statSync(filebase + b).ctime;
+			           });
+	 		out.reverse()
+			lts = "" //list to send
+		
+			count_limit = 20;
+			
+			count = 0 
+			for (var i in out)
+			{	foo = out[i]//.replace(".py","")
+				dater = fs.statSync(filebase + out[i]).ctime.toDateString()
+				lts += "<span class='leftin'><a href='/files/"+foo+"'>"+foo+ "</a></span><span class='rightin'> " + dater+"</span><br>";
+				count +=1
+				if (count > count_limit) break; 
+			}
+
+			base_case = 0
+
+			indexer = indexer.replace("##_popthings_##",lts)
+			
 
 			res.send(indexer)
 
