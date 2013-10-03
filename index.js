@@ -167,6 +167,38 @@ function sJAP(objArray, prop, direction){
     }
 }
 
+activefiles = []
+hist_dict = []
+
+function getBigHistory()
+{
+	out = fs.readdirSync(histbase)
+
+	hist_dict = []
+	for (i in activefiles)
+	{
+	
+		its = activefiles[i].replace(".py","")
+		things = activefiles[i].replace(".py","_1*")
+		globs = glob.sync(histbase+"/"+things)
+		hist_dict[hist_dict.length] = {'fil':its,'hits':globs.length}
+	}
+
+	//sort files (ht to http://stackoverflow.com/a/10559790)
+	hist_dict.sort(function(a, b) {
+	               return a.hits - b.hits;
+	           });
+	hist_dict.reverse()
+	
+}
+
+getBigHistory()
+
+setInterval(
+	function()
+	{
+		getBigHistory()
+	},60000)
 
 
 app.get('/*', function(req, res){
@@ -182,13 +214,14 @@ app.get('/*', function(req, res){
 			//get file list
 			out = fs.readdirSync(codebase)
 			//sort files (ht to http://stackoverflow.com/a/10559790)
+			
 			out.sort(function(a, b) {
 			               return fs.statSync(codebase + a).ctime - 
 			                      fs.statSync(codebase + b).ctime;
 			           });
 	 		out.reverse()
+			
 			lts = "" //list to send
-		
 			count_limit = 20;
 			
 			count = 0 
@@ -208,23 +241,9 @@ app.get('/*', function(req, res){
 		
 			//Hist Files
 			//get file list
-			out = fs.readdirSync(histbase)
-		
-			hist_dict = []
-			for (i in activefiles)
-			{
 			
-				its = activefiles[i].replace(".py","")
-				things = activefiles[i].replace(".py","_1*")
-				globs = glob.sync(histbase+"/"+things)
-				hist_dict[hist_dict.length] = {'fil':its,'hits':globs.length}
-			}
-		
-			//sort files (ht to http://stackoverflow.com/a/10559790)
-			hist_dict.sort(function(a, b) {
-			               return a.hits - b.hits;
-			           });
-	 		hist_dict.reverse()
+			
+				
 			lts = "" //list to send
 		
 			count = 0 
