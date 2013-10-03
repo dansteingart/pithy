@@ -18,7 +18,6 @@
 
 <script src="/static/jquery.imagesloaded.js" type="text/javascript" charset="utf-8"></script> 
 
-
 </head>
 <body>
 
@@ -126,7 +125,7 @@ $("#copyto").click(function(){
 		{			
 		  url: "/copyto/",
 		  type:"POST",
-		  data:{page_name:page,script_name:script_name,value:editor.getSession().getValue()},
+		data:{page_name:page,script_name:script_name,value:editor.getSession().getValue()},
 		  success: function(data)
 			{
 		 		gotor = data['redirect']
@@ -178,8 +177,7 @@ function textall()
 }
 
 //Default View
-function splitview()
-{
+function splitview(){
 	$("#left-side").show()
 	$("#right-side").show()
 	$("#left-side").width('50%')	
@@ -191,8 +189,7 @@ function splitview()
 }
 
 //Output View
-function resall()
-{
+function resall(){
 		$("#left-side").hide()
 		$("#right-side").width('100%')
 		areagrower()	
@@ -214,6 +211,20 @@ shortcut.add("F6",function(){
 	if (!allres & !alltext) resall()
 	else splitview()
 })
+
+
+shortcut.add("F7",function(){
+    var myWindow=window.open('','');
+	//print_line = "<a style='color:red;font-family:Helvetica;underline: none' href='' onclick='window.print();'>print me</a><br>"
+    myWindow.document.write(old_stuff);
+    //myWindow.document.close();
+	myWindow.focus();
+	$(myWindow).load(function(){
+		console.log("foo")    
+	});
+	
+})
+
 
 
 /////////////Socket Foo/////////
@@ -240,14 +251,9 @@ socket.on(page.replace("/",""), function (data) {
 				}
 				gotdata = data
 				build_output(gotdata)
-				//console.log("should be stuffs here")
 				
-				//dfd = $('#images').imagesLoaded(); 
-				//dfd.always(
-				//	function(){
-						//$("#images").scrollTop(scrollpos)
-				//	}
-				//)
+				dfd = $('#images').imagesLoaded(); 
+				dfd.always(function(){$("#images").scrollTop(scrollpos)})
 
 });
 
@@ -266,6 +272,8 @@ function makeid(){
 
 
 flot_structure = "<div id='flotter' class='flotter'></div>"
+
+
 
 function build_output(data){
 	
@@ -308,8 +316,11 @@ function build_output(data){
 			
 			
 			outputdata[swap] = "<img width='" + widther+"px' id='"+holder+"' src='"+imloc+"'><br>"
-		}	
 			
+			//outputdata[swap] = "<canvas width='" + widther+"px' id='"+holder+"'></canvas>"
+			
+			//imlist[swap] = {'h':holder,'i':imloc}; 
+		}
 		else if (foots[i].search("##__json__##")==0)
 		{ 
 			flotz = true
@@ -337,11 +348,6 @@ function build_output(data){
 		
 	}
 
-	//collect images
-	
-
-	
-
 	//Build python stderr
 	boots = data['outerr']
 	if (boots == null) boots = ""
@@ -357,7 +363,7 @@ function build_output(data){
 
 		old_stuff = this_stuff	
 		
-		$("#images").html(this_stuff);
+		$(window).load($("#images").html(this_stuff));
 	}
 	if (flotz){if (s.length > 0) $.plot("#flotter", s) } 
 	
@@ -365,7 +371,6 @@ function build_output(data){
 
 old_stuff = ""
 oldlen = 0
-
 function loader(bool,page){
 
 	$.ajax({
@@ -380,7 +385,7 @@ function loader(bool,page){
 	});
 
 }
-
+			
 function saver(bool,page){
 
 	//editor.save()
@@ -404,7 +409,6 @@ function saver(bool,page){
 	}
 	}
 }
-
 
 function history(page){
 	//console.log("loading!");
@@ -438,7 +442,7 @@ function history(page){
 	
 }
 
-function get_data(){	
+function get_data(){
 	loader(false,$("#histories").val());
 	//console.log($("#histories").val())
 }
@@ -448,11 +452,11 @@ function make_option(word){
   return foo.replace(/Milk/gi,word)
 }
 
-function areagrower()
-{
+function areagrower(){
 	area.width($("#left-side").width())
 	area.height($(document).height()*height_factor)
 }
+
 //Editor Stuff
 $(window).resize(function(){
 	try
