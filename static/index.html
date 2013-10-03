@@ -78,7 +78,7 @@ themes = ['textmate','twilight','clouds','dawn','cobalt','clouds_midnight']
 themecycle = 4
 thematic = getCookie('theme')
 if (thematic == undefined) editor.setTheme("ace/theme/"+themes[themecycle]);
-editor.setTheme("ace/theme/"+thematic);
+else editor.setTheme("ace/theme/"+thematic);
 
 
 var socket = io.connect('/');
