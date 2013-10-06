@@ -5,12 +5,10 @@
 <script src="/static/shortcut.js" type="text/javascript" charset="utf-8"></script>
 <script src="/channel/bcsocket.js"></script>
 <script src="/socket.io/socket.io.js"></script>
-
 <script src="/static/ace.js" type="text/javascript" charset="utf-8"></script>
 
 <script src="/static/mode-python.js" type="text/javascript" charset="utf-8"></script>
 <script src="/share/share.js"></script>
-<script src="/share/ace.js"></script>
 <script src="/share/ace.js"></script>
 
 <script src="/static/jquery-1.9.1.js"></script>
@@ -296,7 +294,7 @@ function build_output(data){
 		
 		if (foots[i].search("##_holder_##")>-1) 
 		{
-			outputdata[outputdata.length] = "<img width='" + widther+"px'src='"+foots[i].replace("##_holder_##:","")+"'><br>"
+			outputdata[outputdata.length] = "<img src='"+foots[i].replace("##_holder_##:","")+"'><br>"
 		}
 		else if (foots[i].search("##_dynamic_##")>-1) 
 		{
@@ -315,11 +313,7 @@ function build_output(data){
 			}
 			
 			
-			outputdata[swap] = "<img width='" + widther+"px' id='"+holder+"' src='"+imloc+"'><br>"
-			
-			//outputdata[swap] = "<canvas width='" + widther+"px' id='"+holder+"'></canvas>"
-			
-			//imlist[swap] = {'h':holder,'i':imloc}; 
+			outputdata[swap] = "<img id='"+holder+"' src='"+imloc+"'><br>"
 		}
 		else if (foots[i].search("##__json__##")==0)
 		{ 

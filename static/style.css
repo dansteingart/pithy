@@ -8,7 +8,10 @@ body
 	text-rendering: optimizeLegibility;
 }
 
-
+img
+{
+	width: 100%;
+}
 
 /* scrollbar style from http://maxvoltar.com/, http://almaer.com/scrollbar/debug.html */
 
