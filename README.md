@@ -40,7 +40,7 @@ because pithy just runs from a directory, standard http authentication can be ap
 
 1. a fairly up to date (not 3.0 though) python installation
 2. [node.js](http://nodejs.org/)  (0.8.16 or better)
-3. science stuff! I like to to use [EPD](http://www.enthought.com/products/epd_free.php), but scipy, numpy and matplotlib should be sufficient 
+3. science stuff! I like [EPD](http://www.enthought.com/products/epd_free.php), but scipy, numpy and matplotlib should be sufficient 
 
 ###installation/usage 
 
@@ -49,7 +49,7 @@ because pithy just runs from a directory, standard http authentication can be ap
 3. run "node index.js 8001" where 8001 is the port number (change to whatever you want)
 4. navigate to http://localhost:8001  (or wherever you put stuff).  you should see a page, and the URL should have a random string of characters appened.  try some python.
 5. the default user is "user" and pass is "pass" (no quotes, change this in the index.js file right now, line 
-5.  now add whatever name you want to the URL (numbers,letters and (-,_) only.  run some code here.  share the url if you're running on an accessisible server.  repeat.  now you're pithy.
+5. now add whatever name you want to the URL (numbers,letters and (-,_) only.  run some code here.  share the url if you're running on an accessisible server.  repeat.  now you're pithy.
 
 
 ###example
