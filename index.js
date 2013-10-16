@@ -68,12 +68,12 @@ for (d in dirs)
 	}
 }
 
-codebase = "code"+POC+"/"
-histbase = "code_stamped"+POC+"/"
-tempbase = "temp_results"+POC+"/"
-resbase = "results"+POC+"/"
-imgbase = "images"+POC+"/"
-filebase = "files"+POC+"/"
+codebase = __dirname + "/code"+POC+"/"
+histbase = __dirname + "/code_stamped"+POC+"/"
+tempbase = __dirname + "/temp_results"+POC+"/"
+resbase = __dirname + "/results"+POC+"/"
+imgbase = __dirname + "/images"+POC+"/"
+filebase = __dirname + "/files"+POC+"/"
 
 
 //create pithy.py lib if it doesn't already exist
@@ -86,20 +86,20 @@ try
 catch (e)
 {
 	console.log("making a pithy library")
-	fs.writeFileSync(codebase+'/pithy.py',fs.readFileSync('static/prepend.txt').toString())
+	fs.writeFileSync(codebase+'/pithy.py',fs.readFileSync(__dirname + '/static/prepend.txt').toString())
 }
 
 //create pass.json file if it doesn't already exist
 try
 {
-	checkface = fs.readFileSync('pass'+POC+'.json').toString()
+	checkface = fs.readFileSync(__dirname + '/pass'+POC+'.json').toString()
 	console.log("pass.json is in place")
 	
 }
 catch (e)
 {
 	console.log("making a password file")
-	fs.writeFileSync('pass'+POC+'.json',fs.readFileSync('static/passmold').toString())
+	fs.writeFileSync(__dirname + '/pass'+POC+'.json',fs.readFileSync(__dirname + '/static/passmold').toString())
 }
 
 //Basic Settings
@@ -208,7 +208,7 @@ app.get('/*', function(req, res){
 		//res.redirect("/"+makeid());
 		if (req.params[0] == "") 
 		{
-			indexer = fs.readFileSync('static/homepage.html').toString()
+			indexer = fs.readFileSync(__dirname + '/static/homepage.html').toString()
 
 			//New Files
 			//get file list
@@ -298,7 +298,7 @@ app.get('/*', function(req, res){
 
 	else if(req.params[0] == "files/" || req.params[0] == "files")
 	{
-		indexer = fs.readFileSync('static/filedex.html').toString()
+		indexer = fs.readFileSync(__dirname + '/static/filedex.html').toString()
 		//get file list
 		out = fs.readdirSync(filebase)
 		//sort files (ht to http://stackoverflow.com/a/10559790)
@@ -318,7 +318,7 @@ app.get('/*', function(req, res){
 	}
 	else
 	{
-		indexer = fs.readFileSync('static/index.html').toString()
+		indexer = fs.readFileSync(__dirname + '/static/index.html').toString()
 		res.send(indexer)
 	}
   	//console.log(req.params)
@@ -559,7 +559,7 @@ function betterexec(nameo,fff)
 	console.log(parts)
 	console.log(estring)
 	console.log(__dirname)
-	essence = __dirname+"/"+codebase+nameo
+	essence = codebase+nameo
 	big_gulp = settings.python_path+" -u '"+essence+".py' "+estring
 	fullcmd = "touch "+tempbase+parts[1] +"; " +big_gulp+" > '"+tempbase+nameo+"'"
 	
