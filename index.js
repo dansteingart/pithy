@@ -28,7 +28,7 @@ POC = "" //trust me
 console.log("reflecting changes oK!")
 app.use(express.basicAuth(function(user, pass, callback) {
  
-	raw = fs.readFileSync("pass.json").toString();
+	raw = fs.readFileSync(__dirname + "/pass.json").toString();
 	things = JSON.parse(raw);
 	names = things['things']
 	var result = null;
