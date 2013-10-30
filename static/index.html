@@ -265,6 +265,13 @@ socket.on(page.replace("/",""), function (data) {
 					$("#status").html("saved, exec time = "+data['exec_time']+"ms");
 					history(page);
 					
+				}else if(data['work_time']){
+		
+		 
+					$("#status").html('<i>been working for ' + data['work_time'] + ' ms</i>');
+			
+		
+			
 				}
 				gotdata = data
 				build_output(gotdata)
@@ -285,7 +292,7 @@ socket.on(page + "/clear", function(data){
 	if(asked_for_it || $('#images').html()=='' ){
 		ready_to_receive = true
 		asked_for_it = false
-		
+		$('#showNewResults').hide()
 	}else{
 		$('#showNewResults').show()
 	}
@@ -328,8 +335,8 @@ function build_output(data){
 	flotz = false
 	for (var i=0; i<foots.length; i++)
 	{
-		if(i==foots.length-2 && foots[i]=='' && String(foots[i+1]).indexOf('<i>been working for')==0)continue;
-		
+		if(i==foots.length-1 && foots[i]=='') continue;
+			
 		if (foots[i].search("##_holder_##")>-1) 
 		{
 			outputdata[outputdata.length] = "<img src='"+foots[i].replace("##_holder_##:","")+"'><br>"
@@ -366,11 +373,6 @@ function build_output(data){
 			}
 		}
 		
-		else if (foots[i].search("been working")>-1)
-		{ 
-			$("#status").html(foots[i].replace("<br>",""));
-			
-		}
 		
 		else 
 		{
@@ -380,6 +382,13 @@ function build_output(data){
 		
 	}
 
+	
+	if(data['stdout']){
+		boots = data['stdout']
+		if (boots == null) boots = ""
+		boots = boots.replace(/\n/g,"<br>")
+		outputdata[outputdata.length] = "<br><span style='color:blue'>"+boots+"</span>"
+	}
 	//Build python stderr
 	if(data['outerr']){
 		boots = data['outerr']

@@ -577,7 +577,7 @@ function betterexec(nameo,fff)
 	
 	essence = codebase+nameo
 	big_gulp = settings.python_path+" -u \""+essence+".py\" "+estring
-	fullcmd = "touch \""+tempbase+parts[1] +"\" ; " +big_gulp+" > \""+tempbase+nameo+"\""
+	fullcmd = "touch \""+tempbase+parts[1] +"\" & " +big_gulp+" > \""+tempbase+nameo+"\""
 	console.log(fullcmd)
 	
 	start_time = new Date().getTime()
@@ -609,7 +609,7 @@ function betterexec(nameo,fff)
 			bytesread = fs.readSync(fd, buffer, 0, buffer.length, pos	)
 			processes[p].pos = pos+bytesread
 		}
-		big_out = {'out':stdout+buffer.toString(),'outerr':stderr,'images':[],'exec_time':exec_time}
+		big_out = {'out':buffer.toString(),'stdout': stdout, 'outerr':stderr,'images':[],'exec_time':exec_time}
 		
 		send_list.push({'page_name':hacky_name,'data':big_out})
 		
@@ -699,9 +699,10 @@ function bettertop(p, pos)
 			if(pos<stats['size']){
 				bytesread = fs.readSync(fd, buffer, 0, buffer.length, pos	)
 				processes[p].pos = pos+bytesread
-				outer = buffer.toString() + "\n<i>been working for " + diff + " ms</i>" 
 				
-				send_list.push({'page_name':p,'data':{out:outer}})
+				big_out = {'out':buffer.toString(),'work_time':diff, 'pos':pos}
+		
+				send_list.push({'page_name':p,'data':big_out})
 			}
 	//	}	
 		
