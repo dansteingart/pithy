@@ -30,9 +30,11 @@
 		<span id="status" style="height:10px;"></span>
 		<input id="scriptname" class="texterboxer">
 		<button id="copyto">copy to</button><button id="kill">kill</button>
+		
 		<button id="run">run</button>
 		<span id="history_box"></span> 
 	</div>
+	<button id="showNewResults" style='display:none;color:red;font-weight:bold;' >Show New Results</button>
 	<div id="images" class="images"></div>
 	<div id="placate"></div>
 </div>
@@ -103,7 +105,7 @@ $(function(){
 $("#run").click(function(){
 	//scrollpos = $("#images").scrollTop()
 	//$("#images").html("waiting for result");
-	
+	asked_for_it = true
 	saver(true,pathname); //was page
 	
 });
@@ -118,6 +120,12 @@ $("#kill").click(function(){
 		  data:{page_name:page}
 		})
 
+});
+
+$("#showNewResults").click(function(){
+	ready_to_receive = true;
+	$("#images").html(old_stuff)	
+	$(this).hide()
 });
 
 //Forker The Script
@@ -249,6 +257,11 @@ socket.on(page.replace("/",""), function (data) {
 				if (data['exec_time'] != undefined)
 				{
 					waiting_for_output = false
+					$('#run').removeAttr("disabled")
+					
+					old_stuff = old_stuff.replace(/waiting for output/,'')
+					
+					//$("#images").html(old_stuff);
 					$("#status").html("saved, exec time = "+data['exec_time']+"ms");
 					history(page);
 					
@@ -259,6 +272,24 @@ socket.on(page.replace("/",""), function (data) {
 				dfd = $('#images').imagesLoaded(); 
 				dfd.always(function(){$("#images").scrollTop(scrollpos)})
 
+});
+
+asked_for_it = false
+ready_to_receive = false;
+socket.on(page + "/clear", function(data){
+	ready_to_receive = false
+	old_stuff = ''
+	waiting_for_output = true
+	$('#run').attr("disabled", "disabled");
+	
+	if(asked_for_it || $('#images').html()=='' ){
+		ready_to_receive = true
+		asked_for_it = false
+		
+	}else{
+		$('#showNewResults').show()
+	}
+	
 });
 
 
@@ -367,7 +398,10 @@ function build_output(data){
 		old_stuff += this_stuff	
 		last_stuff = this_stuff
 		
-		$(window).load($("#images").html(old_stuff));
+		
+		if(ready_to_receive){
+			$("#images").html(old_stuff);
+		}
 	}
 	if (flotz){if (s.length > 0) $.plot("#flotter", s) } 
 	
@@ -377,7 +411,8 @@ old_stuff = ""
 last_stuff = ""
 oldlen = 0
 function loader(bool,page){
-
+	
+	
 	$.ajax({
 	  url: "read/",
 	  async:bool,
@@ -385,6 +420,16 @@ function loader(bool,page){
 	  data:{page_name:page,value:editor.getSession().getValue()},
 	  success: function(data){
 	 		editor.getSession().setValue(data['script'])
+	 		
+	 		//in case anything snuck in before this returned
+	 		//data['data']['out'] += old_stuff
+	 		
+	 		//reset old stuff
+	 		old_stuff = ''
+	 		
+	 		ready_to_receive = true
+	 		build_output(data['data'])
+	 		
 
 	  }
 	});

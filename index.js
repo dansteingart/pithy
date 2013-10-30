@@ -361,8 +361,9 @@ app.post('*/run', function(req, res)
 	prepend = settings.prepend		
 	out = ""
 	image_list = []
-	//io.sockets.emit(page_name,{'out':"waiting for output"}) 
-	//Querer to prevent race condition
+	
+	//Queuer to prevent race condition
+	send_list.push({'page_name':page_name + '/clear'})
 	send_list.push({'page_name':page_name,'data':{out:"waiting for output"}})
 	time = new Date().getTime().toString()
 	counter = 0
@@ -484,25 +485,39 @@ app.post('*/read', function(req, res)
 	}
 
 	back_to_pith['script'] = out
-	res.json(back_to_pith)
+	
 	
 	try
 	{
-		resulters = fs.readFileSync(resbase+page_name).toString()
-		console.log('resulters: ' + resulters)
-		resulters = JSON.parse(resulters)	
-		//setTimeout(function()
-		//{
 		//Don't send saved results if this script is running
-		console.log('read, processes has pagename?: ' + processes.hasOwnProperty(page_name) + ", " + page_name + ", " + Object.keys(processes).length)
-		if (!processes.hasOwnProperty(page_name)) send_list.push({'page_name':page_name,'data':resulters})
-		//},1000);
+		if(!processes.hasOwnProperty(page_name)){
+			resulters = fs.readFileSync(resbase+page_name).toString()
+			resulters = JSON.parse(resulters)	
+		}else{
+			try{
+				resulters = fs.readFileSync(tempbase+page_name).toString()	
+				resulters = {out:resulters}
+				
+			}catch(e){
+				//no output yet, do nothing
+				return	
+			}
+		}
+		
+		
+		back_to_pith['data'] = resulters
+		
+		//console.log('read, processes has pagename?: ' + processes.hasOwnProperty(page_name) + ", " + page_name + ", " + Object.keys(processes).length)
+		//send_list.push({'page_name':page_name+'/read','data':resulters})
+		
 		
 	}
 	catch (e)
 	{	
 		console.log(e)
 	}
+	
+	res.json(back_to_pith)
 	
 });
 
@@ -558,12 +573,11 @@ function betterexec(nameo,fff)
 	{
 		estring += parts[i]+" ";
 	}
-	console.log(parts)
-	console.log(estring)
-	console.log(__dirname)
+	
+	
 	essence = codebase+nameo
 	big_gulp = settings.python_path+" -u \""+essence+".py\" "+estring
-	fullcmd = "touch \""+tempbase+parts[1] +"\" & " +big_gulp+" > \""+tempbase+nameo+"\""
+	fullcmd = "touch \""+tempbase+parts[1] +"\" ; " +big_gulp+" > \""+tempbase+nameo+"\""
 	console.log(fullcmd)
 	
 	start_time = new Date().getTime()
@@ -596,7 +610,7 @@ function betterexec(nameo,fff)
 			processes[p].pos = pos+bytesread
 		}
 		big_out = {'out':stdout+buffer.toString(),'outerr':stderr,'images':[],'exec_time':exec_time}
-		console.log('callback from exec?: ' + big_out)
+		
 		send_list.push({'page_name':hacky_name,'data':big_out})
 		
 		
@@ -632,7 +646,7 @@ setInterval(function(){
 	this_send = send_list.splice(0,1)[0]
 	if (this_send != undefined) 
 	{
-			console.log(send_list.length + " message(s) in queue.  Sending " + this_send['page_name'])
+			
 			io.sockets.emit(this_send['page_name'],this_send['data'])
 		
 	};
@@ -686,7 +700,7 @@ function bettertop(p, pos)
 				bytesread = fs.readSync(fd, buffer, 0, buffer.length, pos	)
 				processes[p].pos = pos+bytesread
 				outer = buffer.toString() + "\n<i>been working for " + diff + " ms</i>" 
-				console.log('bettertop' + ": " + outer)
+				
 				send_list.push({'page_name':p,'data':{out:outer}})
 			}
 	//	}	
