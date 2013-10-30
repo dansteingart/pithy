@@ -329,7 +329,7 @@ app.post("*/killer",function(req,res)
 		
 		x = req.body.page_name;
 		console.log(x)
-		thispid = processes[x];
+		thispid = processes[x].path;
 		
 		console.log("trying to kill " + x)
 		if (thispid != undefined)
@@ -410,10 +410,10 @@ app.post('*/run', function(req, res)
 	if (processes[page_name] == undefined) gofer = betterexec(page_name,x)
 	console.log(gofer)
 	//processes[page_name] = gofer['id']
-	processes[page_name] = gofer['name']
+	processes[page_name] = {path:gofer['name'], pos:0}
 	//console.log(processes[page_name])
 	console.log(processes)
-	timers[processes[page_name]] = true
+	timers[processes[page_name].path] = true
 	
 });
 
@@ -489,10 +489,12 @@ app.post('*/read', function(req, res)
 	try
 	{
 		resulters = fs.readFileSync(resbase+page_name).toString()
+		console.log('resulters: ' + resulters)
 		resulters = JSON.parse(resulters)	
 		//setTimeout(function()
 		//{
 		//Don't send saved results if this script is running
+		console.log('read, processes has pagename?: ' + processes.hasOwnProperty(page_name) + ", " + page_name + ", " + Object.keys(processes).length)
 		if (!processes.hasOwnProperty(page_name)) send_list.push({'page_name':page_name,'data':resulters})
 		//},1000);
 		
@@ -560,8 +562,9 @@ function betterexec(nameo,fff)
 	console.log(estring)
 	console.log(__dirname)
 	essence = codebase+nameo
-	big_gulp = settings.python_path+" -u '"+essence+".py' "+estring
-	fullcmd = "touch "+tempbase+parts[1] +"; " +big_gulp+" > '"+tempbase+nameo+"'"
+	big_gulp = settings.python_path+" -u \""+essence+".py\" "+estring
+	fullcmd = "touch \""+tempbase+parts[1] +"\" & " +big_gulp+" > \""+tempbase+nameo+"\""
+	console.log(fullcmd)
 	
 	start_time = new Date().getTime()
 	lastcheck[nameo] = start_time
@@ -571,17 +574,37 @@ function betterexec(nameo,fff)
 		this_pid = chill.pid
 		console.log("this pid is " +this_pid)
 		hacky_name = nameo
-		timers[processes[hacky_name]] = false
+		timers[processes[hacky_name].path] = false
 		console.log(hacky_name+" is done")
 		end_time = new Date().getTime()
+		
+		pos = processes[nameo].pos
+		
 		delete processes[hacky_name];
 		delete times[hacky_name];		
 		//fils = fs.readdirSync("images")
 		exec_time = end_time - start_time;
-		foost = fs.readFileSync(tempbase+nameo).toString()
-		big_out = {'out':stdout+foost,'outerr':stderr,'images':[],'exec_time':exec_time}
+		
+		
+		
+		fd = fs.openSync(tempbase+nameo, 'r')
+		buffer = new Buffer(stats['size']-pos)
+		
+		//error thrown if amount to read is 0
+		if(pos<stats['size']){
+			bytesread = fs.readSync(fd, buffer, 0, buffer.length, pos	)
+			processes[p].pos = pos+bytesread
+		}
+		big_out = {'out':stdout+buffer.toString(),'outerr':stderr,'images':[],'exec_time':exec_time}
+		console.log('callback from exec?: ' + big_out)
 		send_list.push({'page_name':hacky_name,'data':big_out})
-		if (stderr.search("Terminated") == -1) fs.writeFileSync(resbase+hacky_name,JSON.stringify(big_out))
+		
+		
+		if (stderr.search("Terminated") == -1){
+			foost = fs.readFileSync(tempbase+nameo).toString()
+			big_out = {'out':stdout+foost,'outerr':stderr,'images':[],'exec_time':exec_time}
+			fs.writeFileSync(resbase+hacky_name,JSON.stringify(big_out))
+		 }
 		
 	})
 	//console.log(big_gulp)
@@ -609,7 +632,7 @@ setInterval(function(){
 	this_send = send_list.splice(0,1)[0]
 	if (this_send != undefined) 
 	{
-			//console.log(send_list.length + " message(s) in queue")
+			console.log(send_list.length + " message(s) in queue.  Sending " + this_send['page_name'])
 			io.sockets.emit(this_send['page_name'],this_send['data'])
 		
 	};
@@ -622,7 +645,7 @@ setInterval(function(){
 setInterval(function() {
 	for (p in processes)
 	{
-		bettertop(p)
+		bettertop(p, processes[p].pos)
 	
 	}
 }, 1000);
@@ -635,26 +658,37 @@ setInterval(function() {
 		function (error, stdout, stderr) 
 		{
 			console.log(stdout)
-			console.log("flushed imamges")
+			console.log("flushed images")
 		})
 	}, 600000);
 	
 
 lastcheck = {}
 
-function bettertop(p)
+function bettertop(p, pos)
 {
+	if(!pos) pos = 0
 	try{
 		//outer = execSync.stdout("top -b -n 1 -p "+processes[p]);
 		now = new Date().getTime()
 		diff = now - times[p]
-		filemtime = new Date(fs.statSync(tempbase+p)['mtime']).getTime()
+		stats = fs.statSync(tempbase+p)
+		filemtime = stats['mtime'].getTime()
 		diff2 = filemtime - lastcheck[p]
 		//if ((diff2) > 100)
 		//{
 			lastcheck[p] = now
-			outer = fs.readFileSync(tempbase+p).toString() + "\n<i>been working for " + diff + " ms</i>" 
-			send_list.push({'page_name':p,'data':{out:outer}})
+			fd = fs.openSync(tempbase+p, 'r')
+			buffer = new Buffer(stats['size']-pos)
+			
+			//error thrown if amount to read is 0
+			if(pos<stats['size']){
+				bytesread = fs.readSync(fd, buffer, 0, buffer.length, pos	)
+				processes[p].pos = pos+bytesread
+				outer = buffer.toString() + "\n<i>been working for " + diff + " ms</i>" 
+				console.log('bettertop' + ": " + outer)
+				send_list.push({'page_name':p,'data':{out:outer}})
+			}
 	//	}	
 		
 	}
