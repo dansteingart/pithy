@@ -364,7 +364,7 @@ app.post('*/run', function(req, res)
 	
 	//Queuer to prevent race condition
 	send_list.push({'page_name':page_name + '/clear'})
-	send_list.push({'page_name':page_name,'data':{out:"waiting for output"}})
+	send_list.push({'page_name':page_name,'data':{out:"waiting for output<br>"}})
 	time = new Date().getTime().toString()
 	counter = 0
 	data = x['value']
@@ -493,10 +493,15 @@ app.post('*/read', function(req, res)
 		if(!processes.hasOwnProperty(page_name)){
 			resulters = fs.readFileSync(resbase+page_name).toString()
 			resulters = JSON.parse(resulters)	
+			
+			data = build_output(resulters, page_name)
+			data['images']=resulters['images']
+			data['exec_time']=resulters['exec_time']
+			
 		}else{
 			try{
 				resulters = fs.readFileSync(tempbase+page_name).toString()	
-				resulters = {out:resulters}
+				data = {out:resulters}
 				
 			}catch(e){
 				//no output yet, do nothing
@@ -505,7 +510,7 @@ app.post('*/read', function(req, res)
 		}
 		
 		
-		back_to_pith['data'] = resulters
+		back_to_pith['data'] = data
 		
 		//console.log('read, processes has pagename?: ' + processes.hasOwnProperty(page_name) + ", " + page_name + ", " + Object.keys(processes).length)
 		//send_list.push({'page_name':page_name+'/read','data':resulters})
@@ -594,24 +599,30 @@ function betterexec(nameo,fff)
 		
 		pos = processes[nameo].pos
 		
+		stats = fs.statSync(tempbase+nameo)
+		//error thrown if amount to read is 0
+		exec_time = end_time - start_time;
+		
+		buffer = new Buffer(stats['size']-pos)
+		if(pos<stats['size']){
+			fd = fs.openSync(tempbase+nameo, 'r')
+			
+			bytesread = fs.readSync(fd, buffer, 0, buffer.length, pos	)
+			processes[nameo].pos = pos+bytesread
+			
+			
+		
+		}
 		delete processes[hacky_name];
 		delete times[hacky_name];		
 		//fils = fs.readdirSync("images")
-		exec_time = end_time - start_time;
 		
+		data = build_output({'out':buffer.toString(),'stdout': stdout, 'outerr':stderr}, nameo)
+		data['images']=[]
+		data['exec_time']=exec_time
 		
+		send_list.push({'page_name':hacky_name,'data':data})
 		
-		fd = fs.openSync(tempbase+nameo, 'r')
-		buffer = new Buffer(stats['size']-pos)
-		
-		//error thrown if amount to read is 0
-		if(pos<stats['size']){
-			bytesread = fs.readSync(fd, buffer, 0, buffer.length, pos	)
-			processes[p].pos = pos+bytesread
-		}
-		big_out = {'out':buffer.toString(),'stdout': stdout, 'outerr':stderr,'images':[],'exec_time':exec_time}
-		
-		send_list.push({'page_name':hacky_name,'data':big_out})
 		
 		
 		if (stderr.search("Terminated") == -1){
@@ -700,9 +711,11 @@ function bettertop(p, pos)
 				bytesread = fs.readSync(fd, buffer, 0, buffer.length, pos	)
 				processes[p].pos = pos+bytesread
 				
-				big_out = {'out':buffer.toString(),'work_time':diff, 'pos':pos}
+				data = build_output({'out':buffer.toString()}, p)
+				data['work_time'] = diff
+				data['pos'] = pos
 		
-				send_list.push({'page_name':p,'data':big_out})
+				send_list.push({'page_name':p,'data':data})
 			}
 	//	}	
 		
@@ -713,4 +726,97 @@ function bettertop(p, pos)
 		console.log(e)
 	}
 	
+}
+
+last_stuff = {}
+function build_output(data, page){
+	
+	
+	//outputdata = ""
+	outputdata = []
+	boots = data['out']
+	
+	imlist = {}
+	
+	foots = boots.split("\n")
+	flotz = false
+	for (var i=0; i<foots.length; i++)
+	{
+		if(i==foots.length-1 && foots[i]=='') continue;
+			
+		if (foots[i].search("##_holder_##")>-1) 
+		{
+			outputdata[outputdata.length] = "<img src='"+foots[i].replace("##_holder_##:","")+"'><br>"
+		}
+		else if (foots[i].search("##_dynamic_##")>-1) 
+		{
+			things = foots[i].split(":")
+			holder = things[1]
+			timed = things[2]
+			imloc = things[3]
+			swap = outputdata.length;
+			for (var o = 0; o < outputdata.length; o++)
+			{
+				if (outputdata[o].search(holder)>-1) 
+				{ 
+					swap = o;
+					imlist[holder] = imloc
+				}
+			}
+			
+			
+			outputdata[swap] = "<img id='"+holder+"' src='"+imloc+"'><br>"
+		}
+		else if (foots[i].search("##__json__##")==0)
+		{ 
+			flotz = true
+			if (outputdata.search(flot_structure) == -1) outputdata = flot_structure + outputdata
+			foo = foots[i].replace("##__json__##","")
+			foo = JSON.parse(foo)
+			s = []
+			for (i in foo)
+			{
+				s[s.length] = foo[i]
+			}
+		}
+		
+		
+		else 
+		{
+			outputdata[outputdata.length] = foots[i] + "<br>"
+			
+		}
+		
+	}
+
+	
+	if(data['stdout']){
+		boots = data['stdout']
+		if (boots == null) boots = ""
+		boots = boots.replace(/\n/g,"<br>")
+		outputdata[outputdata.length] = "<br><span style='color:blue'>"+boots+"</span>"
+	}
+	//Build python stderr
+	if(data['outerr']){
+		boots = data['outerr']
+		if (boots == null) boots = ""
+		boots = boots.replace(/\n/g,"<br>")
+		outputdata[outputdata.length] = "<br><span style='color:red'>"+boots+"</span>"
+	}		
+	
+	//console.log(thislen)
+	this_stuff = outputdata.join("")
+	to_send = {out:''}
+	if (this_stuff != last_stuff[page])
+	{
+		
+
+		last_stuff[page] = this_stuff
+		to_send['out'] = this_stuff
+		
+		
+	}
+	if (flotz){if (s.length > 0) to_send['flotter']=s } 
+	
+	return to_send
 }

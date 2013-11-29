@@ -325,94 +325,12 @@ function build_output(data){
 	if (widther > maxwidth) widther = maxwidth
 
 	//outputdata = ""
-	outputdata = []
-	boots = data['out']
-	thislen = data['out'].search("been")
-	
-	imlist = {}
-	
-	foots = boots.split("\n")
-	flotz = false
-	for (var i=0; i<foots.length; i++)
-	{
-		if(i==foots.length-1 && foots[i]=='') continue;
-			
-		if (foots[i].search("##_holder_##")>-1) 
-		{
-			outputdata[outputdata.length] = "<img src='"+foots[i].replace("##_holder_##:","")+"'><br>"
-		}
-		else if (foots[i].search("##_dynamic_##")>-1) 
-		{
-			things = foots[i].split(":")
-			holder = things[1]
-			timed = things[2]
-			imloc = things[3]
-			swap = outputdata.length;
-			for (var o = 0; o < outputdata.length; o++)
-			{
-				if (outputdata[o].search(holder)>-1) 
-				{ 
-					swap = o;
-					imlist[holder] = imloc
-				}
-			}
-			
-			
-			outputdata[swap] = "<img id='"+holder+"' src='"+imloc+"'><br>"
-		}
-		else if (foots[i].search("##__json__##")==0)
-		{ 
-			flotz = true
-			if (outputdata.search(flot_structure) == -1) outputdata = flot_structure + outputdata
-			foo = foots[i].replace("##__json__##","")
-			foo = JSON.parse(foo)
-			s = []
-			for (i in foo)
-			{
-				s[s.length] = foo[i]
-			}
-		}
-		
-		
-		else 
-		{
-			outputdata[outputdata.length] = foots[i] + "<br>"
-			
-		}
-		
+	old_stuff += data['out']
+	if(ready_to_receive){
+		$('#images').html(old_stuff);
 	}
-
 	
-	if(data['stdout']){
-		boots = data['stdout']
-		if (boots == null) boots = ""
-		boots = boots.replace(/\n/g,"<br>")
-		outputdata[outputdata.length] = "<br><span style='color:blue'>"+boots+"</span>"
-	}
-	//Build python stderr
-	if(data['outerr']){
-		boots = data['outerr']
-		if (boots == null) boots = ""
-		boots = boots.replace(/\n/g,"<br>")
-		outputdata[outputdata.length] = "<br><span style='color:red'>"+boots+"</span>"
-	}		
-	
-	//console.log(thislen)
-	this_stuff = outputdata.join("")
-	
-	if (this_stuff != last_stuff)
-	{
-		
-
-		old_stuff += this_stuff	
-		last_stuff = this_stuff
-		
-		
-		if(ready_to_receive){
-			$("#images").html(old_stuff);
-		}
-	}
-	if (flotz){if (s.length > 0) $.plot("#flotter", s) } 
+	if (data['flotter']){$.plot("#flotter", data['flotter']) } 
 	
 }
 
@@ -434,7 +352,7 @@ function loader(bool,page){
 	 		//data['data']['out'] += old_stuff
 	 		
 	 		//reset old stuff
-	 		old_stuff = ''
+	 		$('#images').html('')
 	 		
 	 		ready_to_receive = true
 	 		build_output(data['data'])
