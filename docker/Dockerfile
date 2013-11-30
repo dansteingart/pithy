@@ -19,7 +19,7 @@ RUN pip install pil
 
 RUN git clone -b move_build_output_to_server https://github.com/alexsteingart/pithy /root/pithy/
 
-#EXPOSE 8001
+EXPOSE 8001
 
 #ENTRYPOINT ["node", "index.js", "8001"]
 

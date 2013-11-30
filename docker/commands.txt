@@ -1,0 +1,13 @@
+docker build -t INSTANCE_NAME - < Dockerfile
+
+docker run [-p 49001:8001] -w /root/pithy -i -t INSTANCE_NAME node index.js 8001 &
+
+echo -e "GET /containers/json HTTP/1.0\r\n" | nc -U /var/run/docker.sock
+sample response:
+[{"Id":"b7d312c63d7c69927ea2e83e7560ffdc7b3cd80b0264907fd107546dba827095","Image":"secondDockerTest:latest","Command":"node index.js 8000","Created":1385763073,"Status":"Up 3 seconds","Ports":[{"PrivatePort":8000,"PublicPort":49001,"Type":"tcp"}],"SizeRw":0,"SizeRootFs":0},{"Id":"f98544ae6c0e65ee4f7e01ee2e946e3aea5d41cb6303ac1370a9c7709c7f0dee","Image":"pithy.v.0.4:latest","Command":"node index.js 8000","Created":1385757853,"Status":"Up About an hour","Ports":[{"PrivatePort":8000,"PublicPort":49000,"Type":"tcp"}],"SizeRw":0,"SizeRootFs":0}]
+
+look for INSTANCE_NAMEs, take "Id" and occasionally commit:
+docker commit Id INSTANCE_NAME
+
+for shell on docker instance:
+docker run -i -t INSTANCE_NAME /bin/bash
