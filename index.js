@@ -604,13 +604,15 @@ function makeid()
 //Queue to prevent socket race conditions, fires a message from the buffer every x ms
 //TODO: Figure out how to reduce interval time without 
 //buffer?
-oldsend = ""
+old_send = []
 setInterval(function(){
 	this_send = send_list.splice(0,1)[0]
+	
 	if (this_send != undefined) 
 	{
 			//console.log(send_list.length + " message(s) in queue")
 			io.sockets.emit(this_send['page_name'],this_send['data'])
+			old_send = this_send
 		
 	};
 },100)
@@ -636,8 +638,9 @@ setInterval(function() {
 		{
 			console.log(stdout)
 			console.log("flushed imamges")
-		})
-	}, 600000);
+		}
+)
+	}, 6000000);
 	
 
 lastcheck = {}
@@ -645,7 +648,6 @@ lastcheck = {}
 function bettertop(p)
 {
 	try{
-		//outer = execSync.stdout("top -b -n 1 -p "+processes[p]);
 		now = new Date().getTime()
 		diff = now - times[p]
 		filemtime = new Date(fs.statSync(tempbase+p)['mtime']).getTime()
