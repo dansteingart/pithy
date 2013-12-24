@@ -15,6 +15,8 @@ import os
 import sys
 from commands import getoutput as go
 import inspect
+import StringIO
+import urllib, base64
 
 
 #hack to make things worth from PIL
@@ -22,17 +24,40 @@ def showimg(im,tip=".png"):
     tim = str(int(time.time()))    
     #imname = imname.replace("/","-")
     image = 'images/pithy_img_'+str(int(time.time()*1000))+tip
-    print '##_holder_##:',"/"+image
-    im.save(image)
+    #print '##_holder_##:',"/"+image
+    print 
+	im.save(image)
     
 #Hack to get thigns to work from matplotlib
-def showme(tip=".png",kind="static"):
+def showmeold(tip=".png",kind="static"):
     tim = str(int(time.time()))	
+    rcParams['figure.dpi'] = 40
     #imname = imname.replace("/","-")
     image = 'images/pithy_img_'+str(int(time.time()*1000))+tip
     if kind == "static": print '##_holder_##:',"/"+image
     else: print '##_dynamic_##:',kind,':',tim,':',"/"+image
     savefig(image)
+
+
+def showme(tip=".png",kind="static"):
+    tim = str(int(time.time()))	
+    rcParams['figure.dpi'] = 40
+    #imname = imname.replace("/","-")
+    image = 'images/pithy_img_'+str(int(time.time()*1000))+tip
+    if kind == "static": print '<img src=/'+image+'>'
+    else: print '##_dynamic_##:',kind,':',tim,':',"/"+image
+    savefig(image)
+
+def showme64(tip="png"):
+    imgdata = StringIO.StringIO()
+    savefig(imgdata, format=tip)
+    imgdata.seek(0)  # rewind the data
+    preload = 'data:image;base64,' 
+    if tip == ".svg":
+        preload = 'data:image/svg+xml,' 
+    uri =  preload+ urllib.quote(base64.b64encode(imgdata.buf))
+    stylekey = 'style="width:100%;"'
+    print '<img %s src = "%s"/>' % (stylekey,uri)
 
 
 #A smoothing function I use
