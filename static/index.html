@@ -5,9 +5,9 @@
 <script src="/static/shortcut.js" type="text/javascript" charset="utf-8"></script>
 <script src="/channel/bcsocket.js"></script>
 <script src="/socket.io/socket.io.js"></script>
-<script src="/static/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 
-<script src="/static/mode-python.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/ace/mode-python.js" type="text/javascript" charset="utf-8"></script>
 <script src="/share/share.js"></script>
 <script src="/share/ace.js"></script>
 
@@ -52,10 +52,11 @@ var editor = ace.edit("script_area");
 area.width($("#left-side").width())
 area.height($(document).height()*height_factor)
 editor.setPrintMarginColumn(0)
-//var PythonMode = require().Mode;
 editor.getSession().setMode("ace/mode/python");
-editor.setFadeFoldWidgets(false)
-editor.setShowPrintMargin(false)
+editor.setFadeFoldWidgets(false);
+editor.setShowPrintMargin(false);
+editor.setShowInvisibles(false);
+
 foo = editor.getSession()
 foo.setUseWrapMode(true)
 
