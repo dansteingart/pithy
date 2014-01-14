@@ -192,14 +192,14 @@ function getBigHistory()
 	
 }
 
-getBigHistory()
-
+//getBigHistory()
+/*
 setInterval(
 	function()
 	{
-		getBigHistory()
+		//getBigHistory()
 	},60000)
-
+*/
 
 app.get('/*', function(req, res){
 
