@@ -11,14 +11,11 @@ var exec = require('child_process').exec,
 var spawn = require('child_process').spawn,
 	child;
 var os = require("os")
-
+var sh = require("execSync")
 server = http.createServer(app)
-var sharejs = require('share').server;
-var options = {db: {type: 'none'}}; 
 io = require('socket.io')
 io = io.listen(server); //Socket Creations
 io.set('log level', 1)
-sharejs.attach(app, options);
 
 
 //big hack to make killing working
@@ -219,83 +216,8 @@ app.post('*/history', function(req, res)
 	res.json({'out':hist_list})
 });
 
-app.post('*/read', function(req, res)
-{
-	
-	x = req.body
-	back_to_pith = {}
-	out = "Fill Me Up"
-	page_name = x['page_name'].replace("/","")
-	try{
-	try
-	{
-		out = fs.readFileSync("code/"+page_name+".py").toString()
-		
-		
-	}
-	catch (e)
-	{
-		out = fs.readFileSync("code_stamped/"+page_name).toString()		
-	}
-	}
-	catch (e)
-	{
-		out = "fill me up"
-	}
 
-	back_to_pith['script'] = out
-	res.json(back_to_pith)
-	
-	try
-	{
-		resulters = fs.readFileSync("results/"+page_name).toString()
-		resulters = JSON.parse(resulters)	
-		//setTimeout(function()
-		//{
-		//Don't send saved results if this script is running
-		if (!processes.hasOwnProperty(page_name)) send_list.push({'page_name':page_name,'data':resulters})
-		//},1000);
-		
-	}
-	catch (e)
-	{	
-		console.log(e)
-	}
-	
-});
 
-app.post('*/readresults', function(req, res)
-{
-	
-	x = req.body
-	back_to_pith = {}
-	out = "Fill Me Up"
-	page_name = x['page_name']
-	try
-	{
-		out = fs.readFileSync("results/"+page_name).toString()		
-	}
-	catch (e)
-	{
-		//console.log(e)
-		out = "fill me up"
-	}
-	//console.log(out)
-	res.json( JSON.parse(out) )
-	
-});
-
-app.post('*/copyto',function(req,res)
-{
-	x = req.body
-	page_name = x['page_name'].replace("/","")
-	script_name = x['script_name']
-	data = x['value']
-	full_name = script_name+".py"
-	fs.writeFileSync("code/"+full_name,data);
-	res.json({success:true,redirect:script_name})	
-
-})
 
 
 //Start It Up!
@@ -379,30 +301,7 @@ setInterval(function() {
 		//bettertop(p)
 	
 	}
-}, 100);
+}, 50);
 
 lastcheck = {}
 
-function bettertop(p)
-{
-	try{
-		//outer = execSync.stdout("top -b -n 1 -p "+processes[p]);
-		now = new Date().getTime()
-		diff = now - times[p]
-		filemtime = new Date(fs.statSync('temp_results/'+p)['mtime']).getTime()
-		diff2 = filemtime - lastcheck[p]
-		if ((diff2) > 100)
-		{
-			lastcheck[p] = now
-			outer = fs.readFileSync('temp_results/'+p).toString() + "<br><i>been working for " + diff + " ms</i>" 
-			send_list.push({'page_name':p,'data':{out:outer}})
-		}	
-		
-	}
-	catch(e){
-		console.log(processes[p]);
-		console.log(results)
-		console.log(e)
-	}
-	
-}
