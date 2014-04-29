@@ -24,9 +24,9 @@ def showimg(im,tip=".png"):
     tim = str(int(time.time()))    
     #imname = imname.replace("/","-")
     image = 'images/pithy_img_'+str(int(time.time()*1000))+tip
-    #print '##_holder_##:',"/"+image
-    print 
-	im.save(image)
+    print '##_holder_##:',"/"+image
+    im.save(image)
+
     
 #Hack to get thigns to work from matplotlib
 def showmeold(tip=".png",kind="static"):
