@@ -1,6 +1,6 @@
 docker build -t INSTANCE_NAME - < Dockerfile
 
-docker run [-p 49001:8001] -w /root/pithy -i -t INSTANCE_NAME node index.js 8001 &
+docker run -d -p 49001:8001 -w /root/pithy -i -t INSTANCE_NAME nodejs index.js 8001 > id_file
 
 echo -e "GET /containers/json HTTP/1.0\r\n" | nc -U /var/run/docker.sock
 sample response:

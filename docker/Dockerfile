@@ -15,7 +15,7 @@ RUN apt-get install -y nodejs-dev npm git vim python2.7-dev python-pip python-nu
 
 RUN easy_install -U distribute
 
-RUN pip install pil
+RUN pip install pil --allow-external pil --allow-unverified pil
 
 RUN git clone -b move_build_output_to_server https://github.com/alexsteingart/pithy /root/pithy/
 
