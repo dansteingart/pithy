@@ -39,6 +39,8 @@ app.use(express.basicAuth(function(user, pass, callback) {
 		if (user == nuser & pass == npass )
 		{
 			result = (user === nuser && pass === pass);
+			result = user;
+			//req.user = user
 		} 
 	}
  	callback(null /* error */, result);
@@ -105,7 +107,7 @@ catch (e)
 //Basic Settings
 settings = {
 	//"bad_words" : ["rm ","write","while True:","open "],
-	"python_path" : "python",
+	"python_path" : "/usr/bin/python",
 	//'prepend' : "fs.readFileSync('static/prepend.txt').toString()"
 	'prepend' : ""
 	
@@ -228,7 +230,7 @@ app.get('/*', function(req, res){
 			for (var i in out)
 			{	foo = out[i].replace(".py","")
 				dater = fs.statSync(codebase + out[i]).ctime.toDateString()
-				if (foo != "temper") lts += "<span class='leftin'><a href='/"+foo+"'>"+foo+ "</a></span><span class='rightin'> " + dater+"</span><br>";
+				if (foo != "temper" && foo !=".git") lts += "<span class='leftin'><a href='/"+foo+"'>"+foo+ "</a></span><span class='rightin'> " + dater+"</span><br>";
 				count +=1
 				if (count > count_limit) break; 
 			}
@@ -336,7 +338,7 @@ app.post("*/killer",function(req,res)
 		{
 			console.log("killing "+thispid)
 			//exec("kill "+thispid,function(stdout,stderr)
-			exec("/usr/bin/python killer.py "+thispid,function(stdout,stderr)
+			exec("/usr/bin/python killer.py "+x,function(stdout,stderr)
 			
 			{
 				outer = stdout+","+stderr
@@ -394,6 +396,10 @@ app.post('*/run', function(req, res)
 		
 		fs.writeFileSync(codebase+full_name,data);
 		fs.writeFileSync(histbase+page_name+"_"+time,data);
+		
+		gitter = "cd code; git add *.py; git commit -m 'auto commit; user:"+req.user+"'; git push"
+		exec(gitter);
+		console.log('user:'+req.user);
 	}
 
 /*	
@@ -405,7 +411,7 @@ app.post('*/run', function(req, res)
 	}
 */	
 	
-	fs.writeFileSync(codebase+"temper.py",data)
+	//fs.writeFileSync(codebase+"temper.py",data)
 	res.json({success:true})	
 	if (processes[page_name] == undefined) gofer = betterexec(page_name,x)
 	console.log(gofer)
@@ -548,7 +554,7 @@ times = {}
 //big ups to http://stackoverflow.com/questions/13162136/node-js-is-there-a-way-for-the-callback-function-of-child-process-exec-to-ret/13166437#13166437
 function betterexec(nameo,fff)
 {
-	//fullcmd = "touch temp_results/"+nameo +"; " +settings.python_path+" -u '"+__dirname+"/code/"+namemo+".py' > 'temp_results/"+nameo+"'"
+	//fullcmd = "touch temp_results/"+nameo +"; " +settings.python_path+" -W ignore -u '"+__dirname+"/code/"+namemo+".py' > 'temp_results/"+nameo+"'"
 	
 	parts = fff['page_name'].split("/")
 	estring = "";
