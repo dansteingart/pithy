@@ -7,8 +7,9 @@ var util = require("util");
 var express = require('express'); //App Framework (similar to web.py abstraction)
 var app = express();
 var os = require("os")
-var sh = require('execSync');
-
+var exec = require('child_process').exec;
+//var sh = require('execSync');
+var cors = require('cors');
 server = http.createServer(app)
 
 //Basic Settings
@@ -19,6 +20,7 @@ settings = {
 
 //Set Static Directories
 app.use(express.bodyParser());
+app.use(cors());
 app.use("/static", express.static(__dirname + '/static'));
 app.use("/images", express.static(__dirname + '/images'));
 
@@ -44,8 +46,19 @@ app.get('/*', function(req, res){
 				estring += parts[i]+" ";
 			}
 			fullcmd = settings.python_path+" -u '"+__dirname+"/code/"+parts[1]+".py' "+estring
-			results = sh.exec(fullcmd)
-			res.send(results.stdout)
+			//this is bad
+			//var sys = require('sys')
+			//var exec = require('child_process').exec;
+			//function puts(error, stdout, stderr) { sys.puts(stdout) }
+			
+			exec(fullcmd,
+					function(error, stdout, stderr)
+					{
+						res.send(stdout);
+					}
+				)
+			//results = sh.exec(fullcmd)
+			//res.send(results.stdout)
 		}
 		catch (err)
 		{
