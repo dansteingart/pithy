@@ -397,9 +397,9 @@ app.post('*/run', function(req, res)
 		fs.writeFileSync(codebase+full_name,data);
 		fs.writeFileSync(histbase+page_name+"_"+time,data);
 		
-		gitter = "cd code; git add *.py; git commit -m 'auto commit; user:"+req.user+"'; git push"
-		exec(gitter);
-		console.log('user:'+req.user);
+		//gitter = "cd code; git add *.py; git commit -m 'auto commit; user:"+req.user+"'; git push"
+		//exec(gitter);
+		//console.log('user:'+req.user);
 	}
 
 /*	
