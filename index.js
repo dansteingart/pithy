@@ -48,12 +48,12 @@ app.use(express.basicAuth(function(user, pass, callback) {
 }));
 
 
-//big hack to make killing working
+//big hack to make killing work
 var os_offset = 2
 if (os.platform() == 'darwin') os_offset = 2
 
 //make required directories
-dirs = ['temp_results','code','code_stamped','results','images','files']
+dirs = ['temp_results','code','code_stamped','results','marked_results','images','files']
 for (d in dirs)
 {
 	dird = dirs[d]+POC.toString()
@@ -74,6 +74,8 @@ codebase = "code"+POC+"/"
 histbase = "code_stamped"+POC+"/"
 tempbase = "temp_results"+POC+"/"
 resbase = "results"+POC+"/"
+stored_resbase = "marked_results"+POC+"/"
+
 imgbase = "images"+POC+"/"
 filebase = "files"+POC+"/"
 
@@ -397,9 +399,12 @@ app.post('*/run', function(req, res)
 		fs.writeFileSync(codebase+full_name,data);
 		fs.writeFileSync(histbase+page_name+"_"+time,data);
 		
-		//gitter = "cd code; git add *.py; git commit -m 'auto commit; user:"+req.user+"'; git push"
-		//exec(gitter);
-		//console.log('user:'+req.user);
+		if (gitted)
+		{
+			gitter = "cd code; git add *.py; git commit -m 'auto commit; user:"+req.user+"'; git push"
+			exec(gitter);
+			console.log('user:'+req.user);
+		}
 	}
 
 /*	
@@ -462,6 +467,46 @@ app.post('*/history', function(req, res)
 		
 	res.json({'out':hist_list})
 });
+
+
+app.post('*/markedresults', function(req, res)
+{
+	x = req.body;
+	page_name = x['page_name']
+	console.log(x)
+	length = "_1314970891000".length //get length of timestamp
+	structure = stored_resbase+page_name+"*"
+	thing_list = []
+
+	fils  = fs.readdirSync(stored_resbase)
+	for (i in fils)
+	{
+		console.log(fils[i])
+		console.log(page_name)
+		if (fils[i].search(page_name+"_") > -1) 
+		{
+			thing_list.push(fils[i])
+		}
+	}
+		
+	fils = thing_list
+	fils.sort()
+	fils.reverse()
+	console.log(fils);
+	
+	hist_list = []
+	for (i in fils)
+	{
+		//time_part = parseInt(fils[i].split("_")[1])
+		time_part = parseInt(fils[i].substr(fils[i].length - length+1))
+		marked_name = JSON.parse(fs.readFileSync(stored_resbase+fils[i]))['name']
+		hist_list.push([fils[i],marked_name])
+	}
+	console.log(hist_list);
+		
+	res.json({'out':hist_list})
+});
+
 
 app.post('*/read', function(req, res)
 {
@@ -543,6 +588,39 @@ app.post('*/copyto',function(req,res)
 
 })
 
+app.post('*/markresult',function(req,res)
+{
+	x = req.body
+	page_name = x['page_name'].replace("/","")
+	result_name = x['result_name']
+	console.log(result_name)
+	result_set = ""
+	try
+	{
+		hacky_name = stored_resbase+page_name+"_"+parseInt(new Date().getTime())
+		out = fs.readFileSync(resbase+page_name).toString()		
+		result_set = JSON.parse(out)
+		result_set['code'] = fs.readFileSync(codebase+page_name+".py").toString()
+		result_set['name'] = result_name
+		result_set['filename'] = hacky_name
+		fs.writeFileSync(hacky_name,JSON.stringify(result_set))
+	}
+	catch (e)
+	{
+		//console.log(e)
+		out = "fill me up"
+	}
+	
+	console.log(result_set)
+})
+
+
+
+gitted = false;
+for (var i = 0; i < process.argv.length;i++)
+{
+	if (process.argv[i] == "--gitted") gitted = true;
+}
 
 //Start It Up!
 server.listen(process.argv[2]);
@@ -643,7 +721,7 @@ setInterval(function() {
 		function (error, stdout, stderr) 
 		{
 			console.log(stdout)
-			console.log("flushed imamges")
+			console.log("flushed images")
 		}
 )
 	}, 6000000);
