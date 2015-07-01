@@ -74,7 +74,9 @@ codebase = "code"+POC+"/"
 histbase = "code_stamped"+POC+"/"
 tempbase = "temp_results"+POC+"/"
 resbase = "results"+POC+"/"
-stored_resbase = "marked_results"+POC+"/"
+tempbase = resbase //this should just work
+
+stored_resbase = "marked_results"+POC+"/" //ambitions that never came to fruition
 
 imgbase = "images"+POC+"/"
 filebase = "files"+POC+"/"
@@ -196,14 +198,7 @@ function getBigHistory()
 	
 }
 
-//getBigHistory()
-/*
-setInterval(
-	function()
-	{
-		//getBigHistory()
-	},60000)
-*/
+
 
 app.get('/*', function(req, res){
 
@@ -571,8 +566,11 @@ app.post('*/readresults', function(req, res)
 		//console.log(e)
 		out = "fill me up"
 	}
-	//console.log(out)
-	res.json( JSON.parse(out) )
+	
+	//get cc
+	cc = x['cc']
+	if (cc == undefined)  cc = 0;
+	res.json( JSON.parse(out.substring(cc)) )
 	
 });
 
