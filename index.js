@@ -720,7 +720,7 @@ function bettertop(p)
 {
 	try{
 		//compare time to start time
-		now = new Date().getTime() /
+		now = new Date().getTime();
 		diff = now - times[p]
 		filemtime = new Date(fs.statSync(tempbase+p)['mtime']).getTime()
 		
