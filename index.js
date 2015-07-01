@@ -334,7 +334,6 @@ app.post("*/killer",function(req,res)
 		if (thispid != undefined)
 		{
 			console.log("killing "+thispid)
-			//exec("kill "+thispid,function(stdout,stderr)
 			exec("/usr/bin/python killer.py "+x,function(stdout,stderr)
 			
 			{
@@ -402,15 +401,6 @@ app.post('*/run', function(req, res)
 		}
 	}
 
-/*	
-	data = prepend+data
-	while (data.search("showme()")>-1)
-	{
-		data = data.replace("showme()","save_image('"+page_name+"_"+time+"')\n",1)
-		counter ++;
-	}
-*/	
-	
 	//fs.writeFileSync(codebase+"temper.py",data)
 	res.json({success:true})	
 	if (processes[page_name] == undefined) gofer = betterexec(page_name,x)
@@ -420,6 +410,7 @@ app.post('*/run', function(req, res)
 	//console.log(processes[page_name])
 	console.log(processes)
 	timers[processes[page_name]] = true
+		
 	
 });
 
@@ -646,24 +637,22 @@ function betterexec(nameo,fff)
 	fullcmd = "touch "+tempbase+parts[1] +"; " +big_gulp+" > '"+tempbase+nameo+"'"
 	
 	start_time = new Date().getTime()
-	//lastcheck[nameo] = start_time
 	times[nameo] = start_time
 	chill = exec(fullcmd,
 	function (error, stdout, stderr) {
 		this_pid = chill.pid
 		console.log("this pid is " +this_pid)
-		hacky_name = nameo
-		timers[processes[hacky_name]] = false
-		console.log(hacky_name+" is done")
+		timers[processes[nameo]] = false
+		console.log(nameo+" is done")
 		end_time = new Date().getTime()
-		delete processes[hacky_name];
-		delete times[hacky_name];		
+		delete processes[nameo];
+		delete times[nameo];		
 		//fils = fs.readdirSync("images")
 		exec_time = end_time - start_time;
 		foost = fs.readFileSync(tempbase+nameo).toString()
 		big_out = {'out':stdout+foost,'outerr':stderr,'images':[],'exec_time':exec_time}
-		send_list.push({'page_name':hacky_name,'data':big_out})
-		if (stderr.search("Terminated") == -1) fs.writeFileSync(resbase+hacky_name,JSON.stringify(big_out))
+		send_list.push({'page_name':nameo,'data':big_out})
+		if (stderr.search("Terminated") == -1) fs.writeFileSync(resbase+nameo,JSON.stringify(big_out))
 		
 	})
 	//console.log(big_gulp)
