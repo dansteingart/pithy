@@ -646,7 +646,7 @@ function betterexec(nameo,fff)
 	fullcmd = "touch "+tempbase+parts[1] +"; " +big_gulp+" > '"+tempbase+nameo+"'"
 	
 	start_time = new Date().getTime()
-	lastcheck[nameo] = start_time
+	//lastcheck[nameo] = start_time
 	times[nameo] = start_time
 	chill = exec(fullcmd,
 	function (error, stdout, stderr) {
@@ -730,16 +730,14 @@ lastcheck = {}
 function bettertop(p)
 {
 	try{
-		now = new Date().getTime()
+		//compare time to start time
+		now = new Date().getTime() /
 		diff = now - times[p]
 		filemtime = new Date(fs.statSync(tempbase+p)['mtime']).getTime()
-		diff2 = filemtime - lastcheck[p]
-		//if ((diff2) > 100)
-		//{
-			lastcheck[p] = now
-			outer = fs.readFileSync(tempbase+p).toString() + "\n<i>been working for " + diff + " ms</i>" 
-			send_list.push({'page_name':p,'data':{out:outer}})
-	//	}	
+		
+		
+		outer = fs.readFileSync(tempbase+p).toString() + "\n<i>been working for " + diff + " ms</i>" 
+		send_list.push({'page_name':p,'data':{out:outer}})
 		
 	}
 	catch(e){
