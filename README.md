@@ -8,7 +8,7 @@ pithy is:
 
 code should be 1, not 2.  
 
-sometimes you want to share code and see what it does on the same page.  sometimes you want to do this for python with scientific computing.  enter pithy.  
+sometimes you want to share code and see what it does on the same page.  sometimes you want to do this for python with scientific computing.  this is pithy.  
 
 pithy has code on the left, and output on the right.  all changes are saved, and the url is freely shareable.  pithy has been tested against sophomores and juniors in chemical engineering successfully.  
 
