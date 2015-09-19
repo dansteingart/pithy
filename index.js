@@ -8,26 +8,30 @@ var os = require("os"); //OS lib, used here for detecting which operating system
 var util = require("util");
 var express = require('express'); //App Framework (similar to web.py abstraction)
 var app = express();
-var exec = require('child_process').exec,
-  child;
-var spawn = require('child_process').spawn,
-	child;
+
+//there is redundancy here that needs to be cleaned up
+var exec = require('child_process').exec,child;
+var spawn = require('child_process').spawn,child;
+
+//For dealing with llocal files
 var os = require("os")
 var glob = require('glob')
 var options = {db: {type: 'none'}};
  
+//Create the server, start up sharejs.  Note this is an _old_ version of sharejs, pre 0.8.
 server = http.createServer(app)
 sharejs.attach(app, options);
 
+//start socket.io
 io = require('socket.io')
 io = io.listen(server); //Socket Creations
 io.set('log level', 1)
 
-//POC = process.argv[2]
+//a vestige, need to clean out.  don't change this
 POC = "" //trust me
-console.log("reflecting changes oK!")
+
+//basic authentication would be great to outh2 this sucka at some point 
 app.use(express.basicAuth(function(user, pass, callback) {
- 
 	raw = fs.readFileSync("pass.json").toString();
 	things = JSON.parse(raw);
 	names = things['things']
@@ -40,15 +44,13 @@ app.use(express.basicAuth(function(user, pass, callback) {
 		{
 			result = (user === nuser && pass === pass);
 			result = user;
-			//req.user = user
 		} 
 	}
- 	callback(null /* error */, result);
-
+ 	callback(null /* error */, result); //on error
 }));
 
 
-//big hack to make killing work
+//big hack to make killing work --> this should be necessary anhymore try to remove it and see what it does
 var os_offset = 2
 if (os.platform() == 'darwin') os_offset = 2
 
@@ -62,7 +64,6 @@ for (d in dirs)
 	{
 		fs.mkdirSync(dird); 
 		console.log(dird+" has been made")
-		
 	}
 	catch (e) 
 	{
@@ -70,14 +71,13 @@ for (d in dirs)
 	}
 }
 
+//setup variables for where stuff goes and comes from
 codebase = "code"+POC+"/"
 histbase = "code_stamped"+POC+"/"
 tempbase = "temp_results"+POC+"/"
 resbase = "results"+POC+"/"
 tempbase = resbase //this should just work
-
 stored_resbase = "marked_results"+POC+"/" //ambitions that never came to fruition
-
 imgbase = "images"+POC+"/"
 filebase = "files"+POC+"/"
 
@@ -87,7 +87,6 @@ try
 {
 	checkface = fs.readFileSync(codebase+'/pithy.py').toString()
 	console.log("pithy.py is in place")
-	
 }
 catch (e)
 {
@@ -114,11 +113,10 @@ settings = {
 	"python_path" : "/usr/bin/python",
 	//'prepend' : "fs.readFileSync('static/prepend.txt').toString()"
 	'prepend' : ""
-	
 }
 
 
-//Clean Up Via: http://stackoverflow.com/a/9918524/565514
+//Socket Clean Up Via: http://stackoverflow.com/a/9918524/565514
 var clients = {}
 io.sockets.on('connection', function(socket) {
   	console.log(socket.id +" Connected")
@@ -201,10 +199,8 @@ function getBigHistory()
 
 
 app.get('/*', function(req, res){
-
 	if (req.params[0] == "") 
 	{
-		//res.redirect("/"+makeid());
 		if (req.params[0] == "") 
 		{
 			indexer = fs.readFileSync('static/homepage.html').toString()
@@ -236,13 +232,7 @@ app.get('/*', function(req, res){
 
 			indexer = indexer.replace("##_newthings_##",lts)
 			activefiles = out
-		
-		
-			//Hist Files
-			//get file list
-			
-			
-				
+
 			lts = "" //list to send
 		
 			count = 0 
@@ -313,19 +303,16 @@ app.get('/*', function(req, res){
 		}
 		indexer = indexer.replace("##_filesgohere_##",lts)
 		res.send(indexer)
-		
 	}
 	else
 	{
 		indexer = fs.readFileSync('static/index.html').toString()
 		res.send(indexer)
 	}
-  	//console.log(req.params)
 });
 
 app.post("*/killer",function(req,res)
 	{
-		
 		x = req.body.page_name;
 		console.log(x)
 		thispid = processes[x];
@@ -333,9 +320,8 @@ app.post("*/killer",function(req,res)
 		console.log("trying to kill " + x)
 		if (thispid != undefined)
 		{
-			console.log("killing "+thispid)
+			console.log("killing in the name of "+thispid)
 			exec("/usr/bin/python killer.py "+x,function(stdout,stderr)
-			
 			{
 				outer = stdout+","+stderr
 				console.log(outer)
@@ -353,13 +339,12 @@ app.post("*/killer",function(req,res)
 app.post('*/run', function(req, res)
 {
 	x = req.body
-	//console.log(x)
 	page_name = x['page_name'].replace("/","").split("/")[0]
 	script_name = x['script_name']
 	prepend = settings.prepend		
 	out = ""
 	image_list = []
-	//io.sockets.emit(page_name,{'out':"waiting for output"}) 
+
 	//Querer to prevent race condition
 	send_list.push({'page_name':page_name,'data':{out:"waiting for output"}})
 	time = new Date().getTime().toString()
@@ -401,13 +386,10 @@ app.post('*/run', function(req, res)
 		}
 	}
 
-	//fs.writeFileSync(codebase+"temper.py",data)
 	res.json({success:true})	
 	if (processes[page_name] == undefined) gofer = betterexec(page_name,x)
 	console.log(gofer)
-	//processes[page_name] = gofer['id']
 	processes[page_name] = gofer['name']
-	//console.log(processes[page_name])
 	console.log(processes)
 	timers[processes[page_name]] = true
 		
@@ -483,7 +465,6 @@ app.post('*/markedresults', function(req, res)
 	hist_list = []
 	for (i in fils)
 	{
-		//time_part = parseInt(fils[i].split("_")[1])
 		time_part = parseInt(fils[i].substr(fils[i].length - length+1))
 		marked_name = JSON.parse(fs.readFileSync(stored_resbase+fils[i]))['name']
 		hist_list.push([fils[i],marked_name])
@@ -500,7 +481,6 @@ app.post('*/read', function(req, res)
 	x = req.body
 	back_to_pith = {}
 	out = "Fill Me Up"
-	//page_name = x['page_name'].replace("/","")
 	page_name = x['page_name'].replace("/","").split("/")[0]
 	
 	try{
@@ -527,12 +507,8 @@ app.post('*/read', function(req, res)
 	{
 		resulters = fs.readFileSync(resbase+page_name).toString()
 		resulters = JSON.parse(resulters)	
-		//setTimeout(function()
-		//{
-		//Don't send saved results if this script is running
 		if (!processes.hasOwnProperty(page_name)) send_list.push({'page_name':page_name,'data':resulters})
-		//},1000);
-		
+
 	}
 	catch (e)
 	{	
@@ -621,8 +597,6 @@ times = {}
 //big ups to http://stackoverflow.com/questions/13162136/node-js-is-there-a-way-for-the-callback-function-of-child-process-exec-to-ret/13166437#13166437
 function betterexec(nameo,fff)
 {
-	//fullcmd = "touch temp_results/"+nameo +"; " +settings.python_path+" -W ignore -u '"+__dirname+"/code/"+namemo+".py' > 'temp_results/"+nameo+"'"
-	
 	parts = fff['page_name'].split("/")
 	estring = "";
 	for (var i=2; i < parts.length;i++) 
@@ -645,17 +619,21 @@ function betterexec(nameo,fff)
 		timers[processes[nameo]] = false
 		console.log(nameo+" is done")
 		end_time = new Date().getTime()
-		delete processes[nameo];
-		delete times[nameo];		
-		//fils = fs.readdirSync("images")
 		exec_time = end_time - start_time;
+
 		foost = fs.readFileSync(tempbase+nameo).toString()
 		big_out = {'out':stdout+foost,'outerr':stderr,'images':[],'exec_time':exec_time}
 		send_list.push({'page_name':nameo,'data':big_out})
+		
 		if (stderr.search("Terminated") == -1) fs.writeFileSync(resbase+nameo,JSON.stringify(big_out))
 		
+		//Delete Processes
+		delete processes[nameo];
+		delete times[nameo];		
+
+		
 	})
-	//console.log(big_gulp)
+
 	return {'pid':chill.pid + os_offset,'name':essence}
 }
 
@@ -673,8 +651,8 @@ function makeid()
 }
 
 //Queue to prevent socket race conditions, fires a message from the buffer every x ms
-//TODO: Figure out how to reduce interval time without 
-//buffer?
+//TODO: Figure out how to reduce interval time without buffer?
+
 old_send = []
 setInterval(function(){
 	this_send = send_list.splice(0,1)[0]
@@ -716,6 +694,8 @@ setInterval(function() {
 
 lastcheck = {}
 
+
+//This checks in on the process and sends an update as to how long it's been working
 function bettertop(p)
 {
 	try{
@@ -723,8 +703,6 @@ function bettertop(p)
 		now = new Date().getTime();
 		diff = now - times[p]
 		filemtime = new Date(fs.statSync(tempbase+p)['mtime']).getTime()
-		
-		
 		outer = fs.readFileSync(tempbase+p).toString() + "\n<i>been working for " + diff + " ms</i>" 
 		send_list.push({'page_name':p,'data':{out:outer}})
 		
