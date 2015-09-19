@@ -8,7 +8,10 @@ body
 	text-rendering: optimizeLegibility;
 }
 
-
+img
+{
+	width: 100%;
+}
 
 /* scrollbar style from http://maxvoltar.com/, http://almaer.com/scrollbar/debug.html */
 
@@ -148,4 +151,98 @@ h3
 	float:left;
 	width: 600px;
 	text-align: justify;
+}
+
+textarea
+{
+    margin: auto auto;
+	width:100%;
+	font-size: 14px;
+}
+
+
+
+#script_area {
+     position: relative;
+     width: 500px;
+     height: 400px;
+	font-family: "Courier New",monospace;
+	font-size: 15px;
+	
+ }
+
+
+.selectig
+{
+	outline: none;
+}
+
+.code
+{
+	width:100%;
+}
+
+.output
+{
+    margin: auto auto;
+	width:100%;
+	height:50%;
+	font-size: 15px;
+}
+
+body
+{
+	margin: 0px 0px;
+	padding: 0px 0px;
+	
+	width: 100%;
+}
+
+.texterboxer
+{
+	border: 1px solid silver;
+	background: white;
+	width:150px
+	
+}
+
+input:focus {outline: none; }
+
+.left
+{
+	float:left;
+	width:50%;
+}
+.right
+{
+	float:right;
+	width:50%;
+	height:95%;
+	
+}
+
+.images
+{
+		width:100%;
+		overflow: auto;
+		overflow-y: auto;
+		overflow-x:hidden;		
+		height:100%;
+
+
+}
+
+.credit
+{
+	color: silver;
+	size: 10px;
+	text-align: right;
+	position:absolute; 
+	bottom:10;
+	right:100;
+}
+
+.menu_bar
+{
+	text-align:right;
 }
