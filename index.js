@@ -603,24 +603,22 @@ function betterexec(nameo,fff)
 	{
 		estring += parts[i]+" ";
 	}
-	console.log(parts)
-	console.log(estring)
-	console.log(__dirname)
+	
 	essence = __dirname+"/"+codebase+nameo
 	big_gulp = settings.python_path+" -u '"+essence+".py' "+estring
 	fullcmd = "touch "+tempbase+parts[1] +"; " +big_gulp+" > '"+tempbase+nameo+"'"
 	
 	start_time = new Date().getTime()
 	times[nameo] = start_time
+	console.log(times)
 	chill = exec(fullcmd,
 	function (error, stdout, stderr) {
 		this_pid = chill.pid
 		console.log("this pid is " +this_pid)
-		timers[processes[nameo]] = false
 		console.log(nameo+" is done")
 		end_time = new Date().getTime()
-		exec_time = end_time - start_time;
-
+		exec_time = end_time - times[nameo];
+		
 		foost = fs.readFileSync(tempbase+nameo).toString()
 		big_out = {'out':stdout+foost,'outerr':stderr,'images':[],'exec_time':exec_time}
 		send_list.push({'page_name':nameo,'data':big_out})
@@ -630,6 +628,7 @@ function betterexec(nameo,fff)
 		//Delete Processes
 		delete processes[nameo];
 		delete times[nameo];		
+		timers[processes[nameo]] = false
 
 		
 	})
