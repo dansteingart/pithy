@@ -33,6 +33,7 @@
 		<button id="run"  title="run">r</button>  
 		<button id="kill" title="kill">k</button>  
 		<!--<button id="saveresult">s</button> -->
+		<button id="fiver">5</button>
 		<button id="copyto" title="fork code">c</button> 
 		<span id="history_box"></span> 
 		<span id="markedresults_box"></span> 
@@ -94,12 +95,54 @@ else editor.setTheme("ace/theme/"+thematic);
 
 //What happens when you click run
 $("#run").click(function(){
-	//scrollpos = $("#images").scrollTop()
-	//$("#images").html("waiting for result");
-	//editor.resize()
 	saver(true,pathname); //was page
-	
 });
+
+fiver_timer = false;
+
+$("#fiver").click(function(){
+	fiver_timer = !fiver_timer;
+	if (fiver_timer)
+	{		
+		if (!waiting_for_output ) saver(true,pathname);
+		ftimer = setInterval(countDown,1000)
+		$("#fiver").css('color','rgb(255,0,0)');	
+	}
+	else 
+	{
+		$("#fiver").css('color','rgb(0,0,0)');
+		$("#fiver").html(5);	
+		clearInterval(ftimer)
+	}	
+});
+
+
+function countDown()
+{
+	if (parseInt($("#fiver").html()) == 0)
+	{
+		//clearInterval(ftimer)
+		if (!waiting_for_output ) 
+		{
+			saver(true,pathname);
+			$("#fiver").html(5);
+		}
+		else
+		{
+			console.log('waitface');
+		}
+		
+	}
+	
+	else 
+		{
+			if (!waiting_for_output ) $("#fiver").html(parseInt($("#fiver").html())-1);	
+			
+		}	
+}
+
+var ftimer = ""//setInterval(countDown,1000)
+
 
 //Kill The Script	
 $("#kill").click(function(){
@@ -110,6 +153,8 @@ $("#kill").click(function(){
 		  type:"POST",
 		  data:{page_name:page}
 		})
+		
+		if (fiver_timer) $("#fiver").click()
 
 });
 
@@ -231,7 +276,6 @@ socket.on(page.replace("/",""), function (data) {
 				}
 				gotdata = data
 				build_output(gotdata)
-				
 				dfd = $('#images').imagesLoaded(); 
 				dfd.always(function(){$("#images").scrollTop(scrollpos)})
 
@@ -249,7 +293,6 @@ function makeid(){
 
     return text;
 }
-
 
 flot_structure = "<div id='flotter' class='flotter'></div>"
 
@@ -421,39 +464,6 @@ function history(page){
 	});
 	
 }
-
-function markedresults(page){
-	//console.log("loading!");
-	$.ajax({
-	  url: "/markedresults/",
-	  async:false,
-	  type:"POST",
-	  data:{page_name:page},
-	  success: function(data)
-	  	{
-			out = data['out'];
-			//data = JSON.parse(data);
-			if (out.length > 0)
-			{
-			console.log(out)
-				
-				selecters = "<select id='markedresults' class='selectig'>"
-				selecters += '<option value="newest">current</option>'			
-				
-				for (i in out)
-				{
-				    selecters += '<option value="'+out[i][0]+'">'+ out[i][1] +'</option>'			
-				}
-				selecters += "</select>"
-				$("#markedresults_box").html("heldtight:"+selecters)
-				//$("#markedresults").change(function(){get_data()})}
-			
-		 }
-		}
-	  });
-
-	
-	}
 
 function get_data(){
 	loader(false,$("#histories").val());
