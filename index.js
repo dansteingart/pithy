@@ -8,6 +8,7 @@ var os = require("os"); //OS lib, used here for detecting which operating system
 var util = require("util");
 var express = require('express'); //App Framework (similar to web.py abstraction)
 var app = express();
+var cors = require('cors');
 
 //there is redundancy here that needs to be cleaned up
 var exec = require('child_process').exec,child;
@@ -49,6 +50,7 @@ app.use(express.basicAuth(function(user, pass, callback) {
  	callback(null /* error */, result); //on error
 }));
 
+app.use(cors());
 
 //big hack to make killing work --> this should be necessary anhymore try to remove it and see what it does
 var os_offset = 2
@@ -229,7 +231,7 @@ app.get('/*', function(req, res){
 			}
 
 			base_case = 0
-
+			lts += "<br>all code <a href='/code/'>here</a>"
 			indexer = indexer.replace("##_newthings_##",lts)
 			activefiles = out
 
@@ -300,6 +302,26 @@ app.get('/*', function(req, res){
 		for (i in out)
 		{
 			lts += "<a href='/"+filebase+out[i]+"'>"+out[i] + "</a> , " + fs.statSync(filebase + out[i]).ctime+"<br>";
+		}
+		indexer = indexer.replace("##_filesgohere_##",lts)
+		res.send(indexer)
+	}
+	else if(req.params[0] == "code/" || req.params[0] == "code")
+	{
+		indexer = fs.readFileSync('static/filedex.html').toString()
+		//get file list
+		out = fs.readdirSync(codebase)
+		//sort files (ht to http://stackoverflow.com/a/10559790)
+		out.sort(function(a, b) {
+		               return fs.statSync(codebase + a).ctime - 
+		                      fs.statSync(codebase + b).ctime;
+		           });
+ 		out.reverse()
+		lts = "" //list to send
+		for (i in out)
+		{
+			oo = out[i].replace(".py","")
+			lts += "<a href='/"+oo+"'>"+oo + "</a> , " + fs.statSync(codebase + out[i]).ctime+"<br>";
 		}
 		indexer = indexer.replace("##_filesgohere_##",lts)
 		res.send(indexer)
