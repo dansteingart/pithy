@@ -7,7 +7,7 @@ code should be 1, not 2.
 
 sometimes you want to share code and see what it does on the same page.  sometimes you want to do this for python with scientific computing.  enter pithy.  
 
-pithy has code on the left, and output on the right.  all changes are saved, and the url is freely shareable.  pithy has been tested against sophomores and juniors in chemical engineering successfully.  
+pithy has code on the left, and output on the right.  all changes are saved, and the url is freely shareable.  pithy has been tested against sophomores and juniors in chemical and mechanical engineering classes successfully for three years and running.  
 
 pithy is python for sharing plots and numerical output, among other things.  it's really pretty cool, but you have to play with it for a bit to see why.  go to the [wiki](https://github.com/dansteingart/pithy/wiki) to get a sense of what it can do.
 
@@ -32,9 +32,9 @@ pithy runs arbitrary python on your machine and sends the output back to the bro
 2. has nothing that you don't want the world to see that is not encrypted (ditto)
 3. that can suffer some downtime if someone does something stupid
 
-the [raspberry pi](http://www.raspberrypi.org/) is an awesome server for this very thing
+the [raspberry pi](http://www.raspberrypi.org/) is an awesome server for this very thing.  it runs not bad on an rpi2.
 
-because pithy just runs from a directory, standard http authentication can be applied to make stuff safe.
+because pithy just runs from a directory, standard http authentication can be applied to make stuff safe, herein we use some very simple stuff.
 
 ###pithy requires 
 
@@ -81,7 +81,7 @@ everything here is pure [pylab](http://www.scipy.org/PyLab) except for showme(),
 
 ###acknowledgements
 
-Pithy was made possible in part with support from NSF Grant CMMI 1031208.
+Pithy was made possible in part with support from NSF Grant CMMI 1031280.
 
 Pithy was made better with feedback from many students at CCNY and Princeton.  Thanks.
 
