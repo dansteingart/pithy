@@ -264,7 +264,8 @@ doc.attach_ace(editor);
 //Socket PushStuff
 socket.on(page.replace("/",""), function (data) {
 				//Let know that we've saved stuff
-				
+				scrollpos = $("#images").scrollTop()
+
 				//console.log(data)
 				changed = false;
 				if (data['exec_time'] != undefined)
