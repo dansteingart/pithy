@@ -39,14 +39,33 @@ def showmeold(tip=".png",kind="static"):
     savefig(image)
 
 
-def showme(tip=".png",kind="static"):
+#def showme(tip=".png",kind="static"):
+#    tim = str(int(time.time()))	
+#    rcParams['figure.dpi'] = 40
+#    #imname = imname.replace("/","-")
+#    image = 'images/pithy_img_'+str(int(time.time()*1000))+tip
+#    if kind == "static": print '<img src=/'+image+'>'
+#    else: print '##_dynamic_##:',kind,':',tim,':',"/"+image
+#    savefig(image)
+
+#Updated showme to just do base64 encoded images, it's just better for a ton of reasons.
+def showme(tip="png",kind="static",width=None,height=None,inline=False,dpi=80):
     tim = str(int(time.time()))	
-    rcParams['figure.dpi'] = 40
     #imname = imname.replace("/","-")
-    image = 'images/pithy_img_'+str(int(time.time()*1000))+tip
-    if kind == "static": print '<img src=/'+image+'>'
-    else: print '##_dynamic_##:',kind,':',tim,':',"/"+image
-    savefig(image)
+    image = 'images/pithy_img_'+str(int(time.time()*1000))+"."+tip
+    w = ""
+    h = ""
+    if width != None: w = "width:"+str(width)+"px;"
+    if height != None: h = "height:"+str(height)+"px;"
+    s = "style='%s%s'" %(w,h)
+    #strang = '<img '+s+' src=/'+image+'>'
+    if kind == "static": 
+        print imager64(tip=tip,dpi=dpi,style=s),
+        if not inline: print ""
+
+    else: 
+        savefig(image,dpi=dpi,bbox_inches="tight")
+        print '##_dynamic_##:',kind,':',tim,':',"/"+image
 
 def showme64(tip="png"):
     imgdata = StringIO.StringIO()
