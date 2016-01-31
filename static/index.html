@@ -42,6 +42,8 @@
 	<div id="images" class="images"></div>
 </div>
 
+
+
 <script>
 
 
@@ -62,6 +64,9 @@ editor.setShowPrintMargin(false);
 editor.setShowInvisibles(false);
 foo = editor.getSession()
 foo.setUseWrapMode(true)
+
+//What a new pages shows
+base_template = "##Author: \n##Date Started: \n##Notes: \n";
 
 
 //hacks for now
@@ -414,7 +419,7 @@ function saver(bool,page){
 	script_name = $("#scriptname").val()
 	$("#status").html("waiting for result");
 	
-	if ($.trim(editor.getSession().getValue()) != "Fill Me Up")
+	if ($.trim(editor.getSession().getValue()) != base_template)
 	{
 		//console.log("Changed!");
 		$.ajax(

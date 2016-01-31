@@ -83,6 +83,9 @@ stored_resbase = "marked_results"+POC+"/" //ambitions that never came to fruitio
 imgbase = "images"+POC+"/"
 filebase = "files"+POC+"/"
 
+//What a new pages shows
+base_template = "##Author: \n##Date Started: \n##Notes: \n";
+
 
 //create pithy.py lib if it doesn't already exist
 try
@@ -502,7 +505,7 @@ app.post('*/read', function(req, res)
 	
 	x = req.body
 	back_to_pith = {}
-	out = "Fill Me Up"
+	out = base_template
 	page_name = x['page_name'].replace("/","").split("/")[0]
 	
 	try{
@@ -519,7 +522,7 @@ app.post('*/read', function(req, res)
 	}
 	catch (e)
 	{
-		out = "fill me up"
+		out =  base_template
 	}
 
 	back_to_pith['script'] = out
@@ -544,7 +547,7 @@ app.post('*/readresults', function(req, res)
 	
 	x = req.body
 	back_to_pith = {}
-	out = "Fill Me Up"
+	out =  base_template
 	page_name = x['page_name']
 	try
 	{
@@ -553,7 +556,7 @@ app.post('*/readresults', function(req, res)
 	catch (e)
 	{
 		//console.log(e)
-		out = "fill me up"
+		out =  base_template
 	}
 	
 	//get cc
@@ -595,7 +598,7 @@ app.post('*/markresult',function(req,res)
 	catch (e)
 	{
 		//console.log(e)
-		out = "fill me up"
+		out =  base_template
 	}
 	
 	console.log(result_set)
