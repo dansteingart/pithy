@@ -29,7 +29,6 @@ io = io.listen(server); //Socket Creations
 io.set('log level', 1)
 
 //a vestige, need to clean out.  don't change this
-POC = "" //trust me
 
 //basic authentication would be great to outh2 this sucka at some point 
 app.use(express.basicAuth(function(user, pass, callback) {
@@ -57,10 +56,39 @@ var os_offset = 2
 if (os.platform() == 'darwin') os_offset = 2
 
 //make required directories
-dirs = ['temp_results','code','code_stamped','results','marked_results','images','files']
+
+
+//setup variables for where stuff goes and comes from
+codebase = "code/"
+histbase = "code_stamped/"
+tempbase = "temp_results/"
+resbase = "results/"
+tempbase = resbase //this should just work
+stored_resbase = "marked_results/" //ambitions that never came to fruition
+imgbase = "images/"
+filebase = "files/"
+
+//What a new pages shows
+base_template = "##Author: \n##Date Started: \n##Notes: \n";
+
+gitted = false;
+for (var i = 0; i < process.argv.length;i++)
+{
+	if (process.argv[i].search("--codebase=")>-1)
+	{
+		codebase = process.argv[i].split("=")[1]+"/";
+	}
+	if (process.argv[i].search("--histbase=")>-1)
+	{
+		histbase = process.argv[i].split("=")[1]+"/";
+	}
+	
+}
+
+dirs = [tempbase,codebase,histbase,resbase,imgbase,filebase]
 for (d in dirs)
 {
-	dird = dirs[d]+POC.toString()
+	dird = dirs[d].toString()
 	console.log(dird)
 	try
 	{
@@ -72,20 +100,6 @@ for (d in dirs)
 		console.log(dird+" is in place")
 	}
 }
-
-//setup variables for where stuff goes and comes from
-codebase = "code"+POC+"/"
-histbase = "code_stamped"+POC+"/"
-tempbase = "temp_results"+POC+"/"
-resbase = "results"+POC+"/"
-tempbase = resbase //this should just work
-stored_resbase = "marked_results"+POC+"/" //ambitions that never came to fruition
-imgbase = "images"+POC+"/"
-filebase = "files"+POC+"/"
-
-//What a new pages shows
-base_template = "##Author: \n##Date Started: \n##Notes: \n";
-
 
 //create pithy.py lib if it doesn't already exist
 try
@@ -102,14 +116,14 @@ catch (e)
 //create pass.json file if it doesn't already exist
 try
 {
-	checkface = fs.readFileSync('pass'+POC+'.json').toString()
+	checkface = fs.readFileSync('pass.json').toString()
 	console.log("pass.json is in place")
 	
 }
 catch (e)
 {
 	console.log("making a password file")
-	fs.writeFileSync('pass'+POC+'.json',fs.readFileSync('static/passmold').toString())
+	fs.writeFileSync('pass.json',fs.readFileSync('static/passmold').toString())
 }
 
 //Basic Settings
@@ -611,6 +625,8 @@ for (var i = 0; i < process.argv.length;i++)
 {
 	if (process.argv[i] == "--gitted") gitted = true;
 }
+
+
 
 //Start It Up!
 server.listen(process.argv[2]);
