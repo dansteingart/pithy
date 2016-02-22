@@ -9,3 +9,9 @@ pass.json
 crufts/*
 scratch/*
 static/scratch/*
+
+static/Three.js
+
+static/thingiloader.js
+
+static/thingiview.js
