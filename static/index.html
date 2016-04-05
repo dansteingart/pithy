@@ -361,6 +361,10 @@ function build_output(data){
 		else if (foots[i].search("been working")>-1)
 		{ 
 			runner = foots[i].replace("<br>","")
+			b = runner.search("for ")
+			c = runner.search("ms")
+			fval = parseFloat(runner.substring(b+4,c-1))/1000
+			runner = "<i>been working for "+fval+" s</i>"
 			$("#status").html(runner);
 			
 		}
