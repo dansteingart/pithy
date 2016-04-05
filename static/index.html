@@ -276,7 +276,7 @@ socket.on(page.replace("/",""), function (data) {
 				if (data['exec_time'] != undefined)
 				{
 					waiting_for_output = false
-					$("#status").html("saved, exec time = "+data['exec_time']+"ms");
+					$("#status").html("saved, exec time = "+data['exec_time']/1000+"ms");
 					history(page);
 					
 				}
