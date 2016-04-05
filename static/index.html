@@ -360,7 +360,8 @@ function build_output(data){
 		
 		else if (foots[i].search("been working")>-1)
 		{ 
-			$("#status").html(foots[i].replace("<br>",""));
+			runner = foots[i].replace("<br>","")
+			$("#status").html(runner);
 			
 		}
 		
