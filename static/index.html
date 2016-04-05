@@ -364,7 +364,7 @@ function build_output(data){
 			b = runner.search("for ")
 			c = runner.search("ms")
 			fval = parseFloat(runner.substring(b+4,c-1))/1000
-			runner = "<i>been working for "+fval+" s</i>"
+			runner = "<i>been working for "+fval+"s</i>"
 			$("#status").html(runner);
 			
 		}
