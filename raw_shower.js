@@ -25,7 +25,49 @@ app.use("/static", express.static(__dirname + '/static'));
 app.use("/images", express.static(__dirname + '/images'));
 
 
-app.get('/*', function(req, res){
+app.post('/run',function(req,res)
+{
+
+	if (req.params[0] == "") 
+	{
+		res.send("try harder");
+	}
+
+	else
+	{
+		
+		//here's were we do a lot of fun stuff
+		try
+		{
+			nameo = req.url
+			parts = nameo.split("/");
+			estring = "";
+			console.log(req.body)
+			to_run = req.body['page_name']
+			payload = req.body['payload']
+			
+			fs.writeFileSync(to_run+".json",payload)
+			
+			fullcmd = settings.python_path+" -u '"+__dirname+"/code/"+to_run+".py' "+to_run+".json"
+			
+			exec(fullcmd,
+					function(error, stdout, stderr)
+					{
+						res.send(stdout+stderr);
+					}
+				)
+		}
+		catch (err)
+		{
+			console.log(err)
+		}
+		
+	}
+});
+
+
+app.get('/*', function(req, res)
+{
 
 	if (req.params[0] == "") 
 	{
@@ -46,30 +88,20 @@ app.get('/*', function(req, res){
 				estring += parts[i]+" ";
 			}
 			fullcmd = settings.python_path+" -u '"+__dirname+"/code/"+parts[1]+".py' "+estring
-			//this is bad
-			//var sys = require('sys')
-			//var exec = require('child_process').exec;
-			//function puts(error, stdout, stderr) { sys.puts(stdout) }
-			
 			exec(fullcmd,
 					function(error, stdout, stderr)
 					{
 						res.send(stdout);
 					}
 				)
-			//results = sh.exec(fullcmd)
-			//res.send(results.stdout)
 		}
 		catch (err)
 		{
 			console.log(err)
 		}
-		//console.log(req.url)
-		//res.send("you tried harder")
 		
 	}
 });
-
 
 
 //Start It Up!
