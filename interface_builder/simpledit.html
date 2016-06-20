@@ -2,6 +2,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/ace.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/mode-html.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.1.2/js.cookie.min.js"></script>
 
 <style>
 .left
@@ -34,7 +35,7 @@ textarea
 <script>
 
 
-urller = ""
+urller = "http://steingart.princeton.edu:8004/run"
 
 var editor = ace.edit("code");
 editor.setTheme("ace/theme/monokai");
@@ -51,14 +52,14 @@ $("#code").keyup(
 	}
 )
 
-page_name = ""
+
 function saving()
 {
 	oldpn = page_name
 	page_name = window.prompt("tell me what page to save",page_name)
 	if (page_name != null)
 	{
-		document.cookie = page_name
+		Cookies.set('page_name', page_name)
 		pp = {page: page_name, html: editor.getValue()}
 		console.log("saving: "+page_name)
 		$.post(urller,{page_name:'save_interface',payload:JSON.stringify(pp)})
@@ -68,10 +69,11 @@ function saving()
 	{
 		page_name = oldpn
 	}
+
 }
 
-page_name = document.cookie
-if (page_name != "") loadbegin()
+page_name = Cookies.get('page_name')
+if (page_name != undefined) loadbegin()
 
 function loadbegin()
 {
@@ -91,8 +93,8 @@ function loading()
 	oldpn = page_name
 	page_name = window.prompt("tell me what page to load",page_name)
 	if (page_name != null)
-	{
-		document.cookie = page_name
+	{	
+		Cookies.set('page_name', page_name)
 		pp = {page: page_name}
 		console.log("loading: "+page_name)
 		$.post(urller,{page_name:'load_interface',payload:JSON.stringify(pp)})
