@@ -1,0 +1,114 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/ace.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/mode-html.js"></script>
+
+<style>
+.left
+{
+    position: absolute;
+	width:45%;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+	
+}
+.right
+{
+	float:right;
+	width:45%;
+}
+
+textarea
+{
+	width:100%;
+	height:100%;
+}
+
+</style>
+
+<div id="code" class="left">test</div>
+<div id="output" class="right">fighter</div>
+
+<script>
+
+
+urller = ""
+
+var editor = ace.edit("code");
+editor.setTheme("ace/theme/monokai");
+editor.getSession().setMode("ace/mode/html");
+editor.getSession().setUseWrapMode(true);
+editor.setShowPrintMargin(false);
+
+$("#code").keyup(
+	function(e)
+	{
+		if (e.keyCode == 112) saving()
+		else if (e.keyCode == 113) loading()
+		else $("#output").html(editor.getValue());
+	}
+)
+
+page_name = ""
+function saving()
+{
+	oldpn = page_name
+	page_name = window.prompt("tell me what page to save",page_name)
+	if (page_name != null)
+	{
+		document.cookie = page_name
+		pp = {page: page_name, html: editor.getValue()}
+		console.log("saving: "+page_name)
+		$.post(urller,{page_name:'save_interface',payload:JSON.stringify(pp)})
+		.done(function( data ) {alert(data);});
+	}
+	else
+	{
+		page_name = oldpn
+	}
+}
+
+page_name = document.cookie
+if (page_name != "") loadbegin()
+
+function loadbegin()
+{
+	pp = {page: page_name}
+	console.log("loading: "+page_name)
+	$.post(urller,{page_name:'load_interface',payload:JSON.stringify(pp)})
+	.done(function( data ) {
+		data = JSON.parse(data)
+		editor.setValue(data['html'])
+		$("#output").html(editor.getValue());
+	})
+	
+}
+	
+function loading()
+{
+	oldpn = page_name
+	page_name = window.prompt("tell me what page to load",page_name)
+	if (page_name != null)
+	{
+		document.cookie = page_name
+		pp = {page: page_name}
+		console.log("loading: "+page_name)
+		$.post(urller,{page_name:'load_interface',payload:JSON.stringify(pp)})
+		.done(function( data ) {
+    		data = JSON.parse(data)
+			editor.setValue(data['html'])
+			$("#output").html(editor.getValue());
+		})
+	}
+	else
+	{
+		page_name = oldpn
+	}
+	
+}
+
+
+
+</script>
