@@ -324,7 +324,7 @@ function build_output(data){
 		
 		if (foots[i].search("##_holder_##")>-1) 
 		{
-			outputdata[outputdata.length] = "<img src='"+foots[i].replace("##_holder_##:","")+"'><br>"
+			outputdata[outputdata.length] = "<img src='"+foots[i].replace("##_holder_##:","")+"'>\n"
 		}
 		else if (foots[i].search("##_dynamic_##")>-1) 
 		{
@@ -343,7 +343,7 @@ function build_output(data){
 			}
 			
 			
-			outputdata[swap] = "<img id='"+holder+"' src='"+imloc+"'><br>"
+			outputdata[swap] = "<img id='"+holder+"' src='"+imloc+"'>\n"
 		}
 		else if (foots[i].search("##__json__##")==0)
 		{ 
@@ -371,7 +371,7 @@ function build_output(data){
 		
 		else 
 		{
-			outputdata[outputdata.length] = foots[i]+"<br>"
+			outputdata[outputdata.length] = foots[i]+"\n"
 			
 		}
 		
@@ -380,8 +380,8 @@ function build_output(data){
 	//Build python stderr
 	boots = data['outerr']
 	if (boots == null) boots = ""
-	while (boots.search("\n") > -1) boots = boots.replace("\n","<br>")
-	outputdata[outputdata.length] = "<br><span style='color:red'>"+boots+"</span>"
+	//while (boots.search("\n") > -1) boots = boots.replace("\n","<br>")
+	outputdata[outputdata.length] = "\n<span style='color:red'>"+boots+"</span>"
 	
 	
 	//console.log(thislen)
