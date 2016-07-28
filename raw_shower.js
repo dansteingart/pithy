@@ -71,7 +71,7 @@ app.post('/run',function(req,res)
 			
 			fullcmd = settings.python_path+" -u '"+__dirname+"/code/"+to_run+".py' "+to_run+".json"
 			
-			exec(fullcmd,
+			exec(fullcmd, {maxBuffer: 1024 * 10000},
 					function(error, stdout, stderr)
 					{
 						res.send(stdout+stderr);
@@ -112,7 +112,7 @@ app.post('/*',function(req,res)
 			
 			fullcmd = settings.python_path+" -u '"+__dirname+"/code/"+to_run+".py' "+to_run+".json"
 			
-			exec(fullcmd,
+			exec(fullcmd,{maxBuffer: 1024 * 10000},
 					function(error, stdout, stderr)
 					{
 						res.send(stdout+stderr);
@@ -142,14 +142,18 @@ app.get('/*', function(req, res)
 		try
 		{
 			nameo = req.url
+			nameo = nameo.replace("?","/").replace(/&/g,"/")
+			console.log(nameo);
 			parts = nameo.split("/");
+			console.log(parts)
 			estring = "";
 			for (var i=2; i < parts.length;i++) 
 			{
 				estring += parts[i]+" ";
 			}
+			console.log(estring)
 			fullcmd = settings.python_path+" -u '"+__dirname+"/code/"+parts[1]+".py' "+estring
-			exec(fullcmd,
+			exec(fullcmd,{maxBuffer: 1024 * 10000},
 					function(error, stdout, stderr)
 					{
 						res.send(stdout);
