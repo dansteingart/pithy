@@ -230,8 +230,8 @@ app.get('/*', function(req, res){
 			//sort files (ht to http://stackoverflow.com/a/10559790)
 			
 			out.sort(function(a, b) {
-			               return fs.statSync(codebase + a).ctime - 
-			                      fs.statSync(codebase + b).ctime;
+			               return fs.statSync(codebase + a).mtime - 
+			                      fs.statSync(codebase + b).mtime;
 			           });
 	 		out.reverse()
 			
