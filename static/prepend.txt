@@ -11,7 +11,7 @@ from pylab import *
 fig, ax = plt.subplots()
 
 #Figure Defaults
-rcParams['font.family'] = "Arial"
+#rcParams['font.family'] = "Arial"
 
 
 #hack to make things worth from PIL
