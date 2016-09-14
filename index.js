@@ -113,6 +113,18 @@ catch (e)
 	fs.writeFileSync(codebase+'/pithy.py',fs.readFileSync('static/prepend.txt').toString())
 }
 
+//create python_basics.py lib if it doesn't already exist
+try
+{
+	checkface = fs.readFileSync(codebase+'/python_basics.py').toString()
+	console.log("pithy.py is in place")
+}
+catch (e)
+{
+	console.log("making a pithy library")
+	fs.writeFileSync(codebase+'/python_basics.py',fs.readFileSync('static/python_basics').toString())
+}
+
 //create pass.json file if it doesn't already exist
 try
 {
