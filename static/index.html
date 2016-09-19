@@ -507,7 +507,7 @@ function loadresult(){
 }
 
 function forkcode(){
-	var marker = window.prompt("Copy This Code As:",page+"_copy");
+	var marker = window.prompt("Copy This Code As:",page.split("/")[0]+"_copy");
 	if (marker != null & marker != "")
 	{
 		$.ajax(
