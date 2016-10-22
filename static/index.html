@@ -68,6 +68,9 @@ foo.setUseWrapMode(true)
 //What a new pages shows
 base_template = "##Author: \n##Date Started: \n##Notes: \n";
 
+//auto resize if window name
+if (window.name.search(window.pathname) >-1 ) {resall()}
+
 
 //hacks for now
 $("#save").hide()
@@ -223,6 +226,10 @@ function splitview(){
 	editor.resize()
 }
 
+function newresults(){
+	window.open(window.pathname.toString() ,'name='+window.pathname,'toolbar=no',' menubar=no', 'resizable=yes');
+}
+
 //Output View
 function resall(){
 		$("#left-side").hide()
@@ -244,6 +251,12 @@ shortcut.add("F5",function(){
 shortcut.add("F6",function(){
 	if (!allres & !alltext) resall()
 	else splitview()
+})
+
+
+shortcut.add("F9",function(){
+        newresults();
+	textall();
 })
 
 
