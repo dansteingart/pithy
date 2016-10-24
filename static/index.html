@@ -69,7 +69,13 @@ foo.setUseWrapMode(true)
 base_template = "##Author: \n##Date Started: \n##Notes: \n";
 
 //auto resize if window name
-if (window.name.search(window.pathname) >-1 ) {resall()}
+if (window.name.search(window.pathname) >-1 ) 
+{
+	resall()
+	$("#history_box").remove();
+	$("#copyto").remove()
+
+}
 
 
 //hacks for now
@@ -224,10 +230,16 @@ function splitview(){
 	allres = false
 	alltext = false
 	editor.resize()
+        $("#err").show();
+
 }
 
 function newresults(){
-	window.open(window.pathname.toString() ,'name='+window.pathname,'toolbar=no',' menubar=no', 'resizable=yes');
+	ww = 500;
+	leftish = screen.width-ww;
+	specs = 'toolbar=no,menubar=no,resizable=yes,width='+ww+',height='+ww+',top=0,left='+leftish
+	console.log(specs)
+	window.open(window.pathname.toString() ,window.pathname,specs);
 }
 
 //Output View
@@ -236,6 +248,7 @@ function resall(){
 		$("#right-side").width('100%')
 		areagrower()	
 		allres = true
+		$("#err").hide();
 }
 
 //Folder Toggle
@@ -394,7 +407,7 @@ function build_output(data){
 	boots = data['outerr']
 	if (boots == null) boots = ""
 	//while (boots.search("\n") > -1) boots = boots.replace("\n","<br>")
-	outputdata[outputdata.length] = "\n<span style='color:red'>"+boots+"</span>"
+	outputdata[outputdata.length] = "\n<span id='err' style='color:red'>"+boots+"</span>"
 	
 	
 	//console.log(thislen)
