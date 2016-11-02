@@ -67,6 +67,7 @@ tempbase = resbase //this should just work
 stored_resbase = "marked_results/" //ambitions that never came to fruition
 imgbase = "images/"
 filebase = "files/"
+assetbase = "assets/"
 
 //What a new pages shows
 base_template = "##Author: \n##Date Started: \n##Notes: \n";
@@ -85,7 +86,7 @@ for (var i = 0; i < process.argv.length;i++)
 	
 }
 
-dirs = [tempbase,codebase,histbase,resbase,imgbase,filebase]
+dirs = [tempbase,codebase,histbase,resbase,imgbase,filebase,assetbase]
 for (d in dirs)
 {
 	dird = dirs[d].toString()
@@ -128,14 +129,14 @@ catch (e)
 //create pass.json file if it doesn't already exist
 try
 {
-	checkface = fs.readFileSync('pass.json').toString()
+	checkface = fs.readFileSync(asssetbase+'/pass.json').toString()
 	console.log("pass.json is in place")
 	
 }
 catch (e)
 {
 	console.log("making a password file")
-	fs.writeFileSync('pass.json',fs.readFileSync('static/passmold').toString())
+	fs.writeFileSync(asssetbase+'/pass.json',fs.readFileSync('static/passmold').toString())
 }
 
 //Basic Settings
