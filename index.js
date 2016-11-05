@@ -136,7 +136,7 @@ try
 catch (e)
 {
 	console.log("making a password file")
-	fs.writeFileSync(asssetbase+'/pass.json',fs.readFileSync('static/passmold').toString())
+	fs.writeFileSync(assetbase+'/pass.json',fs.readFileSync('static/passmold').toString())
 }
 
 //Basic Settings
