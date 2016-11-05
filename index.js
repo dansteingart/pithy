@@ -129,7 +129,7 @@ catch (e)
 //create pass.json file if it doesn't already exist
 try
 {
-	checkface = fs.readFileSync(asssetbase+'/pass.json').toString()
+	checkface = fs.readFileSync(assetbase+'/pass.json').toString()
 	console.log("pass.json is in place")
 	
 }
