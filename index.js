@@ -32,7 +32,7 @@ io.set('log level', 1)
 
 //basic authentication would be great to outh2 this sucka at some point 
 app.use(express.basicAuth(function(user, pass, callback) {
-	raw = fs.readFileSync("pass.json").toString();
+	raw = fs.readFileSync(assetbase+"/pass.json").toString();
 	things = JSON.parse(raw);
 	names = things['things']
 	var result = null;
