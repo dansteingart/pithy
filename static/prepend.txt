@@ -6,7 +6,7 @@ import urllib
 import base64
 matplotlib.use('agg')
 from pylab import *
-
+import imghdr
 
 fig, ax = plt.subplots()
 
@@ -21,6 +21,19 @@ def showint():
 
 def himg(fn):
     print "<img src='%s'>" % fn 
+
+def img(ff,width=None,height=None):
+    what = imghdr.what(ff)
+    imgdata = StringIO.StringIO(open(ff).read())
+    preload = 'data:image/%s;base64,'% what
+    uri =  preload+urllib.quote(base64.b64encode(imgdata.buf))
+    w = ""
+    h = ""
+    if width != None: w = "width:"+str(width)+"px;"
+    if height != None: h = "height:"+str(height)+"px;"
+    s = "style='%s%s'" %(w,h)    
+    return '<img %s src = "%s"/>' % (s,uri)
+
 
 def showimg(im,tip=".png",width=None,dpi=150):
     tim = str(int(time.time()))    
