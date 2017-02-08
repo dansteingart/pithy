@@ -38,8 +38,8 @@ because pithy just runs from a directory, standard http authentication can be ap
 
 ###pithy requires 
 
-1. a fairly up to date (not 3.0 though) python installation
-2. [node.js](http://nodejs.org/)  (0.8.16 or better)
+1. a fairly up to date (2.7 and 3.0 work!) python installation
+2. [node.js](http://nodejs.org/)  (4.0.0 or better)
 3. science stuff!  Scipy, numpy and matplotlib are sufficient to say `import pithy`, but you can add whatever you like!
 
 ###installation/usage 
