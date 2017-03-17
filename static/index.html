@@ -161,7 +161,7 @@ var ftimer = ""//setInterval(countDown,1000)
 //Simple Solution for Desync: if no typing for one minute: refresh page
 last_push = new Date().getTime();
 area.keydown(function(e){last_push = new Date().getTime()})
-setInterval(function() { if (last_push < (new Date().getTime() - 600000)) location.reload()}, 5000)
+setInterval(function() { if (last_push < (new Date().getTime() - (15*60*1000))) location.reload()}, 5000)
 
 
 
