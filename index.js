@@ -71,7 +71,7 @@ assetbase = "assets/"
 
 //What a new pages shows
 base_template = "##Author: \n##Date Started: \n##Notes: \n";
-
+pythonbin = "/usr/bin/python";
 gitted = false;
 for (var i = 0; i < process.argv.length;i++)
 {
@@ -83,6 +83,12 @@ for (var i = 0; i < process.argv.length;i++)
 	{
 		histbase = process.argv[i].split("=")[1]+"/";
 	}
+
+	if (process.argv[i].search("--pythonbin=")>-1)
+	{
+		pythonbin = process.argv[i].split("=")[1]+"/";
+	}
+
 	
 }
 
@@ -142,7 +148,7 @@ catch (e)
 //Basic Settings
 settings = {
 	//"bad_words" : ["rm ","write","while True:","open "],
-	"python_path" : "/usr/bin/python",
+	"python_path" : pythonbin,
 	//'prepend' : "fs.readFileSync('static/prepend.txt').toString()"
 	'prepend' : ""
 }
