@@ -72,6 +72,7 @@ assetbase = "assets/"
 //What a new pages shows
 base_template = "##Author: \n##Date Started: \n##Notes: \n";
 pythonbin = "/usr/bin/python";
+prependbase = "static/prepend.txt";
 gitted = false;
 for (var i = 0; i < process.argv.length;i++)
 {
@@ -83,10 +84,13 @@ for (var i = 0; i < process.argv.length;i++)
 	{
 		histbase = process.argv[i].split("=")[1]+"/";
 	}
-
 	if (process.argv[i].search("--pythonbin=")>-1)
 	{
 		pythonbin = process.argv[i].split("=")[1]+"/";
+	}
+	if (process.argv[i].search("--prependbase=")>-1)
+	{
+		prependbase = process.argv[i].split("=")[1]+"/";
 	}
 
 	
@@ -117,7 +121,7 @@ try
 catch (e)
 {
 	console.log("making a pithy library")
-	fs.writeFileSync(codebase+'/pithy.py',fs.readFileSync('static/prepend.txt').toString())
+	fs.writeFileSync(codebase+'/pithy.py',fs.readFileSync(prependbase).toString())
 }
 
 //create python_basics.py lib if it doesn't already exist
