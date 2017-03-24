@@ -86,11 +86,11 @@ for (var i = 0; i < process.argv.length;i++)
 	}
 	if (process.argv[i].search("--pythonbin=")>-1)
 	{
-		pythonbin = process.argv[i].split("=")[1]+"/";
+		pythonbin = process.argv[i].split("=")[1];
 	}
 	if (process.argv[i].search("--prependbase=")>-1)
 	{
-		prependbase = process.argv[i].split("=")[1]+"/";
+		prependbase = process.argv[i].split("=")[1];
 	}
 
 	
