@@ -425,6 +425,10 @@ app.post('*/run', function(req, res)
 
 	full_name = page_name+".py"
 	
+	checkcheck = "python static/tag_find.py "+page_name
+	exec(checkcheck);
+	
+	
 	try
 	{
 		temp = fs.readFileSync(codebase+full_name).toString()
