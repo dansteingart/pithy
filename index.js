@@ -121,7 +121,7 @@ try
 catch (e)
 {
 	console.log("making a pithy library")
-	console.logo(prependbase)
+	console.log(prependbase)
 	fs.writeFileSync(codebase+'/pithy.py',fs.readFileSync(prependbase).toString())
 }
 
