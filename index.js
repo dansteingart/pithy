@@ -121,6 +121,7 @@ try
 catch (e)
 {
 	console.log("making a pithy library")
+	console.logo(prependbase)
 	fs.writeFileSync(codebase+'/pithy.py',fs.readFileSync(prependbase).toString())
 }
 
@@ -128,11 +129,11 @@ catch (e)
 try
 {
 	checkface = fs.readFileSync(codebase+'/python_basics.py').toString()
-	console.log("pithy.py is in place")
+	console.log("tutorial is in place")
 }
 catch (e)
 {
-	console.log("making a pithy library")
+	console.log("making a tutorial")
 	fs.writeFileSync(codebase+'/python_basics.py',fs.readFileSync('static/python_basics').toString())
 }
 
