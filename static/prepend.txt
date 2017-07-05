@@ -14,8 +14,16 @@ fig, ax = plt.subplots()
 #rcParams['font.family'] = "Arial"
 
 
+#make plotly work
+import plotly
+def showplotly(fn=None):
+    if fn == None: fn ='plotly.html'
+    else: fn = "files/%s.html" %fn
+    plotly.offline.plot_mpl(fig,filename=fn)
+    print open(fn).read()
+    
 #hack to make things worth from PIL
-
+    
 def showint():
     print mpld3.fig_to_d3(fig).replace("\n","\r")
 
