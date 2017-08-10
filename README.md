@@ -7,7 +7,7 @@ code should be 1, not 2.
 
 sometimes you want to share code and see what it does on the same page.  sometimes you want to do this for python with scientific computing.  enter pithy.  
 
-pithy has code on the left, and output on the right.  all changes are saved, and the url is freely shareable.  pithy has been tested against sophomores and juniors in chemical and mechanical engineering classes successfully for three years and running.  
+pithy has code on the left, and output on the right.  all changes are saved, and the url is freely shareable.  pithy has been tested against sophomores and juniors in chemical and mechanical engineering classes successfully since 2011.  
 
 pithy is python for sharing plots and numerical output, among other things.  it's really pretty cool, but you have to play with it for a bit to see why.  go to the [wiki](https://github.com/dansteingart/pithy/wiki) to get a sense of what it can do.
 
