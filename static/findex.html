@@ -46,11 +46,11 @@
 
 <script>
 
-
+var delim = "BREAKKKKK"
 var changed = false;
 var status = $("#status");
 var pathname = window.location.pathname;
-pathname = pathname.replace(new RegExp('/', 'g'), "#")
+pathname = pathname.replace(new RegExp('/', 'g'), delim)
 var page = pathname
 var scrollpos = 0;
 height_factor = 1
@@ -543,7 +543,7 @@ function loadresult(){
 
 function forkcode(){
 	var marker = window.prompt("Copy This Code As:",window.location.pathname+"_copy");
-	marker = marker.replace(new RegExp('/', 'g'), "#")
+	marker = marker.replace(new RegExp('/', 'g'), delim)
 	if (marker != null & marker != "")
 	{
 		$.ajax(

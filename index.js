@@ -456,6 +456,7 @@ app.post('*/run', function(req, res)
 		
 		fs.writeFileSync(codebase+full_name,data);
 		fs.writeFileSync(histbase+page_name+"_"+time,data);
+		exec("python2 sorter.py "+page_name)
 		
 		if (gitted)
 		{
