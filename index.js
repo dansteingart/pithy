@@ -74,6 +74,7 @@ base_template = "##Author: \n##Date Started: \n##Notes: \n";
 pythonbin = "/usr/bin/python";
 prependbase = "static/prepend.txt";
 gitted = false;
+var foldermode = false;
 for (var i = 0; i < process.argv.length;i++)
 {
 	if (process.argv[i].search("--codebase=")>-1)
@@ -93,8 +94,16 @@ for (var i = 0; i < process.argv.length;i++)
 		prependbase = process.argv[i].split("=")[1];
 	}
 
+	if (process.argv[i].search("--foldermode=")>-1)
+	{
+		foldermode = (process.argv[i].split("=")[1] == 'true');
+	}
+
+
 	
 }
+
+
 
 dirs = [tempbase,codebase,histbase,resbase,imgbase,filebase,assetbase]
 for (d in dirs)
@@ -369,7 +378,10 @@ app.get('/*', function(req, res){
 	}
 	else
 	{
-		indexer = fs.readFileSync('static/index.html').toString()
+		var actionfile = 'static/index.html'
+		if (foldermode) actionfile = 'static/findex.html'
+
+		indexer = fs.readFileSync(actionfile).toString()
 		res.send(indexer)
 	}
 });
