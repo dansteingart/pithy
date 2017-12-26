@@ -39,8 +39,6 @@ because pithy just runs from a directory, standard http authentication can be ap
 ### the easiest way to use pithy is just spin out a docker container
 htttps://dockerhub/steingart/pithy
 
-
-
 ### pithy requires 
 
 1. a fairly up to date (2.7 and 3.0 work!) python installation
@@ -83,6 +81,14 @@ paste this into your pithy page to generate a graph
     showme() 
 
 everything here is pure [pylab](http://www.scipy.org/PyLab) except for showme(), which does some behind the scenes magic to generate a plot and save the figure.  
+
+
+### UPDATE 2017-12-26
+Some people wanted a mode where they could store different files in different "folders". Haha.
+
+Well, as far as the user is concerned this does that.  
+
+`node index.js 8081 --foldermode=true`
 
 ### acknowledgements
 
