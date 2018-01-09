@@ -44,7 +44,7 @@ app.use("/static", express.static(__dirname + '/static'));
 app.use("/images", express.static(__dirname + '/images'));
 
 
-
+exec("mkdir post_payload/")
 
 app.post('/run',function(req,res)
 {
@@ -65,11 +65,12 @@ app.post('/run',function(req,res)
 			estring = "";
 			console.log(req.body)
 			to_run = req.body['page_name']
+			fn = "post_payload/"+to_run+".json"
 			payload = req.body['payload']
 			
-			fs.writeFileSync(to_run+".json",payload)
+			fs.writeFileSync(fn,payload)
 			
-			fullcmd = settings.python_path+" -u '"+__dirname+"/code/"+to_run+".py' "+to_run+".json"
+			fullcmd = settings.python_path+" -u '"+__dirname+"/code/"+to_run+".py'" + fn
 			
 			exec(fullcmd, {maxBuffer: 1024 * 10000},
 					function(error, stdout, stderr)
@@ -107,10 +108,11 @@ app.post('/*',function(req,res)
 			console.log(req.body)
 			to_run = parts[1]
 			payload = req.body['payload']
+                        fn = "post_payload/"+to_run+".json"
 			
-			fs.writeFileSync(to_run+".json",JSON.stringify(req.body))
+			fs.writeFileSync(fn,JSON.stringify(req.body))
 			
-			fullcmd = settings.python_path+" -u '"+__dirname+"/code/"+to_run+".py' "+to_run+".json"
+			fullcmd = settings.python_path+" -u '"+__dirname+"/code/"+to_run+".py' " + fn
 			
 			exec(fullcmd,{maxBuffer: 1024 * 10000},
 					function(error, stdout, stderr)
