@@ -74,6 +74,7 @@ base_template = "##Author: \n##Date Started: \n##Notes: \n";
 pythonbin = "/usr/bin/python";
 prependbase = "static/prepend.txt";
 gitted = false;
+var foldermode = false;
 for (var i = 0; i < process.argv.length;i++)
 {
 	if (process.argv[i].search("--codebase=")>-1)
@@ -93,8 +94,16 @@ for (var i = 0; i < process.argv.length;i++)
 		prependbase = process.argv[i].split("=")[1];
 	}
 
+	if (process.argv[i].search("--foldermode=")>-1)
+	{
+		foldermode = (process.argv[i].split("=")[1] == 'true');
+	}
+
+
 	
 }
+
+
 
 dirs = [tempbase,codebase,histbase,resbase,imgbase,filebase,assetbase]
 for (d in dirs)
@@ -121,6 +130,7 @@ try
 catch (e)
 {
 	console.log("making a pithy library")
+	console.log(prependbase)
 	fs.writeFileSync(codebase+'/pithy.py',fs.readFileSync(prependbase).toString())
 }
 
@@ -128,11 +138,11 @@ catch (e)
 try
 {
 	checkface = fs.readFileSync(codebase+'/python_basics.py').toString()
-	console.log("pithy.py is in place")
+	console.log("tutorial is in place")
 }
 catch (e)
 {
-	console.log("making a pithy library")
+	console.log("making a tutorial")
 	fs.writeFileSync(codebase+'/python_basics.py',fs.readFileSync('static/python_basics').toString())
 }
 
@@ -368,7 +378,10 @@ app.get('/*', function(req, res){
 	}
 	else
 	{
-		indexer = fs.readFileSync('static/index.html').toString()
+		var actionfile = 'static/index.html'
+		if (foldermode) actionfile = 'static/findex.html'
+
+		indexer = fs.readFileSync(actionfile).toString()
 		res.send(indexer)
 	}
 });
@@ -443,6 +456,7 @@ app.post('*/run', function(req, res)
 		
 		fs.writeFileSync(codebase+full_name,data);
 		fs.writeFileSync(histbase+page_name+"_"+time,data);
+		exec("python2 sorter.py "+page_name)
 		
 		if (gitted)
 		{

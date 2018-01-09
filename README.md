@@ -1,4 +1,4 @@
-###pithy is
+### pithy is
 
 	1. concise and forcefully expressive, or
 	2. containing much pith
@@ -7,11 +7,11 @@ code should be 1, not 2.
 
 sometimes you want to share code and see what it does on the same page.  sometimes you want to do this for python with scientific computing.  enter pithy.  
 
-pithy has code on the left, and output on the right.  all changes are saved, and the url is freely shareable.  pithy has been tested against sophomores and juniors in chemical and mechanical engineering classes successfully for three years and running.  
+pithy has code on the left, and output on the right.  all changes are saved, and the url is freely shareable.  pithy has been tested against sophomores and juniors in chemical and mechanical engineering classes successfully since 2011.  
 
 pithy is python for sharing plots and numerical output, among other things.  it's really pretty cool, but you have to play with it for a bit to see why.  go to the [wiki](https://github.com/dansteingart/pithy/wiki) to get a sense of what it can do.
 
-###you might say
+### you might say
 
 pithy is just like [ipython notebook](http://ipython.org/notebook.html), or the [adafruit learning system IDE](http://learn.adafruit.com/), or `<insert your favorite web ide here>`, and i'd be flattered.  but it's got subtle differences, and the best way to understand them is this:
 
@@ -25,7 +25,7 @@ why is this useful?  imagine you write an analysis of a dynamic dataset in r, or
 
 this is pithy.  it does that.
 
-###big warning
+### big warning
 pithy runs arbitrary python on your machine and sends the output back to the browser in a fairly clear manner.  this is convenient, this is also potentially SUPER DANGEROUS.  thus far there is an optional attempt at code scrubbing to stop people from writing local files, reading local files and `rm -rf`-ing your stuff, but it is most definitely not sandboxed nor bullet proof.  it is currently _not enabled_.  thus, pithy should be run on a server:
 
 1. that is routinely backed up (like all good servers should be)
@@ -36,13 +36,16 @@ the [raspberry pi](http://www.raspberrypi.org/) is an awesome server for this ve
 
 because pithy just runs from a directory, standard http authentication can be applied to make stuff safe, herein we use some very simple stuff.
 
-###pithy requires 
+### the easiest way to use pithy is just spin out a docker container
+htttps://dockerhub/steingart/pithy
+
+### pithy requires 
 
 1. a fairly up to date (2.7 and 3.0 work!) python installation
 2. [node.js](http://nodejs.org/)  (4.0.0 or better)
 3. science stuff!  Scipy, numpy and matplotlib are sufficient to say `import pithy`, but you can add whatever you like!
 
-###installation/usage 
+### installation/usage 
 
 1. clone repository to where you want stuff
 2. cd to that directory
@@ -52,7 +55,7 @@ because pithy just runs from a directory, standard http authentication can be ap
 5. now add whatever name you want to the URL (numbers,letters and (-,_) only.  run some code here.  share the url if you're running on an accessisible server.  repeat.  now you're pithy.
 
 
-###example
+### example
 
 pithy tries to plot things nicely, and in order.  best to learn by example here:
 
@@ -79,7 +82,15 @@ paste this into your pithy page to generate a graph
 
 everything here is pure [pylab](http://www.scipy.org/PyLab) except for showme(), which does some behind the scenes magic to generate a plot and save the figure.  
 
-###acknowledgements
+
+### UPDATE 2017-12-26
+Some people wanted a mode where they could store different files in different "folders". Haha.
+
+Well, as far as the user is concerned this does that.  
+
+`node index.js 8081 --foldermode=true`
+
+### acknowledgements
 
 Pithy was made possible in part with support from NSF Grant CMMI 1031280.
 

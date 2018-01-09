@@ -1,12 +1,25 @@
 import numpy
 import matplotlib
 import time
-import StringIO
+from io import BytesIO
 import urllib
 import base64
 matplotlib.use('agg')
 from pylab import *
-import imghdr
+from subprocess import check_output
+
+def go(string): 
+    return check_output(string,shell=True).decode("utf-8") 
+
+def prepare(library,branch,debug = False):
+    check = go("cd files/feasible_libs/%s/; git checkout %s" % (library,branch))
+    import sys
+    sys.path.append("files/feasible_libs/%s" % library)
+    if debug == True: print(check)
+    
+
+
+
 
 fig, ax = plt.subplots()
 
@@ -14,34 +27,13 @@ fig, ax = plt.subplots()
 #rcParams['font.family'] = "Arial"
 
 
-#make plotly work
-import plotly
-def showplotly(fn=None):
-    if fn == None: fn ='plotly.html'
-    else: fn = "files/%s.html" %fn
-    plotly.offline.plot_mpl(fig,filename=fn)
-    print open(fn).read()
-    
 #hack to make things worth from PIL
-    
+
 def showint():
-    print mpld3.fig_to_d3(fig).replace("\n","\r")
+    print(mpld3.fig_to_d3(fig).replace("\n","\r"))
 
 def himg(fn):
-    print "<img src='%s'>" % fn 
-
-def img(ff,width=None,height=None):
-    what = imghdr.what(ff)
-    imgdata = StringIO.StringIO(open(ff).read())
-    preload = 'data:image/%s;base64,'% what
-    uri =  preload+urllib.quote(base64.b64encode(imgdata.buf))
-    w = ""
-    h = ""
-    if width != None: w = "width:"+str(width)+"px;"
-    if height != None: h = "height:"+str(height)+"px;"
-    s = "style='%s%s'" %(w,h)    
-    return '<img %s src = "%s"/>' % (s,uri)
-
+    print("<img src='%s'>" % fn)
 
 def showimg(im,tip=".png",width=None,dpi=150):
     tim = str(int(time.time()))    
@@ -50,8 +42,8 @@ def showimg(im,tip=".png",width=None,dpi=150):
     im.save(image,dpi=dpi)
     
     if width != None:
-        print "<img src='%s' style='width:%s'>" % (image,str(width)),
-    else: print '##_holder_##:',"/"+image
+        print("<img src='%s' style='width:%s'>" % (image,str(width)),)
+    else: print('##_holder_##:',"/"+image)
     
 
 def showme(tip="png",kind="static",width=None,height=None,inline=False,dpi=80):
@@ -64,33 +56,30 @@ def showme(tip="png",kind="static",width=None,height=None,inline=False,dpi=80):
     s = "style='%s%s'" %(w,h)
     #strang = '<img '+s+' src=/'+image+'>'
     if kind == "static": 
-        print imager64(tip=tip,dpi=dpi,style=s),
-        if not inline: print ""
+        print(imager64(tip=tip,dpi=dpi,style=s),)
+        if not inline: print("")
 
     else: 
         savefig(image,dpi=dpi,bbox_inches="tight")
-        print '##_dynamic_##:',kind,':',tim,':',"/"+image
-
-
-
+        print('##_dynamic_##:',kind,':',tim,':',"/"+image)
 
 def imager64(tip="png",dpi=80,style=None):
-    imgdata = StringIO.StringIO()
+    imgdata = BytesIO()
     savefig(imgdata,dpi=dpi,tip=tip,bbox_inches="tight")
     imgdata.seek(0)  # rewind the data
     preload = 'data:image/%s;base64,'% tip 
     if tip == "svg":
         preload = 'data:image/svg+xml;;base64,' 
-    uri =  preload+urllib.quote(base64.b64encode(imgdata.buf))
+    uri =  preload+urllib.parse.quote(base64.b64encode(imgdata.read()))
     return '<img %s src = "%s"/>' % (style,uri)
 
 #A smoothing function I use
 def smooth(x,window_len=11,window='flat'):
     if x.ndim != 1:
-        raise ValueError, "smooth only accepts 1 dimension arrays."
+        raise ValueError("smooth only accepts 1 dimension arrays.")
 
     if x.size < window_len:
-        raise ValueError, "Input vector needs to be bigger than window size."
+        raise ValueError("Input vector needs to be bigger than window size.")
 
 
     if window_len<3:
@@ -98,7 +87,7 @@ def smooth(x,window_len=11,window='flat'):
 
 
     if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
-        raise ValueError, "Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'"
+        raise ValueError("Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'")
 
 
     s=numpy.r_[x[window_len-1:0:-1],x,x[-1:-window_len:-1]]
@@ -133,7 +122,7 @@ def lineno():
     return inspect.currentframe().f_back.f_lineno
 
 def refresh(interval = 5):
-    print "<meta http-equiv='refresh' content='%i'>" % interval
+    print("<meta http-equiv='refresh' content='%i'>" % interval)
 
 
 
@@ -142,8 +131,8 @@ def refresh(interval = 5):
 clf()
 
 if __name__ == "__main__":
-    print rcParams['figure.figsize']
-    print rcParams['figure.dpi']
+    print(rcParams['figure.figsize'])
+    print(rcParams['figure.dpi'])
     
     a = linspace(0,1,100)
     for i in logspace(-1,1,10):
