@@ -68,7 +68,8 @@ app.post('/run',function(req,res)
 			fn = "post_payload/"+to_run+".json"
 			payload = req.body['payload']
 			
-			fs.writeFileSync(fn,JSON.stringify(req.body)))
+			fs.writeFileSync(fn,JSON.stringify(req.body))
+
 			
 			fullcmd = settings.python_path+" -u '"+__dirname+"/code/"+to_run+".py' " + fn
 			
