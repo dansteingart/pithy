@@ -70,7 +70,7 @@ app.post('/run',function(req,res)
 			
 			fs.writeFileSync(fn,payload)
 			
-			fullcmd = settings.python_path+" -u '"+__dirname+"/code/"+to_run+".py'" + fn
+			fullcmd = settings.python_path+" -u '"+__dirname+"/code/"+to_run+".py' " + fn
 			
 			exec(fullcmd, {maxBuffer: 1024 * 10000},
 					function(error, stdout, stderr)
