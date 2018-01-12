@@ -13,6 +13,19 @@ fig, ax = plt.subplots()
 #Figure Defaults
 #rcParams['font.family'] = "Arial"
 
+def csv_to_table(csv,
+                 table_style="border-collapse:collapse;font-size:15px; border: 1px black solid;",
+                 td_style="margin:0;padding:5px;text-align:center;border: 1px black solid"):
+    csv = csv.strip()
+    out = "<table style='%s'>" % table_style
+    for c in csv.split("\n"):
+        out+="<tr>"
+        for p in c.split(","):
+            out+="<td style='%s'>%s</td>" % (td_style,p)
+        out+= "</tr>"
+    out+= "</table>"
+    return out
+
 
 #make plotly work
 import plotly
