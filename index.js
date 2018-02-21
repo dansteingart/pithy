@@ -695,7 +695,7 @@ function betterexec(nameo,fff)
 
   //look to see if we're going to timeout the script
   timeoutclause = ""
-  if (runtimeout) timeoutclause = "timeout 60" //default to 60 seconds
+  if (runtimeout) timeoutclause = "timeout 180" //default to 180 seconds
 
   //look for timeout string in code ##pithytimeout=YYY
   fil = fs.readFileSync(essence+".py").toString()
