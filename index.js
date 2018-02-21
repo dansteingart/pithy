@@ -18,7 +18,7 @@ var spawn = require('child_process').spawn,child;
 var os = require("os")
 var glob = require('glob')
 var options = {db: {type: 'none'}};
- 
+
 //Create the server, start up sharejs.  Note this is an _old_ version of sharejs, pre 0.8.
 server = http.createServer(app)
 sharejs.attach(app, options);
@@ -30,7 +30,7 @@ io.set('log level', 1)
 
 //a vestige, need to clean out.  don't change this
 
-//basic authentication would be great to outh2 this sucka at some point 
+//basic authentication would be great to outh2 this sucka at some point
 app.use(express.basicAuth(function(user, pass, callback) {
 	raw = fs.readFileSync(assetbase+"/pass.json").toString();
 	things = JSON.parse(raw);
@@ -44,7 +44,7 @@ app.use(express.basicAuth(function(user, pass, callback) {
 		{
 			result = (user === nuser && pass === pass);
 			result = user;
-		} 
+		}
 	}
  	callback(null /* error */, result); //on error
 }));
@@ -74,6 +74,7 @@ base_template = "##Author: \n##Date Started: \n##Notes: \n";
 pythonbin = "/usr/bin/python";
 prependbase = "static/prepend.txt";
 gitted = false;
+var runtimeout = false;
 var foldermode = false;
 for (var i = 0; i < process.argv.length;i++)
 {
@@ -99,8 +100,12 @@ for (var i = 0; i < process.argv.length;i++)
 		foldermode = (process.argv[i].split("=")[1] == 'true');
 	}
 
+  if (process.argv[i].search("--runtimeout=")>-1)
+	{
+		runtimeout = (process.argv[i].split("=")[1] == 'true');
+	}
 
-	
+
 }
 
 
@@ -112,10 +117,10 @@ for (d in dirs)
 	console.log(dird)
 	try
 	{
-		fs.mkdirSync(dird); 
+		fs.mkdirSync(dird);
 		console.log(dird+" has been made")
 	}
-	catch (e) 
+	catch (e)
 	{
 		console.log(dird+" is in place")
 	}
@@ -151,7 +156,7 @@ try
 {
 	checkface = fs.readFileSync(assetbase+'/pass.json').toString()
 	console.log("pass.json is in place")
-	
+
 }
 catch (e)
 {
@@ -233,7 +238,7 @@ function getBigHistory()
 	hist_dict = []
 	for (i in activefiles)
 	{
-	
+
 		its = activefiles[i].replace(".py","")
 		things = activefiles[i].replace(".py","_1*")
 		globs = glob.sync(histbase+"/"+things)
@@ -245,15 +250,15 @@ function getBigHistory()
 	               return a.hits - b.hits;
 	           });
 	hist_dict.reverse()
-	
+
 }
 
 
 
 app.get('/*', function(req, res){
-	if (req.params[0] == "") 
+	if (req.params[0] == "")
 	{
-		if (req.params[0] == "") 
+		if (req.params[0] == "")
 		{
 			indexer = fs.readFileSync('static/homepage.html').toString()
 
@@ -261,23 +266,23 @@ app.get('/*', function(req, res){
 			//get file list
 			out = fs.readdirSync(codebase)
 			//sort files (ht to http://stackoverflow.com/a/10559790)
-			
+
 			out.sort(function(a, b) {
-			               return fs.statSync(codebase + a).mtime - 
+			               return fs.statSync(codebase + a).mtime -
 			                      fs.statSync(codebase + b).mtime;
 			           });
 	 		out.reverse()
-			
+
 			lts = "" //list to send
 			count_limit = 20;
-			
-			count = 0 
+
+			count = 0
 			for (var i in out)
 			{	foo = out[i].replace(".py","")
 				dater = fs.statSync(codebase + out[i]).ctime.toDateString()
 				if (foo != "temper" && foo !=".git") lts += "<span class='leftin'><a href='/"+foo+"'>"+foo+ "</a></span><span class='rightin'> " + dater+"</span><br>";
 				count +=1
-				if (count > count_limit) break; 
+				if (count > count_limit) break;
 			}
 
 			base_case = 0
@@ -286,17 +291,17 @@ app.get('/*', function(req, res){
 			activefiles = out
 
 			lts = "" //list to send
-		
-			count = 0 
-			
+
+			count = 0
+
 			for (j in hist_dict)
-			{	
+			{
 				i = hist_dict[j]['fil']
 				k = hist_dict[j]['hits']
-			
+
 				if (i != "temper") lts += "<span class='leftin'><a href='/"+i+"'>"+i+ "</a></span><span class='rightin'> " + k+" edits</span><br>";
 				count +=1
-				if (count > count_limit) break; 
+				if (count > count_limit) break;
 			}
 
 			base_case = "0"
@@ -309,27 +314,27 @@ app.get('/*', function(req, res){
 			out = fs.readdirSync(filebase)
 			//sort files (ht to http://stackoverflow.com/a/10559790)
 			out.sort(function(a, b) {
-			               return fs.statSync(filebase + a).ctime - 
+			               return fs.statSync(filebase + a).ctime -
 			                      fs.statSync(filebase + b).ctime;
 			           });
 	 		out.reverse()
 			lts = "" //list to send
-		
+
 			count_limit = 20;
-			
-			count = 0 
+
+			count = 0
 			for (var i in out)
 			{	foo = out[i]//.replace(".py","")
 				dater = fs.statSync(filebase + out[i]).ctime.toDateString()
 				lts += "<span class='leftin'><a href='/files/"+foo+"'>"+foo+ "</a></span><span class='rightin'> " + dater+"</span><br>";
 				count +=1
-				if (count > count_limit) break; 
+				if (count > count_limit) break;
 			}
 
 			base_case = 0
 
 			indexer = indexer.replace("##_popthings_##",lts)
-			
+
 
 			res.send(indexer)
 
@@ -344,7 +349,7 @@ app.get('/*', function(req, res){
 		out = fs.readdirSync(filebase)
 		//sort files (ht to http://stackoverflow.com/a/10559790)
 		out.sort(function(a, b) {
-		               return fs.statSync(filebase + a).ctime - 
+		               return fs.statSync(filebase + a).ctime -
 		                      fs.statSync(filebase + b).ctime;
 		           });
  		out.reverse()
@@ -363,7 +368,7 @@ app.get('/*', function(req, res){
 		out = fs.readdirSync(codebase)
 		//sort files (ht to http://stackoverflow.com/a/10559790)
 		out.sort(function(a, b) {
-		               return fs.statSync(codebase + a).ctime - 
+		               return fs.statSync(codebase + a).ctime -
 		                      fs.statSync(codebase + b).ctime;
 		           });
  		out.reverse()
@@ -391,7 +396,7 @@ app.post("*/killer",function(req,res)
 		x = req.body.page_name;
 		console.log(x)
 		thispid = processes[x];
-		
+
 		console.log("trying to kill " + x)
 		if (thispid != undefined)
 		{
@@ -408,7 +413,7 @@ app.post("*/killer",function(req,res)
 				}
 			})
 		}
-	res.json({success:true})	
+	res.json({success:true})
 })
 
 app.post('*/run', function(req, res)
@@ -416,7 +421,7 @@ app.post('*/run', function(req, res)
 	x = req.body
 	page_name = x['page_name'].replace("/","").split("/")[0]
 	script_name = x['script_name']
-	prepend = settings.prepend		
+	prepend = settings.prepend
 	out = ""
 	image_list = []
 
@@ -437,11 +442,11 @@ app.post('*/run', function(req, res)
 	temp =""
 
 	full_name = page_name+".py"
-	
+
 	checkcheck = "python static/tag_find.py "+page_name
 	exec(checkcheck);
-	
-	
+
+
 	try
 	{
 		temp = fs.readFileSync(codebase+full_name).toString()
@@ -453,11 +458,11 @@ app.post('*/run', function(req, res)
 
 	if (temp != data || temp == "dood")
 	{
-		
+
 		fs.writeFileSync(codebase+full_name,data);
 		fs.writeFileSync(histbase+page_name+"_"+time,data);
 		exec("python2 sorter.py "+page_name)
-		
+
 		if (gitted)
 		{
 			gitter = "cd code; git add *.py; git commit -m 'auto commit; user:"+req.user+"'; git push"
@@ -466,14 +471,14 @@ app.post('*/run', function(req, res)
 		}
 	}
 
-	res.json({success:true})	
+	res.json({success:true})
 	if (processes[page_name] == undefined) gofer = betterexec(page_name,x)
 	console.log(gofer)
 	processes[page_name] = gofer['name']
 	console.log(processes)
 	timers[processes[page_name]] = true
-		
-	
+
+
 });
 
 app.post('*/history', function(req, res)
@@ -487,12 +492,12 @@ app.post('*/history', function(req, res)
 	fils  = fs.readdirSync(histbase)
 	for (i in fils)
 	{
-		if (fils[i].search(page_name+"_") > -1) 
+		if (fils[i].search(page_name+"_") > -1)
 		{
 			thing_list.push(fils[i])
 		}
 	}
-		
+
 	fils = thing_list
 	fils.sort()
 	fils.reverse()
@@ -512,7 +517,7 @@ app.post('*/history', function(req, res)
 		time_part = month+"/"+day+"/"+year+" "+hour+":"+min+":"+sec;
 		hist_list.push([fils[i],date.toISOString()])
 	}
-		
+
 	res.json({'out':hist_list})
 });
 
@@ -531,17 +536,17 @@ app.post('*/markedresults', function(req, res)
 	{
 		console.log(fils[i])
 		console.log(page_name)
-		if (fils[i].search(page_name+"_") > -1) 
+		if (fils[i].search(page_name+"_") > -1)
 		{
 			thing_list.push(fils[i])
 		}
 	}
-		
+
 	fils = thing_list
 	fils.sort()
 	fils.reverse()
 	console.log(fils);
-	
+
 	hist_list = []
 	for (i in fils)
 	{
@@ -550,29 +555,29 @@ app.post('*/markedresults', function(req, res)
 		hist_list.push([fils[i],marked_name])
 	}
 	console.log(hist_list);
-		
+
 	res.json({'out':hist_list})
 });
 
 
 app.post('*/read', function(req, res)
 {
-	
+
 	x = req.body
 	back_to_pith = {}
 	out = base_template
 	page_name = x['page_name'].replace("/","").split("/")[0]
-	
+
 	try{
 	try
 	{
 		out = fs.readFileSync(codebase+page_name+".py").toString()
-		
-		
+
+
 	}
 	catch (e)
 	{
-		out = fs.readFileSync(histbase+page_name).toString()		
+		out = fs.readFileSync(histbase+page_name).toString()
 	}
 	}
 	catch (e)
@@ -582,43 +587,43 @@ app.post('*/read', function(req, res)
 
 	back_to_pith['script'] = out
 	res.json(back_to_pith)
-	
+
 	try
 	{
 		resulters = fs.readFileSync(resbase+page_name).toString()
-		resulters = JSON.parse(resulters)	
+		resulters = JSON.parse(resulters)
 		if (!processes.hasOwnProperty(page_name)) send_list.push({'page_name':page_name,'data':resulters})
 
 	}
 	catch (e)
-	{	
+	{
 		console.log(e)
 	}
-	
+
 });
 
 app.post('*/readresults', function(req, res)
 {
-	
+
 	x = req.body
 	back_to_pith = {}
 	out =  base_template
 	page_name = x['page_name']
 	try
 	{
-		out = fs.readFileSync(resbase+page_name).toString()		
+		out = fs.readFileSync(resbase+page_name).toString()
 	}
 	catch (e)
 	{
 		//console.log(e)
 		out =  base_template
 	}
-	
+
 	//get cc
 	cc = x['cc']
 	if (cc == undefined)  cc = 0;
 	res.json( JSON.parse(out.substring(cc)) )
-	
+
 });
 
 app.post('*/copyto',function(req,res)
@@ -629,7 +634,7 @@ app.post('*/copyto',function(req,res)
 	data = x['value']
 	full_name = script_name+".py"
 	fs.writeFileSync(codebase+full_name,data);
-	res.json({success:true,redirect:script_name})	
+	res.json({success:true,redirect:script_name})
 
 })
 
@@ -643,7 +648,7 @@ app.post('*/markresult',function(req,res)
 	try
 	{
 		hacky_name = stored_resbase+page_name+"_"+parseInt(new Date().getTime())
-		out = fs.readFileSync(resbase+page_name).toString()		
+		out = fs.readFileSync(resbase+page_name).toString()
 		result_set = JSON.parse(out)
 		result_set['code'] = fs.readFileSync(codebase+page_name+".py").toString()
 		result_set['name'] = result_name
@@ -655,7 +660,7 @@ app.post('*/markresult',function(req,res)
 		//console.log(e)
 		out =  base_template
 	}
-	
+
 	console.log(result_set)
 })
 
@@ -681,15 +686,28 @@ function betterexec(nameo,fff)
 {
 	parts = fff['page_name'].split("/")
 	estring = "";
-	for (var i=2; i < parts.length;i++) 
+	for (var i=2; i < parts.length;i++)
 	{
 		estring += parts[i]+" ";
 	}
-	
-	essence = __dirname+"/"+codebase+nameo
-	big_gulp = settings.python_path+" -u '"+essence+".py' "+estring
+
+  essence = __dirname+"/"+codebase+nameo
+
+  //look to see if we're going to timeout the script
+  timeoutclause = ""
+  if (runtimeout) timeoutclause = "timeout 60" //default to 60 seconds
+
+  //look for timeout string in code ##pithytimeout=YYY
+  fil = fs.readFileSync(essence+".py").toString()
+  mm = fil.match(/##pithytimeout=(\d+)/)
+  if (mm != null)
+  timeoutclause = "timeout "+mm[1]
+
+  //now process file to see if there's a timeout change
+	big_gulp = timeoutclause + " "+ settings.python_path+" -u '"+essence+".py' "+estring
 	fullcmd = "touch "+tempbase+parts[1] +"; " +big_gulp+" > '"+tempbase+nameo+"'"
-	
+
+
 	start_time = new Date().getTime()
 	times[nameo] = start_time
 	console.log(times)
@@ -700,23 +718,24 @@ function betterexec(nameo,fff)
 		console.log(nameo+" is done")
 		end_time = new Date().getTime()
 		exec_time = end_time - times[nameo];
-		
+
 		foost = fs.readFileSync(tempbase+nameo).toString()
 		big_out = {'out':stdout+foost,'outerr':stderr,'images':[],'exec_time':exec_time}
 		send_list.push({'page_name':nameo,'data':big_out})
-		
+
 		if (stderr.search("Terminated") == -1) fs.writeFileSync(resbase+nameo,JSON.stringify(big_out))
-		
+
 		//Delete Processes
 		delete processes[nameo];
-		delete times[nameo];		
+		delete times[nameo];
 		timers[processes[nameo]] = false
 
-		
+
 	})
 
 	return {'pid':chill.pid + os_offset,'name':essence}
 }
+
 
 //Makes random page
 //cribbed from http://stackoverflow.com/a/1349426/565514
@@ -737,13 +756,13 @@ function makeid()
 old_send = []
 setInterval(function(){
 	this_send = send_list.splice(0,1)[0]
-	
-	if (this_send != undefined) 
+
+	if (this_send != undefined)
 	{
 			//console.log(send_list.length + " message(s) in queue")
 			io.sockets.emit(this_send['page_name'],this_send['data'])
 			old_send = this_send
-		
+
 	};
 },100)
 
@@ -755,23 +774,23 @@ setInterval(function() {
 	for (p in processes)
 	{
 		bettertop(p)
-	
+
 	}
 }, 1000);
 
 
 //flush images
 setInterval(function() {
-	
+
 	chill = exec("rm images/*",
-		function (error, stdout, stderr) 
+		function (error, stdout, stderr)
 		{
 			console.log(stdout)
 			console.log("flushed images")
 		}
 )
 	}, 6000000);
-	
+
 
 lastcheck = {}
 
@@ -784,14 +803,14 @@ function bettertop(p)
 		now = new Date().getTime();
 		diff = now - times[p]
 		filemtime = new Date(fs.statSync(tempbase+p)['mtime']).getTime()
-		outer = fs.readFileSync(tempbase+p).toString() + "\n<i>been working for " + diff + " ms</i>" 
+		outer = fs.readFileSync(tempbase+p).toString() + "\n<i>been working for " + diff + " ms</i>"
 		send_list.push({'page_name':p,'data':{out:outer}})
-		
+
 	}
 	catch(e){
 		console.log(processes[p]);
 		console.log(results)
 		console.log(e)
 	}
-	
+
 }
