@@ -83,12 +83,21 @@ paste this into your pithy page to generate a graph
 everything here is pure [pylab](http://www.scipy.org/PyLab) except for showme(), which does some behind the scenes magic to generate a plot and save the figure.  
 
 
-### UPDATE 2017-12-26
+### Update 2017-12-26
 Some people wanted a mode where they could store different files in different "folders". Haha.
 
 Well, as far as the user is concerned this does that.  
 
 `node index.js 8081 --foldermode=true`
+
+### Update 2018-04-20
+A timeout can be coded in, such that
+
+`node index.js 8081 --runtimeout=true`
+
+Pithy scripts are not allowed to run more than 3 minutes unless overridden in the script with
+
+`##pithytimeout=YYY`, where `YYY` is the timeout in seconds, `0` means run forever.
 
 ### acknowledgements
 
