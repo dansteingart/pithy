@@ -16,7 +16,7 @@
 
 
 
-<script src="/static/jquery.imagesloaded.js" type="text/javascript" charset="utf-8"></script> 
+<script src="/static/jquery.imagesloaded.js" type="text/javascript" charset="utf-8"></script>
 
 </head>
 <body>
@@ -24,20 +24,20 @@
 <div id="left-side" class="left">
 <div id="script_area"></div>
 <div id="code_enter" style="text-align: right;">
-</div>	
+</div>
 
-</div>	
+</div>
 <div id="right-side" class="right">
 	<div class="menu_bar">
 		<span id="status" style="height:10px;"></span>
-		<button id="run"  style="width:22px;" title="run">r</button>  
-		<button id="kill" style="width:22px;" title="kill">k</button>  
+		<button id="run"  style="width:22px;" title="run">r</button>
+		<button id="kill" style="width:22px;" title="kill">k</button>
 		<!--<button id="saveresult">s</button> -->
 		<button id="fiver" style="width:22px;" >5</button>
-		<button id="copyto" style="width:22px;" title="fork code">c</button> 
-		<span id="history_box"></span> 
-		<span id="markedresults_box"></span> 
-		
+		<button id="copyto" style="width:22px;" title="fork code">c</button>
+		<span id="history_box"></span>
+		<span id="markedresults_box"></span>
+
 	</div>
 	<div id="images" class="images"></div>
 </div>
@@ -51,6 +51,8 @@ var changed = false;
 var status = $("#status");
 var pathname = window.location.pathname;
 pathname = pathname.replace(new RegExp('/', 'g'), delim)
+//pathname = pathname.strip(delim)
+pathname = pathname.replace("BREAKKKKK","")
 var page = pathname
 var scrollpos = 0;
 height_factor = 1
@@ -70,7 +72,7 @@ foo.setUseWrapMode(true)
 base_template = "##Author: \n##Date Started: \n##Notes: \n";
 
 //auto resize if window name
-if (window.name.search(window.pathname) >-1 ) 
+if (window.name.search(window.pathname) >-1 )
 {
 	resall()
 	$("#history_box").remove();
@@ -87,7 +89,7 @@ var socket = io.connect('/');
 
 //var foo = null
 
-document.title =  page +" - pithy"
+document.title =  page.replace(/BREAKKKKK/g,"/") +" - pithy"
 this_port = "/"+pathname.split("/")[1]+"/"
 
 var gotdata = ""
@@ -118,17 +120,17 @@ fiver_timer = false;
 $("#fiver").click(function(){
 	fiver_timer = !fiver_timer;
 	if (fiver_timer)
-	{		
+	{
 		if (!waiting_for_output ) saver(true,pathname);
 		ftimer = setInterval(countDown,1000)
-		$("#fiver").css('color','rgb(255,0,0)');	
+		$("#fiver").css('color','rgb(255,0,0)');
 	}
-	else 
+	else
 	{
 		$("#fiver").css('color','rgb(0,0,0)');
-		$("#fiver").html(5);	
+		$("#fiver").html(5);
 		clearInterval(ftimer)
-	}	
+	}
 });
 
 
@@ -137,7 +139,7 @@ function countDown()
 	if (parseInt($("#fiver").html()) == 0)
 	{
 		//clearInterval(ftimer)
-		if (!waiting_for_output ) 
+		if (!waiting_for_output )
 		{
 			saver(true,pathname);
 			$("#fiver").html(5);
@@ -146,14 +148,14 @@ function countDown()
 		{
 			console.log('waitface');
 		}
-		
+
 	}
-	
-	else 
+
+	else
 		{
-			if (!waiting_for_output ) $("#fiver").html(parseInt($("#fiver").html())-1);	
-			
-		}	
+			if (!waiting_for_output ) $("#fiver").html(parseInt($("#fiver").html())-1);
+
+		}
 }
 
 var ftimer = ""//setInterval(countDown,1000)
@@ -167,7 +169,7 @@ area.keydown(function(e){last_push = new Date().getTime()})
 
 
 
-//Kill The Script	
+//Kill The Script
 $("#kill").click(function(){
 		console.log("kill me please")
 		$.ajax(
@@ -176,7 +178,7 @@ $("#kill").click(function(){
 		  type:"POST",
 		  data:{page_name:page}
 		})
-		
+
 		if (fiver_timer) $("#fiver").click()
 
 });
@@ -216,7 +218,7 @@ function folder()
 		editor.getSession().unfold()
 		folded = false
 	}
-	
+
 }
 
 //Textview
@@ -233,9 +235,9 @@ function textall()
 function splitview(){
 	$("#left-side").show()
 	$("#right-side").show()
-	$("#left-side").width('50%')	
+	$("#left-side").width('50%')
 	$("#right-side").width('50%')
-	areagrower()	
+	areagrower()
 	allres = false
 	alltext = false
 	editor.resize()
@@ -255,7 +257,7 @@ function newresults(){
 function resall(){
 		$("#left-side").hide()
 		$("#right-side").width('100%')
-		areagrower()	
+		areagrower()
 		allres = true
 		$("#err").hide();
 }
@@ -289,9 +291,9 @@ shortcut.add("F7",function(){
     //myWindow.document.close();
 	myWindow.focus();
 	$(myWindow).load(function(){
-		console.log("foo")    
+		console.log("foo")
 	});
-	
+
 })
 
 /////////////Socket Foo/////////
@@ -313,11 +315,11 @@ socket.on(page.replace("/",""), function (data) {
 					waiting_for_output = false
 					$("#status").html("saved, exec time = "+data['exec_time']/1000+"s");
 					history(page);
-					
+
 				}
 				gotdata = data
 				build_output(gotdata)
-				dfd = $('#images').imagesLoaded(); 
+				dfd = $('#images').imagesLoaded();
 				dfd.always(function(){$("#images").scrollTop(scrollpos)})
 
 });
@@ -346,22 +348,22 @@ function build_output(data){
 	outputdata = []
 	boots = data['out']
 	//console.log(boots)
-	
+
 	thislen = data['out'].search("been")
-	
+
 	imlist = {}
-	
+
 	foots = boots.split("\n")
 	flotz = false
 	for (i in foots)
 	{
-		
-		
-		if (foots[i].search("##_holder_##")>-1) 
+
+
+		if (foots[i].search("##_holder_##")>-1)
 		{
 			outputdata[outputdata.length] = "<img src='"+foots[i].replace("##_holder_##:","")+"'>\n"
 		}
-		else if (foots[i].search("##_dynamic_##")>-1) 
+		else if (foots[i].search("##_dynamic_##")>-1)
 		{
 			things = foots[i].split(":")
 			holder = things[1]
@@ -370,18 +372,18 @@ function build_output(data){
 			swap = outputdata.length;
 			for (var o = 0; o < outputdata.length; o++)
 			{
-				if (outputdata[o].search(holder)>-1) 
-				{ 
+				if (outputdata[o].search(holder)>-1)
+				{
 					swap = o;
 					imlist[holder] = imloc
 				}
 			}
-			
-			
+
+
 			outputdata[swap] = "<img id='"+holder+"' src='"+imloc+"'>\n"
 		}
 		else if (foots[i].search("##__json__##")==0)
-		{ 
+		{
 			flotz = true
 			if (outputdata.search(flot_structure) == -1) outputdata = flot_structure + outputdata
 			foo = foots[i].replace("##__json__##","")
@@ -392,24 +394,24 @@ function build_output(data){
 				s[s.length] = foo[i]
 			}
 		}
-		
+
 		else if (foots[i].search("been working")>-1)
-		{ 
+		{
 			runner = foots[i].replace("<br>","")
 			b = runner.search("for ")
 			c = runner.search("ms")
 			fval = parseFloat(runner.substring(b+4,c-1))/1000
 			runner = "<i>been working for "+fval+"s</i>"
 			$("#status").html(runner);
-			
+
 		}
-		
-		else 
+
+		else
 		{
 			outputdata[outputdata.length] = foots[i]+"\n"
-			
+
 		}
-		
+
 	}
 
 	//Build python stderr
@@ -417,20 +419,20 @@ function build_output(data){
 	if (boots == null) boots = ""
 	//while (boots.search("\n") > -1) boots = boots.replace("\n","<br>")
 	outputdata[outputdata.length] = "\n<span id='err' style='color:red'>"+boots+"</span>"
-	
-	
+
+
 	//console.log(thislen)
 	this_stuff = outputdata.join("")
 	if (this_stuff != old_stuff)
 	{
-		
 
-		old_stuff = this_stuff	
-		
+
+		old_stuff = this_stuff
+
 		$(window).load($("#images").html(this_stuff));
 	}
-	if (flotz){if (s.length > 0) $.plot("#flotter", s) } 
-	
+	if (flotz){if (s.length > 0) $.plot("#flotter", s) }
+
 }
 
 old_stuff = ""
@@ -449,16 +451,16 @@ function loader(bool,page){
 	});
 
 }
-			
+
 function saver(bool,page){
 
 	//editor.save()
 	if (!waiting_for_output)
-	{ 
+	{
 	waiting_for_output = true
 	script_name = $("#scriptname").val()
 	$("#status").html("waiting for result");
-	
+
 	if ($.trim(editor.getSession().getValue()) != base_template)
 	{
 		//console.log("Changed!");
@@ -468,7 +470,7 @@ function saver(bool,page){
 		  type:"POST",
 		  async:bool,
 		  data:{page_name:page,script_name:script_name,value:editor.getSession().getValue()},
-		 
+
 		})
 	}
 	}
@@ -498,8 +500,8 @@ function history(page){
 				d = new Date()
 				d.setTime(ut)
 				now = moment(ut).local().format("MMM D YYYY hh:mm:ss a")
-				
-			    if (ttt == page) selecters += '<option value="'+out[i][0]+'">'+now+'</option>'			
+
+			    if (ttt == page) selecters += '<option value="'+out[i][0]+'">'+now+'</option>'
 			}
 			selecters += "</select>"
 			$("#history_box").html("history:"+selecters)
@@ -508,7 +510,7 @@ function history(page){
 		}
 	}
 	});
-	
+
 }
 
 function get_data(){
@@ -537,8 +539,8 @@ function loadresult(){
 		  build_output(data);
 	  }
 	});
-	
-	
+
+
 }
 
 function forkcode(){
@@ -547,7 +549,7 @@ function forkcode(){
 	if (marker != null & marker != "")
 	{
 		$.ajax(
-		{			
+		{
 		  url: "/copyto/",
 		  type:"POST",
 		data:{page_name:page,script_name:marker,value:editor.getSession().getValue()},
@@ -559,13 +561,13 @@ function forkcode(){
 				window.location.href = gotor;
 				//window.location.host+"/"+gotor)
 			}
-	  
-	
+
+
 		})
 	}
-	
 
-	
+
+
 }
 
 function markresults(){
@@ -573,17 +575,17 @@ function markresults(){
 	if (marker != null & marker != "")
 	{
 		$.ajax(
-		{			
+		{
 		  url: "/markresult/",
 		  type:"POST",
 		data:{page_name:page,result_name:marker},
 		  success: function(data)
 			{
 			}
-	  
-	
+
+
 		})
-		
+
 	}
 }
 
@@ -601,7 +603,7 @@ $(window).resize(function(){
 	{
 		//console.log(err)
 	}
-	areagrower()	
+	areagrower()
 })
 
 //store editor prefs per browser
