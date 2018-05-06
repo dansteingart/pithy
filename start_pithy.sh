@@ -11,5 +11,5 @@ docker run  \
 -p 8001:8080 \
 -p 8888:8888 \
 -p 8004:8081 \
--v $HOME/pithies/pithy/:/pithy \
+-v $PWD:/pithy \
 -dit --name pithy steingart/pithy
