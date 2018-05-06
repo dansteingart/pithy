@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #Get Latest Version of Pithy
 docker pull steingart/pithy
 
@@ -9,5 +11,5 @@ docker run  \
 -p 8001:8080 \
 -p 8888:8888 \
 -p 8004:8081 \
--v /Users/dan/pithies/pithy/:/pithy \
+-v $HOME/pithies/pithy/:/pithy \
 -dit --name pithy steingart/pithy
