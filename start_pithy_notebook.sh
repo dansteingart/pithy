@@ -12,4 +12,4 @@ docker run  \
 -p 8888:8888 \
 -p 8004:8081 \
 -v $PWD:/pithy \
--dit --name pithy steingart/pithy spn.sh
+-dit --name pithy steingart/pithy bash spn.sh
