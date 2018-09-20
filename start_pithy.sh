@@ -4,7 +4,7 @@
 docker pull steingart/pithy
 
 #Kill Local Container
-docker rm -f pithy
+docker rm -f $USER-pithy
 
 #Startup Container
 docker run  \
@@ -12,4 +12,4 @@ docker run  \
 -p 8888:8888 \
 -p 8004:8081 \
 -v $PWD:/pithy \
--dit --name pithy steingart/pithy
+-dit --name $USER-pithy steingart/pithy
