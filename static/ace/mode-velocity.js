@@ -239,7 +239,6 @@ var tagMap = lang.createMap({
     img         : 'image',
     input       : 'form',
     label       : 'form',
-    option      : 'form',
     script      : 'script',
     select      : 'form',
     textarea    : 'form',
@@ -1423,7 +1422,7 @@ var CstyleBehaviour = function () {
             }
             var rightChar = line.substring(cursor.column, cursor.column + 1);
             if (rightChar == '}' || closing !== "") {
-                var openBracePos = session.findMatchingBracket({row: cursor.row, column: cursor.column+1}, '}');
+                var openBracePos = session.findMatchingBracket({row: cursor.row, column: cursor.column}, '}');
                 if (!openBracePos)
                      return null;
 

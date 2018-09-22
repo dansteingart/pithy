@@ -320,8 +320,8 @@ var MarkdownHighlightRules = function() {
         regex : "^```\\s*[a-zA-Z]*(?:{.*?\\})?\\s*$",
         next  : "githubblock"
     }, { // block quote
-        token : "string.blockquote",
-        regex : "^\\s*>\\s*(?:[*+-]|\\d+\\.)?\\s+",
+        token : "string",
+        regex : "^>[ ].+$",
         next  : "blockquote"
     }, { // HR * - _
         token : "constant",
@@ -357,10 +357,10 @@ var MarkdownHighlightRules = function() {
                     '(\\s*"' +  escaped('"') + '"\\s*)?' +            // "title"
                     "(\\))"                                           // )
         }, { // strong ** __
-            token : "string.strong",
+            token : "string",
             regex : "([*]{2}|[_]{2}(?=\\S))(.*?\\S[*_]*)(\\1)"
         }, { // emphasis * _
-            token : "string.emphasis",
+            token : "string",
             regex : "([*]|[_](?=\\S))(.*?\\S[*_]*)(\\1)"
         }, { //
             token : ["text", "url", "text"],
@@ -401,21 +401,16 @@ var MarkdownHighlightRules = function() {
         }, {
             include : "basic", noEscape: true
         }, {
-            defaultToken : "list" //do not use markup.list to allow stling leading `*` differntly
+            defaultToken : "list"
         } ],
 
         "blockquote" : [ { // BLockquotes only escape on blank lines.
             token : "empty_line",
             regex : "^\\s*$",
             next  : "start"
-        }, { // block quote
-            token : "string.blockquote",
-            regex : "^\\s*>\\s*(?:[*+-]|\\d+\\.)?\\s+",
-            next  : "blockquote"
         }, {
-            include : "basic", noEscape: true
-        }, {
-            defaultToken : "string.blockquote"
+            token : "string",
+            regex : ".+"
         } ],
 
         "githubblock" : [ {
@@ -1085,7 +1080,6 @@ var tagMap = lang.createMap({
     img         : 'image',
     input       : 'form',
     label       : 'form',
-    option      : 'form',
     script      : 'script',
     select      : 'form',
     textarea    : 'form',
@@ -1803,7 +1797,7 @@ define('ace/mode/coffee_highlight_rules', ['require', 'exports', 'module' , 'ace
 
         var keywords = (
             "this|throw|then|try|typeof|super|switch|return|break|by|continue|" +
-            "catch|class|in|instanceof|is|isnt|if|else|extends|for|own|" +
+            "catch|class|in|instanceof|is|isnt|if|else|extends|for|forown|" +
             "finally|function|while|when|new|no|not|delete|debugger|do|loop|of|off|" +
             "or|on|unless|until|and|yes"
         );
