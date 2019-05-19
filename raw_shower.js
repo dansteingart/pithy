@@ -15,9 +15,18 @@ server = http.createServer(app)
 //Basic Settings
 settings = {
 	"python_path" : "python",
-	'prepend' : ""	
+	'prepend' : ""
 }
 
+
+function makecmd(to_run)
+{
+	py_to_run = __dirname+"/code/"+to_run+".py"
+	//open file and see if first line has a shebang set to run.
+	pybin = fs.readFileSync(py_to_run).toString().split("\n")[0].replace("#!","")
+	if (pybin.search("pythin") == -1) pybin = settings.python_path
+	return pybin + " -u '" + py_to_run + " "
+}
 
 dirs = ["interfaces","interfaces_backup"]
 for (d in dirs)
@@ -49,14 +58,14 @@ exec("mkdir post_payload/")
 app.post('/run',function(req,res)
 {
 
-	if (req.params[0] == "") 
+	if (req.params[0] == "")
 	{
 		res.send("try harder");
 	}
 
 	else
 	{
-		
+
 		//here's were we do a lot of fun stuff
 		try
 		{
@@ -64,15 +73,14 @@ app.post('/run',function(req,res)
 			parts = nameo.split("/");
 			estring = "";
 			console.log(req.body)
-			to_run = req.body['page_name']
 			fn = "post_payload/"+to_run+".json"
 			payload = req.body['payload']
-			
+
 			fs.writeFileSync(fn,JSON.stringify(req.body))
 
-			
-			fullcmd = settings.python_path+" -u '"+__dirname+"/code/"+to_run+".py' " + fn
-			
+			fullcmd = makecmd(req.body['page_name'])
+			fullcmd = fullcmd + fn
+
 			exec(fullcmd, {maxBuffer: 1024 * 10000},
 					function(error, stdout, stderr)
 					{
@@ -84,37 +92,38 @@ app.post('/run',function(req,res)
 		{
 			console.log(err)
 		}
-		
+
 	}
 });
 
 app.post('/*',function(req,res)
 {
 
-	if (req.params[0] == "") 
+	if (req.params[0] == "")
 	{
 		res.send("try harder");
 	}
 
 	else
 	{
-		
+
 		//here's were we do a lot of fun stuff
 		try
 		{
 			nameo = req.url
 			parts = nameo.split("/");
-			
+
 			estring = "";
 			console.log(req.body)
-			to_run = parts[1]
+
 			payload = req.body['payload']
-                        fn = "post_payload/"+to_run+".json"
-			
+      fn = "post_payload/"+to_run+".json"
+
 			fs.writeFileSync(fn,JSON.stringify(req.body))
-			
-			fullcmd = settings.python_path+" -u '"+__dirname+"/code/"+to_run+".py' " + fn
-			
+
+			fullcmd = makecmd(parts[1])
+			fullcmd = fullcmd + fn
+
 			exec(fullcmd,{maxBuffer: 1024 * 10000},
 					function(error, stdout, stderr)
 					{
@@ -126,21 +135,21 @@ app.post('/*',function(req,res)
 		{
 			console.log(err)
 		}
-		
+
 	}
 });
 
 app.get('/*', function(req, res)
 {
 
-	if (req.params[0] == "") 
+	if (req.params[0] == "")
 	{
 		res.send("try harder");
 	}
 
 	else
 	{
-		
+
 		//here's were we do a lot of fun stuff
 		try
 		{
@@ -150,12 +159,14 @@ app.get('/*', function(req, res)
 			parts = nameo.split("/");
 			console.log(parts)
 			estring = "";
-			for (var i=2; i < parts.length;i++) 
+			for (var i=2; i < parts.length;i++)
 			{
 				estring += parts[i]+" ";
 			}
 			console.log(estring)
-			fullcmd = settings.python_path+" -u '"+__dirname+"/code/"+parts[1]+".py' "+estring
+			fullcmd = makecmd(parts[1])
+			fullcmd = fullcmd + estring
+
 			exec(fullcmd,{maxBuffer: 1024 * 10000},
 					function(error, stdout, stderr)
 					{
@@ -167,7 +178,7 @@ app.get('/*', function(req, res)
 		{
 			console.log(err)
 		}
-		
+
 	}
 });
 
@@ -175,4 +186,3 @@ app.get('/*', function(req, res)
 //Start It Up!
 server.listen(process.argv[2]);
 console.log('Listening on port '+process.argv[2]);
-
