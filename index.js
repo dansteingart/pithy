@@ -72,7 +72,9 @@ assetbase = "assets/"
 //What a new pages shows
 base_template = "##Author: \n##Date Started: \n##Notes: \n";
 pythonbin = "/usr/bin/python";
-prependbase = "static/prepend.txt";
+prependbase = "static/pithy.py";
+prependbase3 = "static/pithy3.py";
+
 gitted = false;
 var runtimeout = false;
 var foldermode = false;
@@ -105,8 +107,8 @@ for (var i = 0; i < process.argv.length;i++)
 		runtimeout = (process.argv[i].split("=")[1] == 'true');
 	}
 
-
 }
+
 
 
 
@@ -137,6 +139,19 @@ catch (e)
 	console.log("making a pithy library")
 	console.log(prependbase)
 	fs.writeFileSync(codebase+'/pithy.py',fs.readFileSync(prependbase).toString())
+}
+
+//create pithy.py lib if it doesn't already exist
+try
+{
+	checkface = fs.readFileSync(codebase+'/pithy3.py').toString()
+	console.log("pithy3.py is in place")
+}
+catch (e)
+{
+	console.log("making a pithy3 library")
+	console.log(prependbase)
+	fs.writeFileSync(codebase+'/pithy3.py',fs.readFileSync(prependbase3).toString())
 }
 
 //create python_basics.py lib if it doesn't already exist
