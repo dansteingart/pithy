@@ -23,10 +23,16 @@ function makecmd(to_run)
 {
 	py_to_run = __dirname+"/code/"+to_run+".py"
 	//open file and see if first line has a shebang set to run.
-	pybin = fs.readFileSync(py_to_run).toString().split("\n")[0].replace("#!","")
-	if (pybin.search("pythin") == -1) pybin = settings.python_path
-	return pybin + " -u '" + py_to_run + " "
+	try {pybin = fs.readFileSync(py_to_run).toString().split("\n")[0].replace("#!","")}
+	catch(err){
+		console.log(err);
+		pybin = "ls "}
+
+	if (pybin.search("python") == -1) pybin = settings.python_path
+	return pybin + " -u '" + py_to_run + "' "
+
 }
+
 
 dirs = ["interfaces","interfaces_backup"]
 for (d in dirs)
@@ -141,10 +147,14 @@ app.post('/*',function(req,res)
 
 app.get('/*', function(req, res)
 {
-
 	if (req.params[0] == "")
 	{
 		res.send("try harder");
+	}
+
+	else if (req.url == "/favicon.ico")
+	{
+		res.send("nothing to see here");
 	}
 
 	else
@@ -157,23 +167,26 @@ app.get('/*', function(req, res)
 			nameo = nameo.replace("?","/").replace(/&/g,"/")
 			console.log(nameo);
 			parts = nameo.split("/");
-			console.log(parts)
+			//console.log(parts)
+
 			estring = "";
 			for (var i=2; i < parts.length;i++)
 			{
 				estring += parts[i]+" ";
 			}
-			console.log(estring)
+			//console.log(estring)
+
+
 			fullcmd = makecmd(parts[1])
 			fullcmd = fullcmd + estring
 
-			exec(fullcmd,{maxBuffer: 1024 * 10000},
-					function(error, stdout, stderr)
-					{
-						res.send(stdout);
-					}
-				)
-		}
+			if (fullcmd.search("python")> -1)
+			{
+				exec(fullcmd,{maxBuffer: 1024 * 10000},function(error, stdout, stderr){
+
+					res.send(stdout);
+				})}
+			}
 		catch (err)
 		{
 			console.log(err)
