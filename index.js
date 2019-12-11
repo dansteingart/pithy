@@ -71,7 +71,7 @@ assetbase = "assets/"
 
 //What a new pages shows
 base_template = "##Author: \n##Date Started: \n##Notes: \n";
-pythonbin = "/usr/bin/python";
+pythonbin = "/usr/bin/python3";
 prependbase = "static/pithy.py";
 prependbase3 = "static/pithy3.py";
 
