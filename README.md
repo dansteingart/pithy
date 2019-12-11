@@ -39,19 +39,19 @@ because pithy just runs from a directory, standard http authentication can be ap
 ## the easiest way to use pithy is just spin out a docker container
 htttps://dockerhub/steingart/pithy
 
-### pithy requires 
+### pithy requires
 
 1. a fairly up to date (2.7 and 3.0 work!) python installation
 2. [node.js](http://nodejs.org/)  (4.0.0 or better)
 3. science stuff!  Scipy, numpy and matplotlib are sufficient to say `import pithy`, but you can add whatever you like!
 
-### installation/usage 
+### installation/usage
 
 1. clone repository to where you want stuff
 2. cd to that directory
 3. run "node index.js 8001" where 8001 is the port number (change to whatever you want)
 4. navigate to http://localhost:8001  (or wherever you put stuff).  you should see a page, and the URL should have a random string of characters appened.  try some python.
-5. the default user is "user" and pass is "pass" (no quotes, change this in the `pass.json` file right now. 
+5. the default user is "user" and pass is "pass" (no quotes, change this in the `pass.json` file right now.
 5. now add whatever name you want to the URL (numbers,letters and (-,_) only.  run some code here.  share the url if you're running on an accessisible server.  repeat.  now you're pithy.
 
 
@@ -63,7 +63,7 @@ paste this into your pithy page to generate a graph
 
 
     from pithy import *
-	
+
     a = linspace(0,1,100)
     b = sqrt(a)
     c = a**2
@@ -78,7 +78,7 @@ paste this into your pithy page to generate a graph
     xlabel("x")
     ylabel("y")
     title("Now With Labels")
-    showme() 
+    showme()
 
 everything here is pure [pylab](http://www.scipy.org/PyLab) except for showme(), which does some behind the scenes magic to generate a plot and save the figure.  
 
@@ -103,12 +103,11 @@ pithy scripts are not allowed to run more than 3 minutes unless overridden in th
 
 
 ## roadmap (ha)
-[] shebang python 2/3 selector (it's time)
-[] persistent kernel for repl after run? really? 
+- [x] shebang python 2/3 selector (it's time)
+- [ ] persistent kernel for repl after run? really?
 
 ## acknowledgements
 
 pithy was made possible in part with support from NSF Grant CMMI 1031280.
 
 pithy was made better with feedback from many students at CCNY, Princeton and Columbia.  Thanks.
-

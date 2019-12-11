@@ -716,7 +716,7 @@ function betterexec(nameo,fff)
 
   //read in string for magics
   fil = fs.readFileSync(essence+".py").toString()
-	
+
   //look for timeout string in code ##pithytimeout=YYY
   mm = fil.match(/##pithytimeout=(\d+)/)
   if (mm != null) timeoutclause = "timeout "+mm[1]
@@ -724,10 +724,10 @@ function betterexec(nameo,fff)
   pyversion = settings.python_path
   //are we modern yet?
   pp = fil.match("#! /usr/bin/python")
-  if (pp != null) pyversion = pp.replace("#! ","")
+  if (pp != null) pyversion = fil.split("\n")[0].replace("#! ","")
+	console.log(pyversion)
 
-	
-	
+
   //now process file to see if there's a timeout change
 	big_gulp = timeoutclause + " "+ pyversion+" -u '"+essence+".py' "+estring
 	fullcmd = "touch "+tempbase+parts[1] +"; " +big_gulp+" > '"+tempbase+nameo+"'"
