@@ -58,13 +58,13 @@ def showme(tip="png",kind="static",width=None,height=None,inline=False,dpi=80):
 
 
 def imager64(tip="svg",dpi=80,style=None):
-    imgdata = io.StringIO()
+    imgdata = io.BytesIO()
     savefig(imgdata,dpi=dpi,format=tip,bbox_inches="tight")
     imgdata.seek(0)  # rewind the data
     preload = 'data:image/%s;base64,'% tip 
     if tip == "svg":
         preload = 'data:image/svg+xml;base64,' 
-    uri =  preload+urllib.parse.quote(base64.b64encode(imgdata.buf))
+    uri =  preload+urllib.parse.quote(base64.b64encode(imgdata.getvalue()))
     return '<img %s src = "%s"/>' % (style,uri)
 
 #A smoothing function I use
