@@ -71,7 +71,7 @@ assetbase = "assets/"
 
 //What a new pages shows
 base_template = "##Author: \n##Date Started: \n##Notes: \n";
-pythonbin = "/usr/bin/python3";
+pythonbin = "/Users/dan/.pyenv/shims/python";
 prependbase = "static/pithy.py";
 prependbase3 = "static/pithy3.py";
 
@@ -723,7 +723,7 @@ function betterexec(nameo,fff)
 
   pyversion = settings.python_path
   //are we modern yet?
-  pp = fil.match("#! /usr/bin/python")
+  pp = fil.match("#! ")
   if (pp != null) pyversion = fil.split("\n")[0].replace("#! ","")
 	console.log(pyversion)
 
