@@ -71,7 +71,7 @@ assetbase = "assets/"
 
 //What a new pages shows
 base_template = "##Author: \n##Date Started: \n##Notes: \n";
-pythonbin = "/Users/dan/.pyenv/shims/python";
+pythonbin = "/usr/bin/python3";
 prependbase = "static/pithy.py";
 prependbase3 = "static/pithy3.py";
 
@@ -109,7 +109,7 @@ for (var i = 0; i < process.argv.length;i++)
 
 }
 
-base_template = "#!"+pythonbin+" \n"
+base_template = "#! " +pythonbin+" \n"
 base_template += "##Author: \n##Date Started: \n##Notes: \n";
 
 
