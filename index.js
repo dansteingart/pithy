@@ -70,8 +70,11 @@ filebase = "files/"
 assetbase = "assets/"
 
 //What a new pages shows
-base_template = "##Author: \n##Date Started: \n##Notes: \n";
+#base_template = "##Author: \n##Date Started: \n##Notes: \n";
+base_template = fs.readFileSync('static/template.py').toString()
+
 pythonbin = "/usr/bin/python3";
+
 prependbase = "static/pithy.py";
 prependbase3 = "static/pithy3.py";
 
