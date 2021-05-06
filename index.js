@@ -112,10 +112,6 @@ for (var i = 0; i < process.argv.length;i++)
 
 }
 
-base_template = "#! " +pythonbin+" \n"
-base_template += "##Author: \n##Date Started: \n##Notes: \n";
-
-
 
 dirs = [tempbase,codebase,histbase,resbase,imgbase,filebase,assetbase]
 for (d in dirs)
