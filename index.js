@@ -71,7 +71,7 @@ assetbase = "assets/"
 
 //What a new pages shows
 //base_template = "##Author: \n##Date Started: \n##Notes: \n";
-base_template = fs.readFileSync('static/template.py').toString()
+function base_template() {return fs.readFileSync('static/template.py').toString()}
 
 pythonbin = "/usr/bin/python3";
 
@@ -581,7 +581,7 @@ app.post('*/read', function(req, res)
 
 	x = req.body
 	back_to_pith = {}
-	out = base_template
+	out = "";
 	page_name = x['page_name'].replace("/","").split("/")[0]
 
 	try{
@@ -598,7 +598,7 @@ app.post('*/read', function(req, res)
 	}
 	catch (e)
 	{
-		out =  base_template
+		out =  base_template();
 	}
 
 	back_to_pith['script'] = out
@@ -623,7 +623,7 @@ app.post('*/readresults', function(req, res)
 
 	x = req.body
 	back_to_pith = {}
-	out =  base_template
+	out =  "watching, waiting";
 	page_name = x['page_name']
 	try
 	{
@@ -632,7 +632,6 @@ app.post('*/readresults', function(req, res)
 	catch (e)
 	{
 		//console.log(e)
-		out =  base_template
 	}
 
 	//get cc
@@ -654,6 +653,7 @@ app.post('*/copyto',function(req,res)
 
 })
 
+//This is a half-ass attempt to save interesting results that I never finished
 app.post('*/markresult',function(req,res)
 {
 	x = req.body
@@ -681,7 +681,7 @@ app.post('*/markresult',function(req,res)
 })
 
 
-
+//This is really stupid switch that attempts to git version every run. Yes I know. 
 gitted = false;
 for (var i = 0; i < process.argv.length;i++)
 {
