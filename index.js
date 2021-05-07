@@ -51,13 +51,7 @@ app.use(express.basicAuth(function(user, pass, callback) {
 
 app.use(cors());
 
-//big hack to make killing work --> this should be necessary anhymore try to remove it and see what it does
-var os_offset = 2
-if (os.platform() == 'darwin') os_offset = 2
-
 //make required directories
-
-
 //setup variables for where stuff goes and comes from
 codebase = "code/"
 histbase = "code_stamped/"
@@ -182,9 +176,7 @@ catch (e)
 
 //Basic Settings
 settings = {
-	//"bad_words" : ["rm ","write","while True:","open "],
 	"python_path" : pythonbin,
-	//'prepend' : "fs.readFileSync('static/prepend.txt').toString()"
 	'prepend' : ""
 }
 
@@ -681,7 +673,7 @@ app.post('*/markresult',function(req,res)
 })
 
 
-//This is really stupid switch that attempts to git version every run. Yes I know. 
+//This is really stupid switch that attempts to git version every run. Yes I know.
 gitted = false;
 for (var i = 0; i < process.argv.length;i++)
 {
@@ -757,7 +749,7 @@ function betterexec(nameo,fff)
 
 	})
 
-	return {'pid':chill.pid + os_offset,'name':essence}
+	return {'pid':chill.pid,'name':essence}
 }
 
 
