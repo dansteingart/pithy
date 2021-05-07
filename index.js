@@ -2,20 +2,15 @@
 var sharejs = require('share').server;
 
 var http = require("http"); //HTTP Server
-var url = require("url"); // URL Handling
 var fs = require('fs'); // Filesystem Access (writing files)
-var os = require("os"); //OS lib, used here for detecting which operating system we're using
-var util = require("util");
 var express = require('express'); //App Framework (similar to web.py abstraction)
 var app = express();
 var cors = require('cors');
 
 //there is redundancy here that needs to be cleaned up
 var exec = require('child_process').exec,child;
-var spawn = require('child_process').spawn,child;
 
 //For dealing with llocal files
-var os = require("os")
 var glob = require('glob')
 var options = {db: {type: 'none'}};
 
