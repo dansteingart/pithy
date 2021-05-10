@@ -24,7 +24,6 @@ io = io.listen(server); //Socket Creations
 io.set('log level', 1)
 
 //a vestige, need to clean out.  don't change this
-
 //basic authentication would be great to outh2 this sucka at some point
 app.use(express.basicAuth(function(user, pass, callback) {
 	raw = fs.readFileSync(assetbase+"/pass.json").toString();
