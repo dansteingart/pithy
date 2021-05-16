@@ -1,0 +1,33 @@
+{
+  "name": "ot-text",
+  "version": "1.0.2",
+  "description": "OT type for plaintext",
+  "main": "lib/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "coffeescript": "^2.3.2",
+    "mocha": "5",
+    "ot-fuzzer": "~1.0.0"
+  },
+  "scripts": {
+    "test": "mocha test/*.coffee"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ottypes/text.git"
+  },
+  "keywords": [
+    "ot",
+    "text",
+    "sharejs"
+  ],
+  "author": "Joseph Gentle <me@josephg.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ottypes/text/issues"
+  },
+  "homepage": "https://github.com/ottypes/text"
+}

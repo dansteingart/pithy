@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "ace-builds": "^1.4.12",
+    "glob": "^7.1.7",
+    "socket.io": "^4.1.1"
+  }
+}

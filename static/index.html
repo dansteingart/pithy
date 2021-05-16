@@ -4,14 +4,12 @@
 <link rel="icon" type="image/png"  href="/static/favico.png">
 
 <script src="/static/shortcut.js" type="text/javascript" charset="utf-8"></script>
-<script src="/channel/bcsocket.js"></script>
 <script src="/socket.io/socket.io.js"></script>
-<script src="/static/ace/ace.js" type="text/javascript" charset="utf-8"></script>
-<script src="/static/ace/mode-python.js" type="text/javascript" charset="utf-8"></script>
-<script src="/share/share.js"></script>
-<script src="/share/ace.js"></script>
+<script src="/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <script src="/static/jquery-1.9.1.js"></script>
 <script src="/static/jquery-ui.js"></script>
+<script src="/static/rga.js"></script>
+
 <script src="/static/moment.min.js"></script>
 
 
@@ -82,7 +80,8 @@ if (window.name.search(window.pathname) >-1 )
 $("#save").hide()
 
 //socket starts
-var socket = io.connect('/');
+const room = location.pathname.split("/")[1]
+var socket = io.connect({query: {'room': room}});
 
 //var foo = null
 
@@ -92,7 +91,7 @@ this_port = "/"+pathname.split("/")[1]+"/"
 var gotdata = ""
 var maxwidth = 800
 waiting_for_output = false
-loader(true,page);
+//loader(true,page);
 history(page);
 loadresult(page);
 
@@ -262,26 +261,37 @@ function resall(){
 }
 
 //Folder Toggle
-shortcut.add("F4",function(){ folder() })
+cuts = ["F4","Ctrl+4"]
+for (i in cuts) shortcut.add(cuts[i],function(){ folder() })
 
 //AllText/Splitview Toggle
-shortcut.add("F5",function(){
+cuts = ["F5","Ctrl+5"]
+for (i in cuts) 
+{	
+	shortcut.add(cuts[i],function(){
 	if (!allres & !alltext) textall()
-	else splitview()
-})
+	else splitview()})
+}
 
 //Output/Splitview Toggle
-shortcut.add("F6",function(){
-	if (!allres & !alltext) resall()
-	else splitview()
-})
+cuts = ["F6","Ctrl+6"]
+for (i in cuts) 
+{	
+	shortcut.add(cuts[i],function(){
+		if (!allres & !alltext) resall()
+		else splitview()
+	})
+}
 
-
-shortcut.add("F9",function(){
-        newresults();
-	textall();
-})
-
+//Pop out!
+cuts = ["F9","Ctrl+9"]
+for (i in cuts) 
+{	
+	shortcut.add(cuts[i],function(){
+		newresults();
+		textall();
+	})
+}
 
 shortcut.add("F7",function(){
     var myWindow=window.open('','');
@@ -296,11 +306,34 @@ shortcut.add("F7",function(){
 })
 
 /////////////Socket Foo/////////
-//Share JS Stuff
-sharejs.open(page.replace("/",""), 'text', function(error, doc) {
-doc.attach_ace(editor);
- if (editor.getSession().getValue() == "") loader(false,page);
-});
+
+//RGA CRDT replacement of shareJS (RIP)  2021-05-15
+// https://github.com/maca/ace-crdt
+let rga;
+
+socket.on('init', ({ id, history }) => {
+          if (!rga) {
+            rga = new RGA.AceEditorRGA(id, editor)
+            rga.subscribe(op => {socket.emit(room+'code', op) })
+            socket.on(room+'code', op => {
+				rga.receive(op)
+				console.log(op)
+			})
+            socket.emit(room+'code', { type: 'historyRequest' })
+
+
+			//DS Hacky hack: 
+			//    after loading a page, 
+			//    if no one replies to the historyRequest within hto ms, 
+			//    ask the boss
+			var hto = 200;
+			setTimeout(function(){ if (editor.getSession().getValue() == "") loader(true,page);}, hto);
+			//     The chances of this causing problems is likely very high
+          }
+		})
+
+
+
 
 //Socket PushStuff
 socket.on(page.replace("/",""), function (data) {
@@ -428,7 +461,11 @@ function build_output(data){
 
 		old_stuff = this_stuff	
 		
-		$(window).load($("#images").html(this_stuff));
+		//DS: Somehow this changed. Will likely bite me 2021-05-15
+		//$(window).load($("#images").html(this_stuff));
+		//$(window).on("load",function(){$("#images").html(this_stuff)});
+		$("#images").html(this_stuff);
+	
 	}
 	if (flotz){if (s.length > 0) $.plot("#flotter", s) } 
 	
@@ -479,7 +516,7 @@ function history(page){
 
 	$.ajax({
 	  url: "/history/",
-	  async:false,
+	  async:true,
 	  type:"POST",
 	  data:{page_name:page,value:editor.getSession().getValue()},
 	  success: function(data){
@@ -531,7 +568,6 @@ function areagrower(){
 function loadresult(){
 	$.ajax({
 	  url: "readresults/",
-	  async:true,
 	  type:"POST",
 	  data:{page_name:page},
 	  success: function(data){

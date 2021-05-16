@@ -1,27 +1,16 @@
-//NodeJS Imports to Make Everything Just Work
-var sharejs = require('share').server;
 
-var http = require("http"); //HTTP Server
-var fs = require('fs'); // Filesystem Access (writing files)
 var express = require('express'); //App Framework (similar to web.py abstraction)
 var app = express();
+var server = require('http').Server(app)
+var fs = require('fs'); // Filesystem Access (writing files)
 var cors = require('cors');
+var io = require('socket.io')(server)
 
 //there is redundancy here that needs to be cleaned up
 var exec = require('child_process').exec,child;
 
 //For dealing with llocal files
 var glob = require('glob')
-var options = {db: {type: 'none'}};
-
-//Create the server, start up sharejs.  Note this is an _old_ version of sharejs, pre 0.8.
-server = http.createServer(app)
-sharejs.attach(app, options);
-
-//start socket.io
-io = require('socket.io')
-io = io.listen(server); //Socket Creations
-io.set('log level', 1)
 
 //a vestige, need to clean out.  don't change this
 //basic authentication would be great to outh2 this sucka at some point
@@ -100,7 +89,6 @@ for (var i = 0; i < process.argv.length;i++)
 
 }
 
-
 dirs = [tempbase,codebase,histbase,resbase,imgbase,filebase,assetbase]
 for (d in dirs)
 {
@@ -177,12 +165,26 @@ settings = {
 
 //Socket Clean Up Via: http://stackoverflow.com/a/9918524/565514
 var clients = {}
+let nextUserId = 1
+
 io.sockets.on('connection', function(socket) {
   	console.log(socket.id +" Connected")
   	var count = 0;
+
+	//CRDT attempt 2021-05-15
+	var userId = nextUserId++;
+	var room = socket.handshake['query']['room'];
+	console.log(room);
+	console.log('connection - assigning id ' + userId);
+	socket.emit('init', { id: userId })
+	socket.on(room+'code', op => { socket.broadcast.emit(room+'code', op) })
+	
+
 	for (var k in clients) {if (clients.hasOwnProperty(k)) {++count;}}
 	console.log("Clients Connected:"+count)
 	clients[socket.id] = socket;
+
+
 
   socket.on('disconnect', function() {
 	console.log(socket.id +" Disconnected")
@@ -207,6 +209,7 @@ app.use(express.bodyParser());
 app.use("/static", express.static(__dirname + '/static'));
 app.use("/images", express.static(__dirname + '/images'));
 app.use("/"+filebase, express.static(__dirname + "/"+filebase));
+app.use("/ace",express.static(__dirname +'/node_modules/ace-builds/src-noconflict'))
 
 //http://stackoverflow.com/a/4698083/565514
 function sJAP(objArray, prop, direction){
@@ -523,7 +526,6 @@ app.post('*/history', function(req, res)
 	res.json({'out':hist_list})
 });
 
-
 app.post('*/markedresults', function(req, res)
 {
 	x = req.body;
@@ -560,7 +562,6 @@ app.post('*/markedresults', function(req, res)
 
 	res.json({'out':hist_list})
 });
-
 
 app.post('*/read', function(req, res)
 {
@@ -667,14 +668,6 @@ app.post('*/markresult',function(req,res)
 })
 
 
-//This is really stupid switch that attempts to git version every run. Yes I know.
-gitted = false;
-for (var i = 0; i < process.argv.length;i++)
-{
-	if (process.argv[i] == "--gitted") gitted = true;
-}
-
-
 
 //Start It Up!
 server.listen(process.argv[2]);
@@ -776,8 +769,6 @@ setInterval(function(){
 },100)
 
 
-
-
 //Process Checker
 setInterval(function() {
 	for (p in processes)
@@ -786,7 +777,6 @@ setInterval(function() {
 
 	}
 }, 1000);
-
 
 //flush images
 setInterval(function() {
