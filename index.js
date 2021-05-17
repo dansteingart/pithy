@@ -50,7 +50,7 @@ assetbase = "assets/"
 //base_template = "##Author: \n##Date Started: \n##Notes: \n";
 function base_template() {return fs.readFileSync('static/template.py').toString()}
 
-pythonbin = "/usr/bin/python3";
+pythonbin = "python";
 
 prependbase = "static/pithy.py";
 prependbase3 = "static/pithy3.py";
