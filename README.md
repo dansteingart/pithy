@@ -104,6 +104,6 @@ pithy scripts are not allowed to run more than 3 minutes unless overridden in th
 
 ## acknowledgements
 
-pithy was made possible in part with support from NSF Grant CMMI 1031280.
-pithy was made better with feedback from many students at CCNY, Princeton and Columbia.  Thanks.
+pithy was made possible in part with support from NSF Grant CMMI 1031280.  
+pithy was made better with feedback from many students at CCNY, Princeton and Columbia.  Thanks.  
 pithy uses an RGA implementation for ACE created by [Macario Ortega](https://github.com/maca/ace-crdt).
