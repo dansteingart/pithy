@@ -406,7 +406,7 @@ app.post("*/killer",function(req,res)
 		if (thispid != undefined)
 		{
 			console.log("killing in the name of "+thispid)
-			exec("/usr/bin/python killer.py "+x,function(stdout,stderr)
+			exec(pythonbin+" killer.py "+x,function(stdout,stderr)
 			{
 				outer = stdout+","+stderr
 				console.log(outer)
