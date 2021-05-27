@@ -318,6 +318,8 @@ socket.on('init', ({ id, history }) => {
             socket.on(room+'code', op => {
 				rga.receive(op)
 				console.log(op)
+				editor.setReadOnly(false);
+
 			})
             socket.emit(room+'code', { type: 'historyRequest' })
 
@@ -326,9 +328,16 @@ socket.on('init', ({ id, history }) => {
 			//    after loading a page, 
 			//    if no one replies to the historyRequest within hto ms, 
 			//    ask the boss
-			var hto = 200;
-			setTimeout(function(){ if (editor.getSession().getValue() == "") loader(true,page);}, hto);
-			//     The chances of this causing problems is likely very high
+			var hto = 1000;
+			editor.setReadOnly(true)
+			setTimeout(function(){ 
+					if (editor.getSession().getValue() == "") 
+					{
+						loader(true,page);
+						editor.setReadOnly(false);
+					}
+				}, hto);
+			//     The chances of this causing problems is likely high
           }
 		})
 

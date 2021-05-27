@@ -159,15 +159,7 @@ app.post('*/run', function(req, res)
 	}
 
 	data = temp
-	/*
-	while (data.search("showme()")>-1)
-	{
-		gd = page_name.split("-")[0];
-		
-		data = data.replace("showme()","save_image('"+gd+"')\n",1)
-		counter ++;
-	}
-	*/
+
 	fs.writeFileSync("code/temper.py",data)
 	res.json({success:true})	
 	processes[parts[1]] = betterexec(page_name)
@@ -215,8 +207,6 @@ app.post('*/history', function(req, res)
 		
 	res.json({'out':hist_list})
 });
-
-
 
 
 
@@ -290,9 +280,6 @@ setInterval(function(){
 		io.sockets.emit(this_send['page_name'],this_send['data'])
 	};
 },500)
-
-
-
 
 //Process Checker
 setInterval(function() {

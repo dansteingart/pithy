@@ -11,7 +11,6 @@ var exec = require('child_process').exec,child;
 
 //For dealing with llocal files
 var glob = require('glob')
-
 //a vestige, need to clean out.  don't change this
 //basic authentication would be great to outh2 this sucka at some point
 app.use(express.basicAuth(function(user, pass, callback) {
@@ -166,6 +165,8 @@ settings = {
 //Socket Clean Up Via: http://stackoverflow.com/a/9918524/565514
 var clients = {}
 let nextUserId = 1
+
+const rgas = {};
 
 io.sockets.on('connection', function(socket) {
   	console.log(socket.id +" Connected")
