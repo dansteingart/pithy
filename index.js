@@ -178,7 +178,10 @@ io.sockets.on('connection', function(socket) {
 	console.log(room);
 	console.log('connection - assigning id ' + userId);
 	socket.emit('init', { id: userId })
-	socket.on(room+'code', op => { socket.broadcast.emit(room+'code', op) })
+	socket.on(room+'code', op => {
+		console.log(op) 
+		socket.broadcast.emit(room+'code', op) 
+	})
 	
 
 	for (var k in clients) {if (clients.hasOwnProperty(k)) {++count;}}

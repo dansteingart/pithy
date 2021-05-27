@@ -22,14 +22,15 @@ settings = {
 function makecmd(to_run)
 {
 	py_to_run = __dirname+"/code/"+to_run+".py"
+	pyscript = fs.readFileSync(py_to_run).toString()
 	//open file and see if first line has a shebang set to run.
-	try {pybin = fs.readFileSync(py_to_run).toString().split("\n")[0].replace("#!","")}
-	catch(err){
-		console.log(err);
-		pybin = "ls "}
-
+	try {pybin = pyscript.split("\n")[0].replace("#!","")}
+	catch(err){console.log(err);pybin = "ls "}
 	if (pybin.search("python") == -1) pybin = settings.python_path
-	return pybin + " -u '" + py_to_run + "' "
+
+	if (pyscript.search("##shower")> -1) {return pybin + " -u '" + py_to_run + "' "}
+	else {return pybin + " -u 'dontshow.py' "}
+	//else return "echo 'I'm not running this unless you say so right'";
 
 }
 
@@ -176,8 +177,9 @@ app.get('/*', function(req, res)
 			}
 			//console.log(estring)
 
-
 			fullcmd = makecmd(parts[1])
+			console.log(fullcmd)
+
 			fullcmd = fullcmd + estring
 
 			if (fullcmd.search("python")> -1)
