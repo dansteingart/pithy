@@ -104,16 +104,16 @@ else editor.setTheme("ace/theme/"+thematic);
 
 //What happens when you click run
 $("#run").click(function(){
-	saver(true,pathname); //was page
+	runner(true,pathname); //was page
 });
 
+//Run the script every five seconds
 fiver_timer = false;
-
 $("#fiver").click(function(){
 	fiver_timer = !fiver_timer;
 	if (fiver_timer)
 	{		
-		if (!waiting_for_output ) saver(true,pathname);
+		if (!waiting_for_output ) runner(true,pathname);
 		ftimer = setInterval(countDown,1000)
 		$("#fiver").css('color','rgb(255,0,0)');	
 	}
@@ -124,8 +124,6 @@ $("#fiver").click(function(){
 		clearInterval(ftimer)
 	}	
 });
-
-
 function countDown()
 {
 	if (parseInt($("#fiver").html()) == 0)
@@ -133,7 +131,7 @@ function countDown()
 		//clearInterval(ftimer)
 		if (!waiting_for_output ) 
 		{
-			saver(true,pathname);
+			runner(true,pathname);
 			$("#fiver").html(5);
 		}
 		else
@@ -153,13 +151,16 @@ function countDown()
 var ftimer = ""//setInterval(countDown,1000)
 
 
-//Simple Solution for Desync: if no typing for one minute: refresh page
-last_push = new Date().getTime();
-area.keydown(function(e){last_push = new Date().getTime()})
-//setInterval(function() { if (last_push < (new Date().getTime() - (15*60*1000))) location.reload()}, 5000)
-
-
-
+//Simple Solution for sevver synce: if no typing for x: save on watchdog
+var keytime;
+function startkeytimer() {keytime = setTimeout(function(){ saver(pathname)}, 1000);}
+function stopkeytimer() {clearTimeout(keytime);}
+area.keydown(function(e)
+	{
+		stopkeytimer();
+		startkeytimer();
+	}
+)
 
 //Kill The Script	
 $("#kill").click(function(){
@@ -287,24 +288,26 @@ for (i in cuts)
 	})
 }
 
-shortcut.add("F7",function(){
-    var myWindow=window.open('','');
-	//print_line = "<a style='color:red;font-family:Helvetica;underline: none' href='' onclick='window.print();'>print me</a><br>"
-    myWindow.document.write(old_stuff);
-    //myWindow.document.close();
-	myWindow.focus();
-	$(myWindow).load(function(){
-		console.log("foo")    
-	});
-	
-})
+//???
+cuts = ["F7","Ctrl+7"]
+for (i in cuts) 
+{
+	shortcut.add(cuts[i],function(){
+		var myWindow=window.open('','');
+		myWindow.document.write(old_stuff);
+		myWindow.focus();
+		$(myWindow).load(function(){
+			console.log("foo")    
+		});
+		
+	})
+}
+
 
 /////////////Socket Foo/////////
-
 //RGA CRDT replacement of shareJS (RIP)  2021-05-15
 // https://github.com/maca/ace-crdt
 let rga;
-
 socket.on('init', ({ id, history }) => {
           if (!rga) {
             rga = new RGA.AceEditorRGA(id, editor)
@@ -324,12 +327,12 @@ socket.on('init', ({ id, history }) => {
 			//    after loading a page, 
 			//    if no one replies to the historyRequest within hto ms, 
 			//    ask the boss
-			var hto = 1000;
+			var hto = 200;
 			editor.setReadOnly(true)
 			setTimeout(function(){ 
 					if (editor.getSession().getValue() == "") 
 					{
-						loader(true,page);
+						loader(true,page,avoid_collision=true);
 						editor.setReadOnly(false);
 						setstatus("")
 
@@ -338,9 +341,6 @@ socket.on('init', ({ id, history }) => {
 			//     The chances of this causing problems is likely high
           }
 		})
-
-
-
 
 //Socket PushStuff
 socket.on(page.replace("/",""), function (data) {
@@ -363,6 +363,7 @@ socket.on(page.replace("/",""), function (data) {
 
 });
 
+//Socket error handling
 socket.on('connect_error', function()
 	{
 		//If connection error don't allow typing
@@ -452,12 +453,12 @@ function build_output(data){
 		
 		else if (foots[i].search("been working")>-1)
 		{ 
-			runner = foots[i].replace("<br>","")
-			b = runner.search("for ")
-			c = runner.search("ms")
-			fval = parseFloat(runner.substring(b+4,c-1))/1000
-			runner = "<i>been working for "+fval+"s</i>"
-			$("#status").html(runner);
+			pyrunner = foots[i].replace("<br>","")
+			b = pyrunner.search("for ")
+			c = pyrunner.search("ms")
+			fval = parseFloat(pyrunner.substring(b+4,c-1))/1000
+			pyrunner = "<i>been working for "+fval+"s</i>"
+			$("#status").html(pyrunner);
 			
 		}
 		
@@ -496,7 +497,7 @@ function build_output(data){
 
 old_stuff = ""
 oldlen = 0
-function loader(bool,page){
+function loader(bool,page,avoid_collision=false){
 
 	$.ajax({
 	  url: "read/",
@@ -504,16 +505,19 @@ function loader(bool,page){
 	  type:"POST",
 	  data:{page_name:page,value:editor.getSession().getValue()},
 	  success: function(data){
-	 		editor.getSession().setValue(data['script'])
+		  	if (avoid_collision) 
+			{
+		 		if (editor.getSession().getValue() == "") editor.getSession().setValue(data['script'])
+			}
+			else editor.getSession().setValue(data['script'])
 
 	  }
 	});
 
 }
 			
-function saver(bool,page){
+function runner(bool,page,sbool=false){
 
-	//editor.save()
 	if (!waiting_for_output)
 	{ 
 	waiting_for_output = true
@@ -522,17 +526,35 @@ function saver(bool,page){
 	
 	if ($.trim(editor.getSession().getValue()) != base_template)
 	{
-		//console.log("Changed!");
 		$.ajax(
 		{
 		  url: this_port+"run/",
 		  type:"POST",
 		  async:bool,
-		  data:{page_name:page,script_name:script_name,value:editor.getSession().getValue()},
+		  data:{page_name:page,script_name:script_name,value:editor.getSession().getValue(),saveonly:sbool},
 		 
 		})
 	}
 	}
+}
+
+function saver(page)
+{
+	script_name = $("#scriptname").val()
+	console.log("saving on a timer likely")
+	
+	if ($.trim(editor.getSession().getValue()) != base_template)
+	{
+		$.ajax(
+		{
+		  url: this_port+"save/",
+		  type:"POST",
+		  async:true,
+		  data:{page_name:page,script_name:script_name,value:editor.getSession().getValue()},
+		})
+	}
+	
+
 }
 
 function history(page){
@@ -571,7 +593,6 @@ function history(page){
 	});
 	
 }
-
 
 function get_data(){
 	loader(false,$("#histories").val());

@@ -161,7 +161,6 @@ settings = {
 	'prepend' : ""
 }
 
-
 //Socket Clean Up Via: http://stackoverflow.com/a/9918524/565514
 var clients = {}
 let nextUserId = 1
@@ -179,10 +178,9 @@ io.sockets.on('connection', function(socket) {
 	console.log('connection - assigning id ' + userId);
 	socket.emit('init', { id: userId })
 	socket.on(room+'code', op => {
-		console.log(op) 
+		//console.log(op) 
 		socket.broadcast.emit(room+'code', op) 
 	})
-	
 
 	for (var k in clients) {if (clients.hasOwnProperty(k)) {++count;}}
 	console.log("Clients Connected:"+count)
@@ -452,25 +450,20 @@ app.post('*/run', function(req, res)
 
 	full_name = page_name+".py"
 
-	checkcheck = "python static/tag_find.py "+page_name
-	exec(checkcheck);
+	//Marking as vegistial 2021-05-28
+	//checkcheck = "python static/tag_find.py "+page_name
+	//exec(checkcheck);
 
-
-	try
-	{
-		temp = fs.readFileSync(codebase+full_name).toString()
-	}
-	catch (e)
-	{
-		temp = "dood"
-	}
+	//Don't create new file if running the same code!
+	try { temp = fs.readFileSync(codebase+full_name).toString()}
+	catch (e){ temp = "dood" }
 
 	if (temp != data || temp == "dood")
 	{
 
 		fs.writeFileSync(codebase+full_name,data);
 		fs.writeFileSync(histbase+page_name+"_"+time,data);
-		exec("python2 sorter.py "+page_name)
+		//exec("python2 sorter.py "+page_name) //MAV 2021-05-28
 
 		if (gitted)
 		{
@@ -480,6 +473,7 @@ app.post('*/run', function(req, res)
 		}
 	}
 
+	//now let's run with it!
 	res.json({success:true})
 	if (processes[page_name] == undefined) gofer = betterexec(page_name,x)
 	console.log(gofer)
@@ -489,6 +483,23 @@ app.post('*/run', function(req, res)
 
 
 });
+
+app.post('*/save', function(req, res)
+	{
+		x = req.body
+		page_name = x['page_name'].replace("/","").split("/")[0]
+		full_name = page_name+".py"
+		sdata = x['value']
+		console.log("timed save of "+page_name)
+		console.log(sdata)
+		//Don't create new file if running the same code!
+		try { temp = fs.readFileSync(codebase+full_name).toString()}
+		catch (e){ temp = "dood" }
+		if (temp != sdata || temp == "dood") fs.writeFileSync(codebase+full_name,sdata);
+		res.json({success:true})
+	}
+)
+
 
 app.post('*/history', function(req, res)
 {
@@ -526,43 +537,6 @@ app.post('*/history', function(req, res)
 		time_part = month+"/"+day+"/"+year+" "+hour+":"+min+":"+sec;
 		hist_list.push([fils[i],date.toISOString()])
 	}
-
-	res.json({'out':hist_list})
-});
-
-app.post('*/markedresults', function(req, res)
-{
-	x = req.body;
-	page_name = x['page_name']
-	console.log(x)
-	length = "_1314970891000".length //get length of timestamp
-	structure = stored_resbase+page_name+"*"
-	thing_list = []
-
-	fils  = fs.readdirSync(stored_resbase)
-	for (i in fils)
-	{
-		console.log(fils[i])
-		console.log(page_name)
-		if (fils[i].search(page_name+"_") > -1)
-		{
-			thing_list.push(fils[i])
-		}
-	}
-
-	fils = thing_list
-	fils.sort()
-	fils.reverse()
-	console.log(fils);
-
-	hist_list = []
-	for (i in fils)
-	{
-		time_part = parseInt(fils[i].substr(fils[i].length - length+1))
-		marked_name = JSON.parse(fs.readFileSync(stored_resbase+fils[i]))['name']
-		hist_list.push([fils[i],marked_name])
-	}
-	console.log(hist_list);
 
 	res.json({'out':hist_list})
 });
@@ -671,6 +645,42 @@ app.post('*/markresult',function(req,res)
 	console.log(result_set)
 })
 
+app.post('*/markedresults', function(req, res)
+{
+	x = req.body;
+	page_name = x['page_name']
+	console.log(x)
+	length = "_1314970891000".length //get length of timestamp
+	structure = stored_resbase+page_name+"*"
+	thing_list = []
+
+	fils  = fs.readdirSync(stored_resbase)
+	for (i in fils)
+	{
+		console.log(fils[i])
+		console.log(page_name)
+		if (fils[i].search(page_name+"_") > -1)
+		{
+			thing_list.push(fils[i])
+		}
+	}
+
+	fils = thing_list
+	fils.sort()
+	fils.reverse()
+	console.log(fils);
+
+	hist_list = []
+	for (i in fils)
+	{
+		time_part = parseInt(fils[i].substr(fils[i].length - length+1))
+		marked_name = JSON.parse(fs.readFileSync(stored_resbase+fils[i]))['name']
+		hist_list.push([fils[i],marked_name])
+	}
+	console.log(hist_list);
+
+	res.json({'out':hist_list})
+});
 
 
 //Start It Up!
