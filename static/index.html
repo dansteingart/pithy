@@ -308,10 +308,12 @@ let rga;
 socket.on('init', ({ id, history }) => {
           if (!rga) {
             rga = new RGA.AceEditorRGA(id, editor)
-            rga.subscribe(op => {socket.emit(room+'code', op) })
+            rga.subscribe(op => {
+				socket.emit(room+'code', op) 
+			})
             socket.on(room+'code', op => {
 				rga.receive(op)
-				console.log(op)
+				if (op['type']=="batch") console.log("we got the meats")
 				editor.setReadOnly(false);
 
 			})
@@ -329,6 +331,8 @@ socket.on('init', ({ id, history }) => {
 					{
 						loader(true,page);
 						editor.setReadOnly(false);
+						setstatus("")
+
 					}
 				}, hto);
 			//     The chances of this causing problems is likely high
@@ -359,6 +363,22 @@ socket.on(page.replace("/",""), function (data) {
 
 });
 
+socket.on('connect_error', function()
+	{
+		//If connection error don't allow typing
+		console.log("no connection, trying here");
+		editor.setReadOnly(true)
+		setstatus("typing disabled, trying to reconnect.....")
+	}
+)
+
+socket.on('connect', function()
+	{
+		console.log("we back");
+		editor.setReadOnly(false)
+		setstatus("");
+	}
+)
 
 /////////////Functions///////////
 //cribbed from http://stackoverflow.com/a/1349426/565514
@@ -552,6 +572,7 @@ function history(page){
 	
 }
 
+
 function get_data(){
 	loader(false,$("#histories").val());
 	//console.log($("#histories").val())
@@ -579,6 +600,12 @@ function loadresult(){
 	});
 	
 	
+}
+
+function setstatus(s)
+{
+	$("#status").html(s);
+
 }
 
 function forkcode(){
