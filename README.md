@@ -46,60 +46,64 @@ The [raspberry pi](http://www.raspberrypi.org/) is an awesome server for this 
 
 Because pithy just runs from a directory, standard http authentication can be applied to make stuff safe(r), herein we use some very simple stuff.
 
-## The easiest way to use pithy is just spin out a docker container
+## Let's around
 
-This will get you up and running right quick
+- **Installing Pithy**
 
-```bash
-docker run -dit -e UPDATE=true -p 8080:8080 -p 8081:8081 \
-     --name pithy_trial \
-     steingart/pithy
-```
+    ### The easiest way to use pithy is just spin out a docker container
 
-For those not well versed in docker this will 
+    This will get you up and running right quick
 
-- pull (a rather large at ~`1.1 GB`) docker image called `steingart/pithy` your way with a lot of python libraries built in (in both `python2` and `python3`) to do science-y data-y stuff.
-    - Including libs....
+    ```bash
+    docker run -dit -e UPDATE=true -p 8080:8080 -p 8081:8081 \
+         --name pithy_trial \
+         steingart/pithy
+    ```
 
-        ```bash
-        numpy
-        scipy
-        matplotlib
-        pandas
-        scikit-learn
-        pymongo
-        pillow
-        plotly
-        sympy
-        xlrd
-        ```
+    For those not well versed in docker this will 
 
-- map ports `8080` and `8081` to the pithy editor and viewer
-    - change the first number in each to  map otherwise, not the latter. 
-    (e.g. `-p 9000:8080 -p 9001:8081`)
-- sets the `UPDATE` flag to `true`, this tells the docker image to pull the latest version of pithy web framework
-- Detaches a session `-dit` so it's running in the background
-- With a name of `pithy_trial`
+    - pull (a rather large at ~`1.1 GB`) docker image called `steingart/pithy` your way with a lot of python libraries built in (in both `python2` and `python3`) to do science-y data-y stuff.
+        - Including libs....
 
-If you want to save the code on the host, add a `-v [YOUR HOST DIR]:/pithy` flag to the above docker line.
+            ```bash
+            numpy
+            scipy
+            matplotlib
+            pandas
+            scikit-learn
+            pymongo
+            pillow
+            plotly
+            sympy
+            xlrd
+            ```
 
-Obviously, if you know docker, go to town and make it fit your needs with networking etc etc.
+    - map ports `8080` and `8081` to the pithy editor and viewer
+        - change the first number in each to  map otherwise, not the latter. 
+        (e.g. `-p 9000:8080 -p 9001:8081`)
+    - sets the `UPDATE` flag to `true`, this tells the docker image to pull the latest version of pithy web framework
+    - Detaches a session `-dit` so it's running in the background
+    - With a name of `pithy_trial`
 
-## But you don't need to use Docker
+    If you want to save the code on the host, add a `-v [YOUR HOST DIR]:/pithy` flag to the above docker line.
 
-If you just want to use pithy on your host, all you need is 
+    Obviously, if you know docker, go to town and make it fit your needs with networking etc etc.
 
-- node version > 16  available
-- python3 available
+    ### But you don't need to use Docker
 
-and just 
+    If you just want to use pithy on your host, all you need is 
 
-```bash
-git clone http://github.com/dansteingart/pithy
-```
+    - node version > 16  available
+    - python3 available
 
-and then in that directory 
+    and just 
 
-```bash
-bash start.sh
-```
+    ```bash
+    git clone http://github.com/dansteingart/pithy
+    ```
+
+    and then in that directory 
+
+    ```bash
+    bash start.sh
+    ```
