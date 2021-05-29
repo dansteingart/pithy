@@ -1,109 +1,115 @@
-## pithy is
+# pithy is
 
-	1. concise and forcefully expressive, or
-	2. containing much pith
+---
 
-code should be 1, not 2.  
+```
+1. concise and forcefully expressive, or
+2. containing much pith
+```
 
-sometimes you want to share code and see what it does on the same page.  sometimes you want to do this for python with scientific computing.  enter pithy.  
+Code should be 1, not 2.
 
-pithy has code on the left, and output on the right.  all changes are saved, and the url is freely shareable.  pithy has been tested against sophomores and juniors in chemical and mechanical engineering classes successfully since 2011.  
+Sometimes you want to share code and see what it does on the same page. sometimes you want to do this for python with scientific computing. enter pithy.
 
-pithy is python for sharing plots and numerical output, among other things.  it's really pretty cool, but you have to play with it for a bit to see why.  go to the [wiki](https://github.com/dansteingart/pithy/wiki) to get a sense of what it can do.
+pithy has code on the left, and output on the right. all changes are saved, and the url is freely shareable. pithy has been tested against sophomores and juniors in chemical and mechanical engineering classes successfully since 2011.
 
-## you might say
+pithy is python for sharing plots and numerical output, among other things. It's really pretty cool, but you have to play with it for a bit to see why. Go to the [wiki](https://github.com/dansteingart/pithy/wiki) to get a sense of what it can do.
 
-pithy is just like [juptyer notebook](http://juptyer.org/), or the [adafruit learning system IDE](http://learn.adafruit.com/), or `<insert your favorite web ide here>`, and i'd be flattered.  but it's got differences, and the best way to understand them is this:
+## You might say
 
-the incomparable [aaron swartz](http://en.wikipedia.org/wiki/Aaron_Swartz) made a couple of web page/wiki/blog/information engines that are awesome and (imho) radically underappreciated.  they are [jottit](https://www.jottit.com/) and [infogami](https://github.com/infogami/infogami).  The beauty of these programs is the expansiveness of what they can do coupled with the minimal overhead of what you need to get something done.  
+---
 
-here's why they're great: you go to a url.  if the url exists, you can read what's there.  you might be able to add to it.  if the url doesn't exist, then within 5 seconds you can make it exist.  minimal (if any) logging in, and close to zero friction between you and new content.  no laborious wizards nor setup queues.  no "file menu".  no "really?".  just writing.  if you needed to go back, you could.  
+pithy is just like [juptyer notebook](http://juptyer.org/), or the [adafruit learning system IDE](http://learn.adafruit.com/), or `<insert your favorite web ide here>`, and I'd be flattered. But it's got differences, and the best way to understand them is this:
 
-i learned python because aaron spoke highly of it, and pithy is inspired by aaron's approach to adding content to the web, but rather that verbally expressive content this is intended for quantitative analyses.  
+The incomparable [Aaron Swartz](https://en.wikipedia.org/wiki/Aaron_Swartz) made a couple of web page/wiki/blog/information engines that are awesome and (imho) radically under-appreciated. They are [jottit](https://www.jottit.com/) and [infogami](https://github.com/infogami/infogami). The beauty of these programs is the expansiveness of what they can do coupled with the minimal overhead of what you need to get something done.
 
-why is this useful?  imagine you write an analysis of a dynamic dataset in r, or matlab, or whatever.  now imagine if that analysis could be viewed, edited non-destructively, rolled back and/or forked instantaneously by anyone without a login or cumbersome sign-in steps.  now imagine that this analysis is also a standalone web page that can be automatically refreshed.
+Here's why they're great: 
 
-this is pithy.  it does that.
+You go to a url. 
+If the url exists, you can read what's there. 
+          You might be able to add to it. 
+If the url doesn't exist, then within 5 seconds you can make it exist. 
 
-## big warning
-pithy runs arbitrary python on your machine and sends the output back to the browser in a fairly clear manner.  this is convenient, this is also potentially SUPER DANGEROUS.  thus far there is an optional attempt at code scrubbing to stop people from writing local files, reading local files and `rm -rf`-ing your stuff, but it is most definitely not sandboxed nor bullet proof.  it is currently _not enabled_.  thus, pithy should be run on a server:
+Minimal (if any) logging in, and close to zero friction between you and new content. No laborious wizards nor setup queues. No "file menu". no "really?". Just writing. if you needed to go back, you could.
+
+I learned python because Aaron spoke highly of it, and pithy is inspired by Aaron's approach to adding content to the web, but rather that verbally expressive content this is intended for quantitative analyses.
+
+Why is this useful? Imagine you write an analysis of a dynamic dataset in r, or matlab, or whatever. Now imagine if that analysis could be viewed, edited non-destructively, rolled back and/or forked instantaneously by anyone without a login or cumbersome sign-in steps. Now imagine that this analysis is also a standalone web page that can be automatically refreshed.
+
+This is pithy. It does that.
+
+## Big warning
+
+---
+
+Pithy runs arbitrary python on your machine and sends the output back to the browser in a fairly clear manner. this is convenient, this is also potentially SUPER DANGEROUS. thus far there is an optional attempt at code scrubbing to stop people from writing local files, reading local files and `rm -rf`-ing your stuff, but it is most definitely not sandboxed nor bullet proof. it is currently *not enabled*. thus, pithy should be run on a server:
 
 1. that is routinely backed up (like all good servers should be)
 2. has nothing that you don't want the world to see that is not encrypted (ditto)
 3. that can suffer some downtime if someone does something stupid
 
-the [raspberry pi](http://www.raspberrypi.org/) is an awesome server for this very thing.  it runs not bad on an rpi2.
+The [raspberry pi](http://www.raspberrypi.org/) is an awesome server for this very thing. it runs not bad on an rpi2 and really well on an rpi4.
 
-because pithy just runs from a directory, standard http authentication can be applied to make stuff safe, herein we use some very simple stuff.
+Because pithy just runs from a directory, standard http authentication can be applied to make stuff safe(r), herein we use some very simple stuff.
 
-## the easiest way to use pithy is just spin out a docker container
-htttps://dockerhub/steingart/pithy
+## The easiest way to use pithy is just spin out a docker container
 
-### pithy requires
+---
 
-1. a fairly up to date (2.7 and 3.0 work!) python installation
-2. [node.js](http://nodejs.org/)  (4.0.0 or better)
-3. science stuff!  Scipy, numpy and matplotlib are sufficient to say `import pithy`, but you can add whatever you like!
+This will get you up and running right quick
 
-### installation/usage
+```bash
+docker run -dit -e UPDATE=true -p 8080:8080 -p 8081:8081 \
+     --name pithy_trial \
+     steingart/pithy
+```
 
-1. clone repository to where you want stuff
-2. cd to that directory
-3. run "node index.js 8001" where 8001 is the port number (change to whatever you want)
-4. navigate to http://localhost:8001  (or wherever you put stuff).  you should see a page, and the URL should have a random string of characters appened.  try some python.
-5. the default user is "user" and pass is "pass" (no quotes, change this in the `pass.json` file right now.
-5. now add whatever name you want to the URL (numbers,letters and (-,_) only.  run some code here.  share the url if you're running on an accessisible server.  repeat.  now you're pithy.
+For those not well versed in docker this will 
 
+- pull (a rather large at ~`1.1 GB`) docker image called `steingart/pithy` your way with a lot of python libraries built in (in both `python2` and `python3`) to do science-y data-y stuff.
+    - Including libs....
 
-## example
+        ```bash
+        numpy
+        scipy
+        matplotlib
+        pandas
+        scikit-learn
+        pymongo
+        pillow
+        plotly
+        sympy
+        xlrd
+        ```
 
-pithy tries to plot things nicely, and in order.  best to learn by example here:
+- map ports `8080` and `8081` to the pithy editor and viewer
+    - change the first number in each to  map otherwise, not the latter. 
+    (e.g. `-p 9000:8080 -p 9001:8081`)
+- sets the `UPDATE` flag to `true`, this tells the docker image to pull the latest version of pithy web framework
+- Detaches a session `-dit` so it's running in the background
+- With a name of `pithy_trial`
 
-paste this into your pithy page to generate a graph
+If you want to save the code on the host, add a `-v [YOUR HOST DIR]:/pithy` flag to the above docker line.
 
+Obviously, if you know docker, go to town and make it fit your needs with networking etc etc.
 
-    from pithy import *
+## But you don't need to use Docker
 
-    a = linspace(0,1,100)
-    b = sqrt(a)
-    c = a**2
+---
 
-    plot(a,b,'k')
-    plot(a,c,'k')
-    showme()
-    clf()
+If you just want to use pithy on your host, all you need is 
 
-    plot(a,b,'k')
-    plot(a,c,'k')
-    xlabel("x")
-    ylabel("y")
-    title("Now With Labels")
-    showme()
+- node version > 16  available
+- python3 available
 
-everything here is pure [pylab](http://www.scipy.org/PyLab) except for showme(), which does some behind the scenes magic to generate a plot and save the figure.  
+and just 
 
+```bash
+git clone http://github.com/dansteingart/pithy
+```
 
-## runtime arguments:
+and then in that directory 
 
-### folder mode
-some people wanted a mode where they could store different files in different "folders". Haha.
-
-well, as far as the user is concerned this does that.  
-
-`node index.js 8081 --foldermode=true`
-
-### timeout
-a timeout can be coded in, such that
-
-`node index.js 8081 --runtimeout=true`
-
-pithy scripts are not allowed to run more than 3 minutes unless overridden in the script with
-
-`##pithytimeout=YYY`, where `YYY` is the timeout in seconds, `0` means run forever.
-
-
-## acknowledgements
-
-pithy was made possible in part with support from NSF Grant CMMI 1031280.  
-pithy was made better with feedback from many students at CCNY, Princeton and Columbia.  Thanks.  
-pithy uses an RGA implementation for ACE created by [Macario Ortega](https://github.com/maca/ace-crdt).
+```bash
+bash start.sh
+```
