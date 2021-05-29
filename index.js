@@ -491,7 +491,6 @@ app.post('*/save', function(req, res)
 		full_name = page_name+".py"
 		sdata = x['value']
 		console.log("timed save of "+page_name)
-		console.log(sdata)
 		//Don't create new file if running the same code!
 		try { temp = fs.readFileSync(codebase+full_name).toString()}
 		catch (e){ temp = "dood" }
@@ -524,9 +523,7 @@ app.post('*/history', function(req, res)
 	hist_list = []
 	for (i in fils)
 	{
-		//time_part = parseInt(fils[i].split("_")[1])
 		time_part = parseInt(fils[i].substr(fils[i].length - length+1))
-		//console.log(time_part)
 		date = new Date(time_part)
 		hour = date.getHours()
 		min = date.getMinutes()
