@@ -1,7 +1,5 @@
 # pithy is
 
----
-
 ```
 1. concise and forcefully expressive, or
 2. containing much pith
@@ -16,8 +14,6 @@ pithy has code on the left, and output on the right. all changes are saved, and 
 pithy is python for sharing plots and numerical output, among other things. It's really pretty cool, but you have to play with it for a bit to see why. Go to the [wiki](https://github.com/dansteingart/pithy/wiki) to get a sense of what it can do.
 
 ## You might say
-
----
 
 pithy is just like [juptyer notebook](http://juptyer.org/), or the [adafruit learning system IDE](http://learn.adafruit.com/), or `<insert your favorite web ide here>`, and I'd be flattered. But it's got differences, and the best way to understand them is this:
 
@@ -40,8 +36,6 @@ This is pithy. It does that.
 
 ## Big warning
 
----
-
 Pithy runs arbitrary python on your machine and sends the output back to the browser in a fairly clear manner. this is convenient, this is also potentially SUPER DANGEROUS. thus far there is an optional attempt at code scrubbing to stop people from writing local files, reading local files and `rm -rf`-ing your stuff, but it is most definitely not sandboxed nor bullet proof. it is currently *not enabled*. thus, pithy should be run on a server:
 
 1. that is routinely backed up (like all good servers should be)
@@ -53,8 +47,6 @@ The [raspberry pi](http://www.raspberrypi.org/) is an awesome server for this 
 Because pithy just runs from a directory, standard http authentication can be applied to make stuff safe(r), herein we use some very simple stuff.
 
 ## The easiest way to use pithy is just spin out a docker container
-
----
 
 This will get you up and running right quick
 
@@ -94,8 +86,6 @@ If you want to save the code on the host, add a `-v [YOUR HOST DIR]:/pithy` flag
 Obviously, if you know docker, go to town and make it fit your needs with networking etc etc.
 
 ## But you don't need to use Docker
-
----
 
 If you just want to use pithy on your host, all you need is 
 
