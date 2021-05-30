@@ -11,7 +11,9 @@ Sometimes you want to share code and see what it does on the same page. sometime
 
 pithy has code on the left, and output on the right. all changes are saved, and the url is freely shareable. pithy has been tested against sophomores and juniors in chemical and mechanical engineering classes successfully since 2011.
 
-pithy is python for sharing plots and numerical output, among other things. It's really pretty cool, but you have to play with it for a bit to see why. Go to the [wiki](https://github.com/dansteingart/pithy/wiki) to get a sense of what it can do.
+pithy is python for sharing plots and numerical output, among other things. It's really pretty cool, but you have to play with it for a bit to see why. Go to the [this site](https://www.notion.so/ceecnyc/pithy-f6f3546b84634327b7e623c9e1f3d767) to get a sense of what it can do, but have this taste:
+
+![pithy_show](https://user-images.githubusercontent.com/152047/120088467-bd77db00-c0be-11eb-81ee-bb2410544fd5.gif)
 
 ## You might say
 
