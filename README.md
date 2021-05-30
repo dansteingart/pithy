@@ -105,5 +105,4 @@ and then in that directory
 bash start.sh
 ```
 ## More Details
-Coming
-
+[Here](https://www.notion.so/ceecnyc/pithy-f6f3546b84634327b7e623c9e1f3d767).
