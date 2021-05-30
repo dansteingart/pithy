@@ -18,6 +18,7 @@ settings = {
 	'prepend' : ""
 }
 
+var styler = false;
 
 function makecmd(to_run)
 {
@@ -28,10 +29,21 @@ function makecmd(to_run)
 	catch(err){console.log(err);pybin = "ls "}
 	if (pybin.search("python") == -1) pybin = settings.python_path
 
+	if (pyscript.search("##style")> -1) styler = true;
+	else styler = false;
+
+
 	if (pyscript.search("##shower")> -1) {return pybin + " -u '" + py_to_run + "' "}
 	else {return pybin + " -u 'dontshow.py' "}
 	//else return "echo 'I'm not running this unless you say so right'";
 
+}
+
+
+function makestyledoutput(strang)
+{
+	template = fs.readFileSync("static/shower.html").toString()
+	return template.replace("##SWAPME##",strang)
 }
 
 
@@ -186,7 +198,11 @@ app.get('/*', function(req, res)
 			{
 				exec(fullcmd,{maxBuffer: 1024 * 10000},function(error, stdout, stderr){
 
-					res.send(stdout);
+					var out;
+					if (styler) out = makestyledoutput(stdout);
+					else out = stdout;
+					res.send(out);
+
 				})}
 			}
 		catch (err)
