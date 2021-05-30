@@ -6,4 +6,4 @@ if [ "$UPDATE" = true ] ; then
 fi
 
 node index.js 8080 --runtimeout=true&
-node raw_shower.js 8081
+node shower.js 8081
