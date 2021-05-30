@@ -46,64 +46,62 @@ The [raspberry pi](http://www.raspberrypi.org/) is an awesome server for this 
 
 Because pithy just runs from a directory, standard http authentication can be applied to make stuff safe(r), herein we use some very simple stuff.
 
-## Let's around
+## Let's Do It
 
-- **Installing Pithy**
+### The easiest way to use pithy is just spin out a docker container
 
-    ### The easiest way to use pithy is just spin out a docker container
+This will get you up and running right quick
 
-    This will get you up and running right quick
+```bash
+docker run -dit -e UPDATE=true -p 8080:8080 -p 8081:8081 \
+--name pithy_trial \
+steingart/pithy
+```
 
-    ```bash
-    docker run -dit -e UPDATE=true -p 8080:8080 -p 8081:8081 \
-         --name pithy_trial \
-         steingart/pithy
-    ```
+For those not well versed in docker this will 
 
-    For those not well versed in docker this will 
+- pull (a rather large at ~`1.1 GB`) docker image called `steingart/pithy` your way with a lot of python libraries built in (in both `python2` and `python3`) to do science-y data-y stuff.
+- Including libs....
 
-    - pull (a rather large at ~`1.1 GB`) docker image called `steingart/pithy` your way with a lot of python libraries built in (in both `python2` and `python3`) to do science-y data-y stuff.
-        - Including libs....
+  ```bash
+  numpy
+  scipy
+  matplotlib
+  pandas
+  scikit-learn
+  pymongo
+  pillow
+  plotly
+  sympy
+  xlrd
+  ```
 
-            ```bash
-            numpy
-            scipy
-            matplotlib
-            pandas
-            scikit-learn
-            pymongo
-            pillow
-            plotly
-            sympy
-            xlrd
-            ```
+- map ports `8080` and `8081` to the pithy editor and viewer
+- change the first number in each to  map otherwise, not the latter. 
+(e.g. `-p 9000:8080 -p 9001:8081`)
+- sets the `UPDATE` flag to `true`, this tells the docker image to pull the latest version of pithy web framework
+- Detaches a session `-dit` so it's running in the background
+- With a name of `pithy_trial`
 
-    - map ports `8080` and `8081` to the pithy editor and viewer
-        - change the first number in each to  map otherwise, not the latter. 
-        (e.g. `-p 9000:8080 -p 9001:8081`)
-    - sets the `UPDATE` flag to `true`, this tells the docker image to pull the latest version of pithy web framework
-    - Detaches a session `-dit` so it's running in the background
-    - With a name of `pithy_trial`
+If you want to save the code on the host, add a `-v [YOUR HOST DIR]:/pithy` flag to the above docker line.
 
-    If you want to save the code on the host, add a `-v [YOUR HOST DIR]:/pithy` flag to the above docker line.
+Obviously, if you know docker, go to town and make it fit your needs with networking etc etc.
 
-    Obviously, if you know docker, go to town and make it fit your needs with networking etc etc.
+### But you don't need to use Docker
 
-    ### But you don't need to use Docker
+If you just want to use pithy on your host, all you need is 
+- node version > 16  available
+- python3 available
 
-    If you just want to use pithy on your host, all you need is 
+```bash
+git clone http://github.com/dansteingart/pithy
+```
 
-    - node version > 16  available
-    - python3 available
+and then in that directory 
 
-    and just 
+```bash
+bash start.sh
+```
+## More Details
+Coming
 
-    ```bash
-    git clone http://github.com/dansteingart/pithy
-    ```
-
-    and then in that directory 
-
-    ```bash
-    bash start.sh
-    ```
