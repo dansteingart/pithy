@@ -130,17 +130,30 @@ catch (e)
 	fs.writeFileSync(codebase+'/pithy3.py',fs.readFileSync(prependbase3).toString())
 }
 
-//create python_basics.py lib if it doesn't already exist
+//create python2_basics.py lib if it doesn't already exist
 try
 {
-	checkface = fs.readFileSync(codebase+'/python_basics.py').toString()
+	checkface = fs.readFileSync(codebase+'/python2_basics.py').toString()
 	console.log("tutorial is in place")
 }
 catch (e)
 {
 	console.log("making a tutorial")
-	fs.writeFileSync(codebase+'/python_basics.py',fs.readFileSync('static/python_basics').toString())
+	fs.writeFileSync(codebase+'/python2_basics.py',fs.readFileSync('static/python2_basics.py').toString())
 }
+
+//create python3_basics.py lib if it doesn't already exist
+try
+{
+	checkface = fs.readFileSync(codebase+'/python3_basics.py').toString()
+	console.log("tutorial is in place")
+}
+catch (e)
+{
+	console.log("making a tutorial")
+	fs.writeFileSync(codebase+'/python3_basics.py',fs.readFileSync('static/python3_basics.py').toString())
+}
+
 
 //create pass.json file if it doesn't already exist
 try
