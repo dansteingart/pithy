@@ -11,13 +11,12 @@ Sometimes you want to share code and see what it does on the same page. sometime
 
 pithy has code on the left, and output on the right. all changes are saved, and the url is freely shareable. pithy has been tested against sophomores and juniors in chemical and mechanical engineering classes successfully since 2011.
 
-pithy is python for sharing plots and numerical output, among other things. It's really pretty cool, but you have to play with it for a bit to see why. Go to the [this site](https://www.notion.so/ceecnyc/pithy-f6f3546b84634327b7e623c9e1f3d767) to get a sense of what it can do, but have this taste:
+pithy is python for sharing plots and numerical output, among other things. It's really pretty cool, but you have to play with it for a bit to see why. Go [here](https://www.notion.so/ceecnyc/pithy-f6f3546b84634327b7e623c9e1f3d767) to get a sense of what it can do, but have this taste:
 
 ![pithy_show](https://user-images.githubusercontent.com/152047/120088467-bd77db00-c0be-11eb-81ee-bb2410544fd5.gif)
-
 ## You might say
 
-pithy is just like [juptyer notebook](http://juptyer.org/), or the [adafruit learning system IDE](http://learn.adafruit.com/), or `<insert your favorite web ide here>`, and I'd be flattered. But it's got differences, and the best way to understand them is this:
+pithy is just like [juptyer notebook](http://juptyer.org/), or `<insert your favorite web ide here>`, and I'd be flattered. But it's got differences, and the best way to understand them is this:
 
 The incomparable [Aaron Swartz](https://en.wikipedia.org/wiki/Aaron_Swartz) made a couple of web page/wiki/blog/information engines that are awesome and (imho) radically under-appreciated. They are [jottit](https://www.jottit.com/) and [infogami](https://github.com/infogami/infogami). The beauty of these programs is the expansiveness of what they can do coupled with the minimal overhead of what you need to get something done.
 
@@ -38,13 +37,13 @@ This is pithy. It does that.
 
 ## Big warning
 
-Pithy runs arbitrary python on your machine and sends the output back to the browser in a fairly clear manner. this is convenient, this is also potentially SUPER DANGEROUS. thus far there is an optional attempt at code scrubbing to stop people from writing local files, reading local files and `rm -rf`-ing your stuff, but it is most definitely not sandboxed nor bullet proof. it is currently *not enabled*. thus, pithy should be run on a server:
+Pithy runs arbitrary python on your machine and sends the output back to the browser in a fairly clear manner. this is convenient, this is also potentially SUPER DANGEROUS. Pithy should be run on a server:
 
-1. that is routinely backed up (like all good servers should be)
-2. has nothing that you don't want the world to see that is not encrypted (ditto)
-3. that can suffer some downtime if someone does something stupid
+1. That is routinely backed up (like all good servers should be)
+2. Has nothing that you don't want the world to see that is not encrypted (ditto)
+3. That can suffer some downtime if someone does something stupid
 
-The [raspberry pi](http://www.raspberrypi.org/) is an awesome server for this very thing. it runs not bad on an rpi2 and really well on an rpi4.
+The [raspberry pi](http://www.raspberrypi.org/) is an awesome server for this very thing. It runs not bad on an rpi2 and really well on an rpi4.
 
 Because pithy just runs from a directory, standard http authentication can be applied to make stuff safe(r), herein we use some very simple stuff.
 
