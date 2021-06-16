@@ -327,7 +327,7 @@ socket.on('init', ({ id, history }) => {
 			//    after loading a page, 
 			//    if no one replies to the historyRequest within hto ms, 
 			//    ask the boss
-			var hto = 200;
+			var hto = 1000;
 			editor.setReadOnly(true)
 			setTimeout(function(){ 
 					if (editor.getSession().getValue() == "") 
