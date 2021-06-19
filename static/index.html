@@ -453,6 +453,7 @@ function build_output(data){
 		
 		else if (foots[i].search("been working")>-1)
 		{ 
+			waiting_for_output = true; 
 			pyrunner = foots[i].replace("<br>","")
 			b = pyrunner.search("for ")
 			c = pyrunner.search("ms")
