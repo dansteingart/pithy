@@ -5,6 +5,7 @@ results/*
 temp_results/*
 .DS_Store
 pass.json
+files/*
 
 crufts/*
 scratch/*

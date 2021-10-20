@@ -53,6 +53,7 @@ pythonbin = "python3";
 
 prependbase = "static/pithy.py";
 prependbase3 = "static/pithy3.py";
+sudo = ""
 
 gitted = false;
 var runtimeout = false;
@@ -80,6 +81,12 @@ for (var i = 0; i < process.argv.length;i++)
 	{
 		foldermode = (process.argv[i].split("=")[1] == 'true');
 	}
+
+	if (process.argv[i].search("--sudo")>-1)
+	{
+		sudo = "sudo"
+	}
+
 
   if (process.argv[i].search("--runtimeout=")>-1)
 	{
@@ -421,7 +428,7 @@ app.post("*/killer",function(req,res)
 		if (thispid != undefined)
 		{
 			console.log("killing in the name of "+thispid)
-			exec(pythonbin+" killer.py "+x,function(stdout,stderr)
+			exec(sudo + " "+pythonbin+" killer.py "+x,function(stdout,stderr)
 			{
 				outer = stdout+","+stderr
 				console.log(outer)
@@ -731,7 +738,7 @@ function betterexec(nameo,fff)
 
 
   //now process file to see if there's a timeout change
-	big_gulp = timeoutclause + " "+ pyversion+" -u '"+essence+".py' "+estring
+	big_gulp = sudo+" "+timeoutclause + " "+ pyversion+" -u '"+essence+".py' "+estring
 	fullcmd = "touch "+tempbase+parts[1] +"; " +big_gulp+" > '"+tempbase+nameo+"'"
 
 
