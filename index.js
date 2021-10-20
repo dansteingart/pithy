@@ -9,8 +9,9 @@ var io = require('socket.io')(server)
 //there is redundancy here that needs to be cleaned up
 var exec = require('child_process').exec,child;
 
-//For dealing with llocal files
+//For dealing with local files
 var glob = require('glob')
+
 //a vestige, need to clean out.  don't change this
 //basic authentication would be great to outh2 this sucka at some point
 app.use(express.basicAuth(function(user, pass, callback) {
@@ -46,14 +47,13 @@ filebase = "files/"
 assetbase = "assets/"
 
 //What a new pages shows
-//base_template = "##Author: \n##Date Started: \n##Notes: \n";
 function base_template() {return fs.readFileSync('static/template.py').toString()}
 
 pythonbin = "python3";
 
 prependbase = "static/pithy.py";
 prependbase3 = "static/pithy3.py";
-
+sudo = ""
 gitted = false;
 var runtimeout = false;
 var foldermode = false;
@@ -75,6 +75,12 @@ for (var i = 0; i < process.argv.length;i++)
 	{
 		prependbase = process.argv[i].split("=")[1];
 	}
+
+	if (process.argv[i].search("--sudo")>-1)
+	{
+		sudo = "sudo";
+	}
+
 
 	if (process.argv[i].search("--foldermode=")>-1)
 	{
@@ -421,7 +427,7 @@ app.post("*/killer",function(req,res)
 		if (thispid != undefined)
 		{
 			console.log("killing in the name of "+thispid)
-			exec(pythonbin+" killer.py "+x,function(stdout,stderr)
+			exec(sudo+" "+pythonbin+" killer.py "+x,function(stdout,stderr)
 			{
 				outer = stdout+","+stderr
 				console.log(outer)
@@ -476,7 +482,6 @@ app.post('*/run', function(req, res)
 
 		fs.writeFileSync(codebase+full_name,data);
 		fs.writeFileSync(histbase+page_name+"_"+time,data);
-		//exec("python2 sorter.py "+page_name) //MAV 2021-05-28
 
 		if (gitted)
 		{
@@ -628,69 +633,69 @@ app.post('*/copyto',function(req,res)
 
 })
 
-//This is a half-ass attempt to save interesting results that I never finished
-app.post('*/markresult',function(req,res)
-{
-	x = req.body
-	page_name = x['page_name'].replace("/","")
-	result_name = x['result_name']
-	console.log(result_name)
-	result_set = ""
-	try
-	{
-		hacky_name = stored_resbase+page_name+"_"+parseInt(new Date().getTime())
-		out = fs.readFileSync(resbase+page_name).toString()
-		result_set = JSON.parse(out)
-		result_set['code'] = fs.readFileSync(codebase+page_name+".py").toString()
-		result_set['name'] = result_name
-		result_set['filename'] = hacky_name
-		fs.writeFileSync(hacky_name,JSON.stringify(result_set))
-	}
-	catch (e)
-	{
-		//console.log(e)
-		out =  base_template
-	}
+// //This is a half-ass attempt to save interesting results that I never finished
+// app.post('*/markresult',function(req,res)
+// {
+// 	x = req.body
+// 	page_name = x['page_name'].replace("/","")
+// 	result_name = x['result_name']
+// 	console.log(result_name)
+// 	result_set = ""
+// 	try
+// 	{
+// 		hacky_name = stored_resbase+page_name+"_"+parseInt(new Date().getTime())
+// 		out = fs.readFileSync(resbase+page_name).toString()
+// 		result_set = JSON.parse(out)
+// 		result_set['code'] = fs.readFileSync(codebase+page_name+".py").toString()
+// 		result_set['name'] = result_name
+// 		result_set['filename'] = hacky_name
+// 		fs.writeFileSync(hacky_name,JSON.stringify(result_set))
+// 	}
+// 	catch (e)
+// 	{
+// 		//console.log(e)
+// 		out =  base_template
+// 	}
 
-	console.log(result_set)
-})
+// 	console.log(result_set)
+// })
 
-app.post('*/markedresults', function(req, res)
-{
-	x = req.body;
-	page_name = x['page_name']
-	console.log(x)
-	length = "_1314970891000".length //get length of timestamp
-	structure = stored_resbase+page_name+"*"
-	thing_list = []
+// app.post('*/markedresults', function(req, res)
+// {
+// 	x = req.body;
+// 	page_name = x['page_name']
+// 	console.log(x)
+// 	length = "_1314970891000".length //get length of timestamp
+// 	structure = stored_resbase+page_name+"*"
+// 	thing_list = []
 
-	fils  = fs.readdirSync(stored_resbase)
-	for (i in fils)
-	{
-		console.log(fils[i])
-		console.log(page_name)
-		if (fils[i].search(page_name+"_") > -1)
-		{
-			thing_list.push(fils[i])
-		}
-	}
+// 	fils  = fs.readdirSync(stored_resbase)
+// 	for (i in fils)
+// 	{
+// 		console.log(fils[i])
+// 		console.log(page_name)
+// 		if (fils[i].search(page_name+"_") > -1)
+// 		{
+// 			thing_list.push(fils[i])
+// 		}
+// 	}
 
-	fils = thing_list
-	fils.sort()
-	fils.reverse()
-	console.log(fils);
+// 	fils = thing_list
+// 	fils.sort()
+// 	fils.reverse()
+// 	console.log(fils);
 
-	hist_list = []
-	for (i in fils)
-	{
-		time_part = parseInt(fils[i].substr(fils[i].length - length+1))
-		marked_name = JSON.parse(fs.readFileSync(stored_resbase+fils[i]))['name']
-		hist_list.push([fils[i],marked_name])
-	}
-	console.log(hist_list);
+// 	hist_list = []
+// 	for (i in fils)
+// 	{
+// 		time_part = parseInt(fils[i].substr(fils[i].length - length+1))
+// 		marked_name = JSON.parse(fs.readFileSync(stored_resbase+fils[i]))['name']
+// 		hist_list.push([fils[i],marked_name])
+// 	}
+// 	console.log(hist_list);
 
-	res.json({'out':hist_list})
-});
+// 	res.json({'out':hist_list})
+// });
 
 
 //Start It Up!
@@ -731,7 +736,7 @@ function betterexec(nameo,fff)
 
 
   //now process file to see if there's a timeout change
-	big_gulp = timeoutclause + " "+ pyversion+" -u '"+essence+".py' "+estring
+	big_gulp = sudo+" "+timeoutclause + " "+ pyversion+" -u '"+essence+".py' "+estring
 	fullcmd = "touch "+tempbase+parts[1] +"; " +big_gulp+" > '"+tempbase+nameo+"'"
 
 
