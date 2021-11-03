@@ -109,6 +109,8 @@ else editor.setTheme("ace/theme/"+thematic);
 //What happens when you click run
 $("#run").click(function(){
 	runner(true,pathname); //was page
+	history(page); //get if we changed show new code
+
 });
 
 //Run the script every five seconds
