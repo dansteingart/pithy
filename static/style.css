@@ -61,6 +61,32 @@ img
 	text-decoration: none;
 }
 
+button
+{
+	background-color: #DDDDDD;
+	border: .5px solid #888888;
+	height:20px;
+	width:20px;
+	color: black;
+  
+}
+
+button:hover
+{
+	color:darkgreen;
+	background-color: #EEEEEE;
+}
+
+button:active
+{
+	color:green;
+}
+
+button:disabled
+{
+	background-color: darkgray;
+	color:white;
+}
 
 textarea
 {

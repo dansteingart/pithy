@@ -24,11 +24,11 @@
 <div id="right-side" class="right">
 	<div class="menu_bar">
 		<span id="status" style="height:10px;"></span>
-		<button id="run"  style="width:22px;" title="run">r</button>  
-		<button id="kill" style="width:22px;" title="kill">k</button>  
+		<button id="run"   title="run">r</button>  
+		<button id="kill"  title="kill">k</button>  
 		<!--<button id="saveresult">s</button> -->
-		<button id="fiver" style="width:22px;" >5</button>
-		<button id="copyto" style="width:22px;" title="fork code">c</button> 
+		<button id="fiver" >5</button>
+		<button id="copyto" title="fork code">c</button> 
 		<span id="history_box"></span> 
 		<span id="markedresults_box"></span> 
 		
@@ -108,10 +108,19 @@ else editor.setTheme("ace/theme/"+thematic);
 
 //What happens when you click run
 $("#run").click(function(){
-	runner(true,pathname); //was page
-	history(page); //get if we changed show new code
 
+	if (!$("#run").prop("disabled"))
+	{
+		runner(true,pathname); //was page
+		history(page); //get if we changed show new code
+
+		//little blinky blinky
+		$("#run").css('color','rgb(0,255,0)');	
+		setTimeout(function(){$("#run").css('color','rgb(0,0,0)')},200)
+	}
 });
+
+
 
 //Run the script every five seconds
 fiver_timer = false;
@@ -358,6 +367,7 @@ socket.on(page.replace("/",""), function (data) {
 				if (data['exec_time'] != undefined)
 				{
 					waiting_for_output = false
+					$("#run").prop("disabled",false);
 					$("#status").html("saved, exec time = "+data['exec_time']/1000+"s");
 					history(page);
 					
@@ -527,7 +537,9 @@ function runner(bool,page,sbool=false){
 
 	if (!waiting_for_output)
 	{ 
+	
 	waiting_for_output = true
+	$("#run").prop("disabled",true);
 	script_name = $("#scriptname").val()
 	$("#status").html("waiting for result");
 	
