@@ -24,6 +24,25 @@ body
 	font-size: 25px;
 }
 
+.newpagebox
+{
+	border-radius: 0px;
+	border-top: none;
+	border-left: none;
+	border-right: none;
+	border-bottom: solid #444 .5px;
+	font-size: 25px;
+	width: 40%;
+
+
+}
+.goButton
+{
+	font-size:25;
+	width: 45px;
+	height: 35px;
+}
+
 .colheader
 {
 	color: #777;
@@ -78,7 +97,7 @@ var pathname = window.location.origin;
 var page = pathname.split("//")[1].split(".")[0] //get subdomain
 
 $("#headface").html("pithy")
-$("#news").prepend("new page -> "+pathname+"/<input class='newpage' id='newpage'> </input><button onclick='goThere()'>go</button>")
+$("#news").prepend("new page -> "+pathname+"/<input class='newpagebox' id='newpage'> </input><button class='goButton' onclick='goThere()'>go</button>")
 
 
 
