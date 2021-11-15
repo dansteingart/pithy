@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "codemirror": "^5.63.3",
+    "express": "^4.17.1",
+    "express-basic-auth": "^1.2.0",
+    "fs": "^0.0.1-security",
+    "g": "^2.0.1",
+    "http-server": "^14.0.0",
+    "monaco-editor": "^0.30.1",
+    "node-inspect": "^2.0.0",
+    "webpack": "^5.63.0",
+    "y-codemirror": "^3.0.0",
+    "y-codemirror.next": "^0.1.0",
+    "y-monaco": "^0.1.2",
+    "y-websocket": "^1.3.17",
+    "yjs": "^13.5.20"
+  },
+  "devDependencies": {
+    "webpack-cli": "^4.9.1"
+  }
+}

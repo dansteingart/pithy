@@ -1,0 +1,248 @@
+<head>
+<script
+  src="https://code.jquery.com/jquery-3.6.0.min.js"
+  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+  crossorigin="anonymous"></script>
+<script src="dist/main.js"></script>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="http://codemirror.net/lib/codemirror.css">
+<link rel="stylesheet" href="https://codemirror.net/addon/fold/foldgutter.css">
+<link rel="stylesheet" href="http://codemirror.net/theme/3024-day.css">
+<link rel="stylesheet" href="http://codemirror.net/theme/3024-night.css">
+<link rel="stylesheet" href="http://codemirror.net/theme/ambiance.css">
+<link rel="stylesheet" href="http://codemirror.net/theme/base16-dark.css">
+<link rel="stylesheet" href="http://codemirror.net/theme/base16-light.css">
+<link rel="stylesheet" href="http://codemirror.net/theme/blackboard.css">
+<link rel="stylesheet" href="http://codemirror.net/theme/cobalt.css">
+<link rel="stylesheet" href="http://codemirror.net/theme/eclipse.css">
+<link rel="stylesheet" href="http://codemirror.net/theme/elegant.css">
+<link rel="stylesheet" href="http://codemirror.net/theme/erlang-dark.css">
+<link rel="stylesheet" href="http://codemirror.net/theme/lesser-dark.css">
+<link rel="stylesheet" href="http://codemirror.net/theme/midnight.css">
+<link rel="stylesheet" href="http://codemirror.net/theme/monokai.css">
+<link rel="stylesheet" href="http://codemirror.net/theme/neat.css">
+<link rel="stylesheet" href=http://codemirror.net/doc/docs.css>
+<script src="http://codemirror.net/lib/codemirror.js"></script>
+<script src="https://codemirror.net/addon/fold/foldcode.js"></script>
+<script src="https://codemirror.net/addon/fold/foldgutter.js"></script>
+<script src="https://codemirror.net/addon/fold/brace-fold.js"></script>
+<script src="https://codemirror.net/addon/fold/indent-fold.js"></script>
+<script src="https://codemirror.net/addon/fold/comment-fold.js"></script>
+<script src="https://codemirror.net/addon/comment/comment.js"></script>
+<script src="https://codemirror.net/addon/comment/continuecomment.js"></script>
+
+<script src="http://codemirror.net/mode/python/python.js"></script>
+<script src="https://codemirror.net/keymap/sublime.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
+<script src="https://unpkg.com/hotkeys-js/dist/hotkeys.min.js"></script>
+
+<style>
+
+body, html {
+  height: 100%;
+  background-color: white;
+  overflow-wrap: break-word;
+
+}
+
+    .remote-caret {
+      position: relative;
+      border-left: 2px solid black;
+      margin-left: -1px;
+      margin-right: -1px;
+      box-sizing: border-box;
+    }
+    .remote-caret > div {
+      white-space: nowrap;
+      position: absolute;
+      top: -1.05em;
+      left: -2px;
+      font-size: .6em;
+      background-color: rgb(37, 0, 250);
+      font-family: serif;
+      font-style: normal;
+      font-weight: normal;
+      line-height: normal;
+      user-select: none;
+      color: white;
+      padding-left: 2px;
+      padding-right: 2px;
+      z-index: 3;
+      transition: opacity .3s ease-in-out;
+    }
+    .remote-caret.hide-name > div {
+      transition-delay: .7s;
+      opacity: 0;
+    }
+    .remote-caret:hover > div {
+      opacity: 1;
+      transition-delay: 0s;
+    }
+    .cm-editor.cm-focused { outline: 2px solid cyan }
+    .cm-editor .cm-content { font-family: "Consolas" }
+
+
+    .CodeMirror
+    {
+      float:left;
+      width:50%;
+      height: 100%;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 16px;
+    }
+
+    .right
+    {
+      background-color: white;
+      font-family: Arial, Helvetica, sans-serif;
+      float:right;
+      width:50%;
+      height: 100%;
+    }
+
+
+
+
+    .output
+   {
+     font-family: Arial, Helvetica, sans-serif;
+   }
+
+</style>
+
+
+</head>
+<body>
+
+<div id="editor" class="editor" class="left""></div>
+<div id="right" class="right">
+  <div class="menu_bar">
+		<span id="status" style="height:10px;"></span>
+		<button id="run"   title="run">r</button>  
+		<button id="kill"  title="kill">k</button>  
+		<!-- <button id="saveresult">s</button>
+		<button id="fiver" >5</button>
+		<button id="copyto" title="fork code">c</button> 
+		<span id="history_box"></span> 
+		<span id="markedresults_box"></span>  -->
+		
+	</div>
+
+  <!-- <button id="run">r</button> <button id="kill">k</button> <span class="output" id="status"></span> -->
+
+  <div id="output" class="images"></div>
+</div>
+
+<script>
+
+const editorContainer = $("#editor")[0];
+const editor = CodeMirror(editorContainer, {
+  mode: 'python',
+  lineNumbers: true,
+  styleActiveLine: true,
+  matchBrackets: true,
+  lineWrapping: true,
+  extraKeys: {
+    "Cmd-Q": function(cm){ cm.foldCode(cm.getCursor());},
+    'Cmd-/': function(cm){cm.execCommand('toggleComment')},
+    'Ctrl-/': function(cm){cm.execCommand('toggleComment')}
+    },
+  foldGutter: true,
+  gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]
+
+})
+editor.setOption("theme","cobalt");
+editor.setOption("readOnly",true);
+
+//setup Y
+code_name = window.location.pathname.split("/")[1];
+cdk = code_name+"_keys";
+const ydoc = new Y.Doc()
+const wsProvider = new WebsocketProvider(window.location.origin.replace("http","ws"), code_name, ydoc)
+wsProvider.on('status', event => {
+  console.log(event.status)
+  if (event.status == "connected") 
+  {
+    check_running();
+    editor.setOption("readOnly", false);
+  }
+  else if (event.status == "disconnected") 
+  {
+    editor.setOption("readOnly", true);
+  }
+
+})
+
+
+
+//Setup and Bind CM
+const yCm = ydoc.getText('codemirror')
+const yUndoManager = new Y.UndoManager(yCm)
+const binding = new CodemirrorBinding(yCm, editor, wsProvider.awareness, { yUndoManager })
+check_exists();
+
+//setup and bind output pane
+const yO = ydoc.getText(code_name+'_output')
+yO.observe(event => {
+  $("#output").html(yO.toString());
+})
+
+//set flags to mark running
+const ykeys = ydoc.getMap(cdk)
+ykeys.observe(event =>{
+  if (ykeys.get('running') == true) 
+  {
+    $("#run").prop("disabled",true);
+    $("#status").html(`Running for ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
+  }
+  else 
+  {
+    $("#run").prop("disabled",false);
+    $("#status").html(`Finshed after ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
+  }
+
+} )
+
+//check to see if code is running and match up codes
+function check_running()
+{
+  $.post("/check_running/",{'code':code_name}, function(data)
+  {
+    ykeys.set('running',data['running']);
+    console.log(data);
+  })
+}
+
+function check_exists()
+{
+  $.post("/check_exists/",{'code':code_name}, function(data)
+  {
+    console.log(data);
+  })
+}
+
+//rest of code!
+function run()
+{
+  payload = {'code':code_name};
+  if ($("#run").prop("disabled") == false) $.post('/run/',payload,function(data){console.log(data)});
+}
+$("#run").click(function(){run()});
+function kill()
+{
+  payload = {'code':code_name};
+  $.post('/kill/',payload,function(data){console.log(data)});
+}
+$("#kill").click(function(){kill()});
+
+editor.addKeyMap({'Cmd-Enter': function(cm){run();}});
+editor.addKeyMap({'Cmd-K': function(cm){kill();}});
+
+// hotkeys('command+enter', function (event, handler){run();})
+// hotkeys('command+k', function (event, handler){kill();})
+
+
+
+</script>
+
+</body>
