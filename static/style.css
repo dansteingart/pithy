@@ -251,3 +251,11 @@ input:focus {outline: none; }
 {
 	text-align:right;
 }
+
+.error
+{
+	border-top: .5px solid silver;
+	padding-top: 20px;
+	margin-top: 20px;
+	color:red;
+}

@@ -2,20 +2,20 @@
 /**
  * @type {any}
  */
- const WebSocket = require('ws')
- const http = require('http')
- const wss = new WebSocket.Server({ noServer: true })
- const utils = require('./libs/utils.js');
- const setupWSConnection = utils.setupWSConnection
- var express = require('express');
- const basicAuth = require('express-basic-auth')
- var bodyParser = require('body-parser')
- var fs = require('fs')
- const app = express();
- const host = process.env.HOST || '0.0.0.0'
- const port = process.env.PORT || 1234
- var Y = require("yjs");
- const { spawn } = require('child_process');
+const WebSocket = require('ws')
+const http = require('http')
+const wss = new WebSocket.Server({ noServer: true })
+const utils = require('./libs/utils.js');
+const setupWSConnection = utils.setupWSConnection
+var express = require('express');
+const basicAuth = require('express-basic-auth')
+var bodyParser = require('body-parser')
+var fs = require('fs')
+const app = express();
+const host = process.env.HOST || '0.0.0.0'
+const port = process.env.PORT || 1234
+var Y = require("yjs");
+const { spawn } = require('child_process');
 
 const server = http.createServer(app)
 function authentication(req, res, next) {
@@ -167,7 +167,10 @@ app.post('/get_history/',function(req,res)
   res.send({'reverted':histval})
 })
 
-app.get('/*', (req, res) => {res.sendFile('index.html', { root: __dirname });})
+app.get('/*', (req, res) => {
+    if (req.params[0] == "") res.sendFile('homepage.html', { root: __dirname+"/static" })
+    else res.sendFile('index.html', { root: __dirname+"/static" });
+  });
 
 
 app.post("/run/",(req,res) => {
@@ -186,6 +189,7 @@ function runner(codename){
         fs.writeFileSync(`${histbase}${codename}_${time}`,code);
   }
   fs.writeFileSync("code/"+codename+".py",code)
+
   ks[codename] = utils.getYDoc(codename).getMap(codename+"_keys");
   ks[codename].set("running",true);
   os[codename] = utils.getYDoc(codename).getText(codename+'_output')
@@ -194,12 +198,9 @@ function runner(codename){
   ts[codename] = setInterval(function(){ks[codename].set('runtime',new Date().getTime()-tss[codename])},10);
   ps[codename] = spawn("python3",[`-u`,`code/${codename}.py`]);
   ps[codename].stdout.on('data',(d) => {os[codename].insert(os[codename].length,`${d}`)})
-  ps[codename].stderr.on('data',(err) => {os[codename].insert(os[codename].length,`<span style='color:red'>${err}</span>`)})
-  ps[codename].on('error',(err) => {os[codename].insert(os[codename].length,`<span style='color:red'>${err}</span>`)})
-  ps[codename].on('exit',(exit_code)=> {
-    ks[codename].set("running",false);
-    clearInterval(ts[codename]);
-  })
+  ps[codename].stderr.on('data',(err) => {os[codename].insert(os[codename].length,`<div class='error'>${err}</div>`)})
+  ps[codename].on('error',(err) => {os[codename].insert(os[codename].length,`<div class='error'>${err}</div>`)})
+  ps[codename].on('exit',(exit_code)=> {ks[codename].set("running",false);clearInterval(ts[codename]);})
 
   return ps[codename]
 }
