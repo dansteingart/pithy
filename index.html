@@ -30,7 +30,7 @@
 <script src="https://codemirror.net/addon/fold/comment-fold.js"></script>
 <script src="https://codemirror.net/addon/comment/comment.js"></script>
 <script src="https://codemirror.net/addon/comment/continuecomment.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 <script src="http://codemirror.net/mode/python/python.js"></script>
 <script src="https://codemirror.net/keymap/sublime.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
@@ -120,6 +120,8 @@ body, html {
 		<span id="status" style="height:10px;"></span>
 		<button id="run"   title="run">r</button>  
 		<button id="kill"  title="kill">k</button>  
+    <span id="history_box"></span> 
+
 		<!-- <button id="saveresult">s</button>
 		<button id="fiver" >5</button>
 		<button id="copyto" title="fork code">c</button> 
@@ -173,8 +175,6 @@ wsProvider.on('status', event => {
 
 })
 
-
-
 //Setup and Bind CM
 const yCm = ydoc.getText('codemirror')
 const yUndoManager = new Y.UndoManager(yCm)
@@ -198,7 +198,7 @@ ykeys.observe(event =>{
   else 
   {
     $("#run").prop("disabled",false);
-    $("#status").html(`Finshed after ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
+    if (ykeys.get("runtime") > 0) $("#status").html(`Finshed after ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
   }
 
 } )
@@ -226,8 +226,10 @@ function run()
 {
   payload = {'code':code_name};
   if ($("#run").prop("disabled") == false) $.post('/run/',payload,function(data){console.log(data)});
+  history()
 }
 $("#run").click(function(){run()});
+
 function kill()
 {
   payload = {'code':code_name};
@@ -237,6 +239,39 @@ $("#kill").click(function(){kill()});
 
 editor.addKeyMap({'Cmd-Enter': function(cm){run();}});
 editor.addKeyMap({'Cmd-K': function(cm){kill();}});
+
+history();
+
+
+function history(){
+  $.post("/history/",{'code':code_name},(data)=>{
+    console.log(data)
+    out = data['history']
+    if (out == undefined) out = []
+    if (out.length > 1)
+    {
+      selecters = "<select id='histories' class='selectig'>"
+      for (i in out)
+      {
+          ttt = out[i][0]
+          ut = ttt.substr(ttt.length-13,ttt.length)
+          ttt = ttt.substr(0,ttt.length-14)
+          ut = parseInt(ut)
+          d = new Date()
+          d.setTime(ut)
+          now = moment(ut).local().format("MMM D YYYY hh:mm:ss a")
+          if (ttt == code_name) selecters += '<option value="'+out[i][0]+'">'+now+'</option>'			
+      }
+      selecters += "</select>"
+      $("#history_box").html("history:"+selecters)
+      $("#histories").change(function(){get_data()})}
+  });
+}
+
+function get_data(){
+	val = $("#histories").val();
+  $.post("/get_history/",{'code':code_name,'history':val},(data)=>{console.log(data);})
+}
 
 // hotkeys('command+enter', function (event, handler){run();})
 // hotkeys('command+k', function (event, handler){kill();})

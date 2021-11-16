@@ -39,6 +39,9 @@ function authentication(req, res, next) {
 
 }
 
+//folders
+histbase = "code_stamped/";
+
 app.use('/dist',express.static('dist'));
 app.use('/static',express.static('static'));
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -87,7 +90,7 @@ app.post("/check_exists/",(req,res)=>{
 })
 
  
- app.post("/check_running/",(req,res)=>{
+app.post("/check_running/",(req,res)=>{
   data = req.body;
   out = {'running':true}
   if (ps[data['code']]==undefined) out['running'] = false
@@ -97,6 +100,56 @@ app.post("/check_exists/",(req,res)=>{
 
  });
 
+
+app.post('/history/', function(req, res)
+ {
+   data = req.body;
+   codename = data['code']
+   length = "_1314970891000".length //get length of timestamp
+   structure = `${histbase + codename}*`
+   thing_list = []
+ 
+   fils  = fs.readdirSync(histbase)
+   for (i in fils)
+   {
+     if (fils[i].search(`${codename}_`) > -1)
+     {
+       thing_list.push(fils[i])
+     }
+   }
+ 
+   fils = thing_list
+   fils.sort()
+   fils.reverse()
+   hist_list = []
+   for (i in fils)
+   {
+     time_part = parseInt(fils[i].substr(fils[i].length - length+1))
+     date = new Date(time_part)
+     hour = date.getHours()
+     min = date.getMinutes()
+     sec = date.getSeconds()
+     day = date.getDate()
+     month = date.getMonth()
+     year = date.getYear()
+     time_part = month+"/"+day+"/"+year+" "+hour+":"+min+":"+sec;
+     hist_list.push([fils[i],date.toISOString()])
+   }
+ 
+   res.json({'history':hist_list})
+ });
+
+app.post('/get_history/',function(req,res)
+{
+  data = req.body;
+  codename = data['code']
+  histval  = data['history']
+  old_code = fs.readFileSync(`${histbase+histval}`).toString();
+  ycm = utils.getYDoc(codename).getText('codemirror')
+  ycm.delete(0,ycm.length);
+  ycm.insert(0,old_code);
+  res.send({'reverted':histval})
+})
 
 app.get('/*', (req, res) => {res.sendFile('index.html', { root: __dirname });})
 
@@ -108,7 +161,14 @@ app.post("/run/",(req,res) => {
 });
 
 function runner(codename){
+
   code = utils.getYDoc(codename).getText('codemirror').toString();
+  try { have = fs.readFileSync("code/"+codename+".py").toString();}
+  catch(e) {have = ""}
+  if (code != have) {
+        time = new Date().getTime().toString()
+        fs.writeFileSync(`${histbase}${codename}_${time}`,code);
+  }
   fs.writeFileSync("code/"+codename+".py",code)
   ks[codename] = utils.getYDoc(codename).getMap(codename+"_keys");
   ks[codename].set("running",true);

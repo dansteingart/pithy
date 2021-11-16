@@ -2,3 +2,5 @@ node_modules/*
 .DS_store
 .DS_store
 persist/*
+code/*
+code_stamped/*
