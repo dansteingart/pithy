@@ -4,3 +4,7 @@ node_modules/*
 persist/*
 code/*
 code_stamped/*
+images/*
+files/*
+assets/*
+results/*

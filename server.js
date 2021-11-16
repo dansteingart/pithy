@@ -40,7 +40,23 @@ function authentication(req, res, next) {
 }
 
 //folders
-histbase = "code_stamped/";
+codebase = "code/"
+histbase = "code_stamped/"
+tempbase = "temp_results/"
+resbase = "results/"
+imgbase = "images/"
+filebase = "files/"
+assetbase = "assets/"
+
+dirs = [tempbase,codebase,histbase,resbase,imgbase,filebase,assetbase]
+for (d in dirs)
+{
+	dird = dirs[d].toString()
+	try
+	{ fs.mkdirSync(dird); console.log(dird+" has been made");}
+	catch (e){console.log(dird+" is in place")}
+}
+
 
 app.use('/dist',express.static('dist'));
 app.use('/static',express.static('static'));
