@@ -12,7 +12,7 @@
  var bodyParser = require('body-parser')
  var fs = require('fs')
  const app = express();
- const host = process.env.HOST || 'localhost'
+ const host = process.env.HOST || '0.0.0.0'
  const port = process.env.PORT || 1234
  var Y = require("yjs");
  const { spawn } = require('child_process');
