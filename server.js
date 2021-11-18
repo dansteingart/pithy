@@ -18,7 +18,10 @@ var Y = require("yjs");
 const { spawn } = require('child_process');
 
 const server = http.createServer(app)
+
+
 function authentication(req, res, next) {
+  users = JSON.parse(fs.readFileSync("assets/pass.json").toString())
   var authheader = req.headers.authorization;
   if (!authheader) {
       var err = new Error('You are not authenticated!');
@@ -29,7 +32,9 @@ function authentication(req, res, next) {
   var auth = new Buffer.from(authheader.split(' ')[1],'base64').toString().split(':');
   var user = auth[0];
   var pass = auth[1];
-  if (user == 'admin' && pass == 'password') {next();} 
+  //if (user == 'admin' && pass == 'password') {next();} 
+  if(users.hasOwnProperty(user) && users[user]==pass){next();}
+
   else {
       var err = new Error('You are not authenticated!');
       res.setHeader('WWW-Authenticate', 'Basic');
@@ -82,15 +87,16 @@ app.post("/check_exists/",(req,res)=>{
   action = "none"
   //first, see if we've got anything in memory/peristence
   foo = utils.getYDoc(codename).getText('codemirror').toString();
-    if (foo.length == 0)
-    {
+    if (foo.length == 0){
       console.log(`Cannot find ${codename}.py in memory, looking in code`);
       //if not, try to open up file from code and inject into codemirror 
       if (fs.existsSync(`code/${codename}.py`))
       {
         console.log(`Inserting from code/${codename}.py`);
         bits = fs.readFileSync(`code/${codename}.py`).toString();
-        code = utils.getYDoc(codename).getText('codemirror').insert(0,bits);
+        mem = utils.getYDoc(codename).getText('codemirror')
+        mem.delete(0,mem.length);
+        mem.insert(0,bits);
         action = "pulled from code"
       }
       //if nothing, send template
@@ -98,10 +104,13 @@ app.post("/check_exists/",(req,res)=>{
       {
         console.log(`Doesn't seem to exist, inserting template`);
         bits = fs.readFileSync(`static/template.txt`).toString()
-        code = utils.getYDoc(codename).getText('codemirror').insert(0,bits);
+        mem = utils.getYDoc(codename).getText('codemirror')
+        mem.delete(0,mem.length);
+        mem.insert(0,bits);
         action = "inserted template"
       }
-  }
+    }
+    else { console.log(`Found ${codename} in memory`) }
   res.send({'action':action})
 })
 
@@ -111,6 +120,9 @@ app.post("/check_running/",(req,res)=>{
   out = {'running':true}
   if (ps[data['code']]==undefined) out['running'] = false
   else if (ps[data['code']]['exitCode']!= null) out['running'] = false
+  else if (ps[data['code']]['killed']) out['running'] = false
+
+  if (out['running']) out['ps'] = ps[data['code']]
   
   res.send(out)
 
@@ -173,6 +185,12 @@ app.get('/*', (req, res) => {
   });
 
 
+app.post("/get_user/",(req,res) =>{
+  foo = new Buffer.from(req.headers.authorization.split(' ')[1],'base64').toString().split(':')
+  res.send({'user':foo[0]})
+}
+)
+
 app.post("/run/",(req,res) => {
   data = req.body
   getme = runner(data['code'])
@@ -200,7 +218,11 @@ function runner(codename){
   ps[codename].stdout.on('data',(d) => {os[codename].insert(os[codename].length,`${d}`)})
   ps[codename].stderr.on('data',(err) => {os[codename].insert(os[codename].length,`<div class='error'>${err}</div>`)})
   ps[codename].on('error',(err) => {os[codename].insert(os[codename].length,`<div class='error'>${err}</div>`)})
-  ps[codename].on('exit',(exit_code)=> {ks[codename].set("running",false);clearInterval(ts[codename]);})
+  ps[codename].on('exit',(exit_code)=> {
+  ks[codename].set("running",false);
+  ks[codename].set("exit_code",exit_code);
+  ks[codename].set("killed",ps[codename]['killed']);
+  clearInterval(ts[codename]);})
 
   return ps[codename]
 }

@@ -135,9 +135,6 @@ def refresh(interval = 5):
     print("<meta http-equiv='refresh' content='%i'>" % interval)
 
 
-
-
-
 clf()
 
 if __name__ == "__main__":

@@ -114,7 +114,7 @@ body, html {
 <div id="editor" class="editor" class="left""></div>
 <div id="right" class="right">
   <div class="menu_bar">
-		<span id="status" style="height:10px;"></span>
+		<span id="status" style="height:10px;"></span> 
 		<button id="run"   title="run">r</button>  
 		<button id="kill"  title="kill">k</button>  
     <span id="history_box"></span> 
@@ -153,7 +153,7 @@ const editor = CodeMirror(editorContainer, {
 editor.setOption("theme","cobalt");
 editor.setOption("readOnly",true);
 
-//setup Y
+//setup 
 code_name = window.location.pathname.split("/")[1];
 cdk = code_name+"_keys";
 const ydoc = new Y.Doc()
@@ -163,11 +163,16 @@ wsProvider.on('status', event => {
   if (event.status == "connected") 
   {
     check_running();
+    setTimeout(check_exists,500);
+    $("#status").html("Connected")
+
     editor.setOption("readOnly", false);
   }
   else if (event.status == "disconnected") 
   {
     editor.setOption("readOnly", true);
+    $("#status").html("<span style='color:red'>Disconnected</span> ")
+
   }
 
 })
@@ -176,7 +181,6 @@ wsProvider.on('status', event => {
 const yCm = ydoc.getText('codemirror')
 const yUndoManager = new Y.UndoManager(yCm)
 const binding = new CodemirrorBinding(yCm, editor, wsProvider.awareness, { yUndoManager })
-check_exists();
 
 //setup and bind output pane
 const yO = ydoc.getText(code_name+'_output')
@@ -195,7 +199,13 @@ ykeys.observe(event =>{
   else 
   {
     $("#run").prop("disabled",false);
-    if (ykeys.get("runtime") > 0) $("#status").html(`Finshed after ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
+    if (ykeys.get("runtime") > 0) 
+    {
+      if  (ykeys.get("killed")) $("#status").html(`Killed at ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
+      else $("#status").html(`Finshed after ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
+
+    }
+
   }
 
 } )
@@ -238,6 +248,13 @@ editor.addKeyMap({'Cmd-Enter': function(cm){run();}});
 editor.addKeyMap({'Cmd-K': function(cm){kill();}});
 
 history();
+
+//Cursor Set
+user = "";
+$.post("/get_user/",function(data){
+  user=data['user'];
+  binding.awareness.setLocalStateField('user', { color: '#008833', name: user });
+})
 
 
 function history(){
