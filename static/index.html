@@ -141,11 +141,13 @@ const editor = CodeMirror(editorContainer, {
   styleActiveLine: true,
   matchBrackets: true,
   lineWrapping: true,
+  keyMap: 'sublime',
   extraKeys: {
     "Cmd-Q": function(cm){ cm.foldCode(cm.getCursor());},
     'Cmd-/': function(cm){cm.execCommand('toggleComment')},
-    'Ctrl-/': function(cm){cm.execCommand('toggleComment')}
-    },
+    'Ctrl-/': function(cm){cm.execCommand('toggleComment')},
+    'Cmd-Alt-Up': 'addCursorToPrevLine',
+    'Cmd-Alt-Down': 'addCursorToNextLine'},
   foldGutter: true,
   gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]
 

@@ -16,6 +16,7 @@ const host = process.env.HOST || '0.0.0.0'
 const port = process.env.PORT || 1234
 var Y = require("yjs");
 const { spawn } = require('child_process');
+var glob = require("glob")
 
 const server = http.createServer(app)
 
@@ -65,6 +66,8 @@ for (d in dirs)
 
 app.use('/dist',express.static('dist'));
 app.use('/static',express.static('static'));
+app.use('/node_modules',express.static('node_modules'));
+
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(authentication)
@@ -74,6 +77,30 @@ ts = {}
 os = {}
 ks = {}
 tss = {}
+
+//Helper Functions
+
+app.post("/code_list/",(req,res)=>{
+
+  data = req.body;
+  if (data['count'] == undefined) data['count'] = 10
+
+  files = glob.sync("code/*.py")
+  
+  files = files.map(function (fileName) {
+      return {
+        name: fileName,
+        time: fs.statSync(fileName).mtime.getTime()
+      };
+    })
+    .sort(function (a, b) {
+      return b.time - a.time; })
+    .map(function (v) {
+      return [v.name,v.time]; });  
+  
+res.send({'files':files})
+
+})
 
 app.post("/check_status/",(req,res)=>{
   data = req.body;
@@ -190,6 +217,8 @@ app.post("/get_user/",(req,res) =>{
   res.send({'user':foo[0]})
 }
 )
+
+//Running Functions
 
 app.post("/run/",(req,res) => {
   data = req.body

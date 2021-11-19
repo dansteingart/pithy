@@ -3,7 +3,7 @@
 	<LINK REL=StyleSheet HREF="/static/style.css" TYPE="text/css" MEDIA=screen>
 	
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <style>
 body
 {
@@ -16,6 +16,11 @@ body
 	color:silver;
 	font-size: 40px;
 	
+}
+
+h2
+{
+	margin-bottom:0;
 }
 
 .newpage 
@@ -75,9 +80,14 @@ div#middle {
 	
 }
 
-.rightin
-{
+.simplist {
+	list-style: none;
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
 }
+
+.simplist td { padding: 0 20 0 0; }
+
 
 </style>
 
@@ -87,6 +97,7 @@ div#middle {
 	<div id="news" class="newpage">  <span id="whoops"></span></div>
 	<div class="buffer"></div>
 	<div id="left">
+	<div id="recent"></div>
 	</div>	
 </body>
 
@@ -98,6 +109,22 @@ var page = pathname.split("//")[1].split(".")[0] //get subdomain
 $("#headface").html("pithy")
 $("#news").prepend("new page -> "+pathname+"/<input class='newpagebox' id='newpage'> </input><button class='goButton' onclick='goThere()'>go</button>")
 
+$.post("/code_list/",{'count':20},function(data)
+{
+	out = "<h2>Recent</h2>\n<table class='simplist'>\n"
+	for (i in data['files'])
+	{
+		core = data['files'][i][0].split("/")[1].replace(".py","")
+		//ts  = new Date(data['files'][i][1]).toLocaleString('en-US', { timeZone: "MST" });
+		ts = moment(data['files'][i][1]).format("YYYY-MM-DD HH:mm:ss")
+		link = `<a href="${core}">${core}</a>`
+
+		out += `<tr><td>${link}</td><td>${ts}</tr></td>\n`
+
+	}
+	out+='</table>'
+	$("#recent").html(out)
+})
 
 
 function goThere()
