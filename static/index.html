@@ -1,38 +1,37 @@
 <head>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="dist/main.js"></script>
-<link rel="stylesheet" href="/static/style.css">
-<link rel="stylesheet" href="http://codemirror.net/lib/codemirror.css">
-<link rel="stylesheet" href="https://codemirror.net/addon/fold/foldgutter.css">
-<link rel="stylesheet" href="http://codemirror.net/theme/3024-day.css">
-<link rel="stylesheet" href="http://codemirror.net/theme/3024-night.css">
-<link rel="stylesheet" href="http://codemirror.net/theme/ambiance.css">
-<link rel="stylesheet" href="http://codemirror.net/theme/base16-dark.css">
-<link rel="stylesheet" href="http://codemirror.net/theme/base16-light.css">
-<link rel="stylesheet" href="http://codemirror.net/theme/blackboard.css">
-<link rel="stylesheet" href="http://codemirror.net/theme/cobalt.css">
-<link rel="stylesheet" href="http://codemirror.net/theme/eclipse.css">
-<link rel="stylesheet" href="http://codemirror.net/theme/elegant.css">
-<link rel="stylesheet" href="http://codemirror.net/theme/erlang-dark.css">
-<link rel="stylesheet" href="http://codemirror.net/theme/lesser-dark.css">
-<link rel="stylesheet" href="http://codemirror.net/theme/midnight.css">
-<link rel="stylesheet" href="http://codemirror.net/theme/monokai.css">
-<link rel="stylesheet" href="http://codemirror.net/theme/neat.css">
-<link rel="stylesheet" href=http://codemirror.net/doc/docs.css>
-<script src="http://codemirror.net/lib/codemirror.js"></script>
-<script src="https://codemirror.net/addon/fold/foldcode.js"></script>
-<script src="https://codemirror.net/addon/fold/foldgutter.js"></script>
-<script src="https://codemirror.net/addon/fold/brace-fold.js"></script>
-<script src="https://codemirror.net/addon/fold/indent-fold.js"></script>
-<script src="https://codemirror.net/addon/fold/comment-fold.js"></script>
-<script src="https://codemirror.net/addon/comment/comment.js"></script>
-<script src="https://codemirror.net/addon/comment/continuecomment.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-<script src="http://codemirror.net/mode/python/python.js"></script>
-<script src="https://codemirror.net/keymap/sublime.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
-<script src="https://unpkg.com/hotkeys-js/dist/hotkeys.min.js"></script>
-
+<script src="/static/js/yball.js"></script>
+<script src="/static/js/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="/static/style/main-style.css">
+<link rel="stylesheet" href="/static/style/codemirror.css">
+<link rel="stylesheet" href="/static/style/foldgutter.css">
+<link rel="stylesheet" href="/static/style/3024-day.css">
+<link rel="stylesheet" href="/static/style/3024-night.css">
+<link rel="stylesheet" href="/static/style/ambiance.css">
+<link rel="stylesheet" href="/static/style/base16-dark.css">
+<link rel="stylesheet" href="/static/style/base16-light.css">
+<link rel="stylesheet" href="/static/style/blackboard.css">
+<link rel="stylesheet" href="/static/style/cobalt.css">
+<link rel="stylesheet" href="/static/style/eclipse.css">
+<link rel="stylesheet" href="/static/style/elegant.css">
+<link rel="stylesheet" href="/static/style/erlang-dark.css">
+<link rel="stylesheet" href="/static/style/lesser-dark.css">
+<link rel="stylesheet" href="/static/style/midnight.css">
+<link rel="stylesheet" href="/static/style/monokai.css">
+<link rel="stylesheet" href="/static/style/neat.css">
+<link rel="stylesheet" href=/static/style/docs.css>
+<script src="/static/js/codemirror.js"></script>
+<script src="/static/js/foldcode.js"></script>
+<script src="/static/js/foldgutter.js"></script>
+<script src="/static/js/brace-fold.js"></script>
+<script src="/static/js/indent-fold.js"></script>
+<script src="/static/js/comment-fold.js"></script>
+<script src="/static/js/comment.js"></script>
+<script src="/static/js/continuecomment.js"></script>
+<script src="/static/js/moment.min.js"></script>
+<script src="/static/js/python.js"></script>
+<script src="/static/js/sublime.js"></script>
+<script src="/static/js/numeral.min.js"></script>
+<script src="/static/js/hotkeys.min.js"></script>
 <style>
 
 body, html {
@@ -56,7 +55,8 @@ body, html {
       left: -2px;
       font-size: .6em;
       background-color: rgb(37, 0, 250);
-      font-family: serif;
+      font-family: Helvetica;
+      font-size:15;
       font-style: normal;
       font-weight: normal;
       line-height: normal;
@@ -76,7 +76,7 @@ body, html {
       transition-delay: 0s;
     }
     .cm-editor.cm-focused { outline: 2px solid cyan }
-    .cm-editor .cm-content { font-family: "Consolas" }
+    .cm-editor .cm-content { font-family: "Courier" }
 
 
     .CodeMirror
@@ -96,8 +96,6 @@ body, html {
       width:50%;
       height: 100%;
     }
-
-
 
 
     .output
@@ -205,7 +203,6 @@ ykeys.observe(event =>{
     {
       if  (ykeys.get("killed")) $("#status").html(`Killed at ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
       else $("#status").html(`Finshed after ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
-
     }
 
   }
