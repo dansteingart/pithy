@@ -7,6 +7,6 @@ import CodeMirror from 'codemirror'
 self.Y = Y;
 self.WebsocketProvider = WebsocketProvider;
 self.CodemirrorBinding = CodemirrorBinding;
-self.CodeMirror = CodeMirror;
-//self.MonacoBinding = MonacoBinding;
+//self.CodeMirror = CodeMirror;
+self.MonacoBinding = MonacoBinding;
 
