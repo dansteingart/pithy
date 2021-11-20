@@ -52,8 +52,14 @@ h2
 	font-size: 25px;
 	width: 40%;
 
-
 }
+
+.selectedcode
+{
+	background:#ccc;
+	color: #444
+}
+
 .goButton
 {
 	font-size:25;
@@ -192,11 +198,12 @@ function goThere()
 	
 }
 
-pos = 0
+pos = -1
+selectedstyle = "background:#ccc;color:#333"
 selectout = false;
 $(window).keydown(function(event){
 	codes = $("[attr=code]")
-	codes.removeAttr("style","color:gray")
+	codes.parent().parent().removeAttr("style",selectedstyle)
 	selectout = false;
 	if (event.which == 38 || event.which ==  40) 
 	{
@@ -208,10 +215,10 @@ $(window).keydown(function(event){
 		if (pos < 0) pos = 0;
 		if (pos >= codes.length) pos = codes.length-1;
 		console.log(codes[pos].innerText)
-		codes[pos].setAttribute("style","color:gray")
+		codes[pos].parentElement.parentElement.setAttribute("style",selectedstyle)
 	}
 
-	if (event.which == 13) 
+	else if (event.which == 13) 
 	{
 		if (selectout = true){
 			console.log(`going to ${codes[pos].innerText}`)
@@ -220,6 +227,8 @@ $(window).keydown(function(event){
 	
 		} 
 	}
+
+	else {$(".newpagebox").focus()}
 
 
 })

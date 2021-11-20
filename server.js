@@ -227,6 +227,20 @@ app.post("/get_user/",(req,res) =>{
 }
 )
 
+
+app.post("/copy_code/",(req,res)=>{
+  data = req.body;
+  codename = data['code']
+  copyto = data['copy_to']
+  nfn = `code/${copyto}.py`
+  if (fs.existsSync(nfn)){res.send({'status':'aborted, file already exists'})}
+  else
+  {
+    code = utils.getYDoc(codename).getText('codemirror').toString();
+    fs.writeFileSync(nfn,code)
+    res.send({'status':'success','new_code':copyto})
+  }
+})
 //Running Functions
 
 app.post("/run/",(req,res) => {
@@ -235,6 +249,8 @@ app.post("/run/",(req,res) => {
   res.send({'state':getme});
 });
 
+
+
 function runner(codename){
 
   code = utils.getYDoc(codename).getText('codemirror').toString();
@@ -242,9 +258,11 @@ function runner(codename){
   catch(e) {have = ""}
   if (code != have) {
         time = new Date().getTime().toString()
+        fs.writeFileSync("code/"+codename+".py",code)
         fs.writeFileSync(`${histbase}${codename}_${time}`,code);
   }
-  fs.writeFileSync("code/"+codename+".py",code)
+  
+
 
   ks[codename] = utils.getYDoc(codename).getMap(codename+"_keys");
   ks[codename].set("running",true);

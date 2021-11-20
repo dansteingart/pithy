@@ -118,6 +118,8 @@ body, html {
 		<span id="status" style="height:10px;"></span> 
 		<button id="run"   title="run">r</button>  
 		<button id="kill"  title="kill">k</button>  
+    <button id="copyto" title="fork code">c</button> 
+
     <span id="history_box"></span> 
 
 		<!-- <button id="saveresult">s</button>
@@ -170,6 +172,7 @@ wsProvider.on('status', event => {
     $("#status").html("Connected")
 
     editor.setOption("readOnly", false);
+    editor.focus();
   }
   else if (event.status == "disconnected") 
   {
@@ -229,6 +232,28 @@ function check_exists()
     console.log(data);
   })
 }
+
+$("#copyto").click(function(){
+	forkcode();
+});
+
+function forkcode(){
+	var marker = window.prompt("Copy This Code As:",code_name+"_copy");
+	if (marker != null & marker != "")
+	{
+		$.post("/copy_code/",
+		  {code:code_name,copy_to:marker},
+		  function(data){
+        if (data['status'] == "success")  window.location.href = data['new_code'];
+        else alert(data['status'])
+			}
+		)
+	}
+	
+
+	
+}
+
 
 //rest of code!
 function run()
