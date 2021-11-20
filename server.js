@@ -63,6 +63,8 @@ for (d in dirs)
 	catch (e){console.log(dird+" is in place")}
 }
 
+//if first run make password file
+if (!fs.existsSync("assets/pass.json")){fs.writeFileSync("assets/pass.json",`{"user":"pass"}`)}
 
 app.use('/dist',express.static('dist'));
 app.use('/static',express.static('static'));
