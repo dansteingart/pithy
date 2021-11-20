@@ -66,6 +66,13 @@ for (d in dirs)
 //if first run make password file
 if (!fs.existsSync("assets/pass.json")){fs.writeFileSync("assets/pass.json",`{"user":"pass"}`)}
 
+//if first run make password file
+basics = ["pithy3.py","python3_basics.py"]
+for (i in basics)
+{
+  if (!fs.existsSync(`code/${basics[i]}`)){fs.copyFileSync(`static/examples/${basics[i]}`,`code/${basics[i]}`)}
+}
+
 app.use('/dist',express.static('dist'));
 app.use('/static',express.static('static'));
 app.use('/node_modules',express.static('node_modules'));
