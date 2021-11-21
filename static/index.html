@@ -208,8 +208,9 @@ ykeys.observe(event =>{
     $("#run").prop("disabled",false);
     if (ykeys.get("runtime") > 0) 
     {
-      if  (ykeys.get("killed")) $("#status").html(`Killed at ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
-      else $("#status").html(`Finshed after ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
+      if  (ykeys.get("killed")) $("#status").html(`killed at ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
+      else if (ykeys.get("exit_code")==124) $("#status").html(`timeout at ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`)
+      else $("#status").html(`finshed after ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
     }
 
   }

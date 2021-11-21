@@ -14,11 +14,15 @@ var fs = require('fs')
 const app = express();
 const host = process.env.HOST || '0.0.0.0'
 const port = process.env.PORT || 1234
+const pithy_bin = process.env.PITHY_BIN || "python3"
+const pithy_timeout = process.env.PITHY_TIMEOUT || 0
 var Y = require("yjs");
 const { spawn } = require('child_process');
 var glob = require("glob")
 
 const server = http.createServer(app)
+
+
 
 
 function authentication(req, res, next) {
@@ -62,6 +66,9 @@ for (d in dirs)
 	{ fs.mkdirSync(dird); console.log(dird+" has been made");}
 	catch (e){console.log(dird+" is in place")}
 }
+
+console.log(`timeout set to ${pithy_timeout}`)
+console.log(`python set to ${pithy_bin}`)
 
 //if first run make password file
 if (!fs.existsSync("assets/pass.json")){fs.writeFileSync("assets/pass.json",`{"user":"pass"}`)}
@@ -262,7 +269,19 @@ function runner(codename){
         fs.writeFileSync(`${histbase}${codename}_${time}`,code);
   }
   
+  //Look for timeout in code
+  var to  = pithy_timeout;
+  try {to = parseInt(code.match(/##pithytimeout=[\d*].*\n/g)[0].split("=")[1].trim())}
+  catch {to = pithy_timeout;}
 
+
+  //Look for different python version in code 
+  var bin = pithy_bin;
+  try {
+    bin = code.match(/#!.*\n/g)[0].split("!")[1].trim()
+    console.log(`running ${codename} with python overidden to ${bin}`)
+  }
+  catch (err) {bin = pithy_bin}
 
   ks[codename] = utils.getYDoc(codename).getMap(codename+"_keys");
   ks[codename].set("running",true);
@@ -270,16 +289,15 @@ function runner(codename){
   os[codename].delete(0,os[codename].length);
   tss[codename] = new Date().getTime();
   ts[codename] = setInterval(function(){ks[codename].set('runtime',new Date().getTime()-tss[codename])},10);
-  ps[codename] = spawn("python3",[`-u`,`code/${codename}.py`]);
+  ps[codename] = spawn("timeout",[to,bin,`-u`,`code/${codename}.py`]);
   ps[codename].stdout.on('data',(d) => {os[codename].insert(os[codename].length,`${d}`)})
   ps[codename].stderr.on('data',(err) => {os[codename].insert(os[codename].length,`<div class='error'>${err}</div>`)})
   ps[codename].on('error',(err) => {os[codename].insert(os[codename].length,`<div class='error'>${err}</div>`)})
   ps[codename].on('exit',(exit_code)=> {
-  ks[codename].set("running",false);
-  ks[codename].set("exit_code",exit_code);
-  ks[codename].set("killed",ps[codename]['killed']);
-  clearInterval(ts[codename]);})
-
+    ks[codename].set("running",false);
+    ks[codename].set("exit_code",exit_code);
+    ks[codename].set("killed",ps[codename]['killed']);
+    clearInterval(ts[codename]);})
   return ps[codename]
 }
 
