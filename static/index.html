@@ -136,7 +136,6 @@ body, html {
 </div>
 
 <script>
-
 const editorContainer = $("#editor")[0];
 const editor = CodeMirror(editorContainer, {
   mode: 'python',
@@ -160,6 +159,8 @@ editor.setOption("readOnly",true);
 
 //setup 
 code_name = window.location.pathname.split("/")[1];
+document.title = code_name
+
 cdk = code_name+"_keys";
 const ydoc = new Y.Doc()
 const wsProvider = new WebsocketProvider(window.location.origin.replace("http","ws"), code_name, ydoc)
