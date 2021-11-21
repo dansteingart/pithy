@@ -137,7 +137,9 @@ var page = pathname.split("//")[1].split(".")[0] //get subdomain
 $("#headface").html("pithy")
 $("#news").prepend("new page -> "+pathname+"/<span id='newpage'></span> </input><button class='goButton' onclick='goThere()'>go</button>")
 
-$.post("/code_list/",{'count':20},function(data)
+$.post("/code_list/",function(data){table_maker(data)})
+
+function table_maker(data)
 {
 	out = "<table id='tabler'>\n"
 	out+= `<thead>
@@ -174,12 +176,8 @@ $.post("/code_list/",{'count':20},function(data)
 	$("#tabler_filter").css("display","inline")
 	$("#tabler_filter").children().css("font-size",0)
 	$("#tabler_filter").children().children().addClass("newpagebox") 
-	//$(".paginate_button").css("display","none")
-	//$("input").addClass("searchbox")
 
-
-
-})
+}
 
 function goThere()
 {

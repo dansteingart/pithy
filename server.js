@@ -99,7 +99,6 @@ tss = {}
 app.post("/code_list/",(req,res)=>{
 
   data = req.body;
-  if (data['count'] == undefined) data['count'] = 10
 
   files = glob.sync("code/*.py")
   
@@ -114,6 +113,9 @@ app.post("/code_list/",(req,res)=>{
     .map(function (v) {
       return [v.name,v.time]; });  
   
+
+if (data['count'] != undefined) files = files.slice(0,data['count']);
+
 res.send({'files':files})
 
 })

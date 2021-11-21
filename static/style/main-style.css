@@ -20,6 +20,14 @@ img
     height: 6px;
 }
 
+.shower{ 
+	white-space: pre;
+	margin:20 20 20 20;
+	padding:20 20 20 20;
+
+	padding:auto;	
+}
+
 ::-webkit-scrollbar-track-piece {
     background: #FFFFFF;
 }
