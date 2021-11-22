@@ -107,10 +107,7 @@ app.post("/code_list/",(req,res)=>{
         name: fileName,
         time: fs.statSync(fileName).mtime.getTime()
       };
-    })
-    .sort(function (a, b) {
-      return b.time - a.time; })
-    .map(function (v) {
+    }).map(function (v) {
       return [v.name,v.time]; });  
   
 
