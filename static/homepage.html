@@ -137,7 +137,8 @@ var page = pathname.split("//")[1].split(".")[0] //get subdomain
 $("#headface").html("pithy")
 $("#news").prepend("new page -> "+pathname+"/<span id='newpage'></span> </input><button class='goButton' onclick='goThere()'>go</button>")
 
-$.post("/code_list/",function(data){table_maker(data)})
+console.log("Let's Get Data")
+$.post("/code_list/",function(data){console.log("Got Data");table_maker(data)})
 
 function table_maker(data)
 {
