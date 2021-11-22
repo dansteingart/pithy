@@ -167,8 +167,8 @@ function table_maker(data)
 					bInfo : false,
 					pagingType: "simple",
 					order: [[1,'desc']],
-					keys: true
-
+					keys: true,
+					deferRender: true
                 }
 	$("#code").html(out)
 	$('#tabler').DataTable(options);
