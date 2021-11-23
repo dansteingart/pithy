@@ -163,14 +163,11 @@ function table_maker(data)
 	out+='</table>'
 	options = {
                     paging: true, //turn off paging
-                    bLengthChange: false,
-					bInfo : false,
 					order: [[1,'desc']],
 					deferRender:    true,
 					scrollY:        500,
 					scrollCollapse: true,
 					scroller:       true
-
                 }
 	$("#code").html(out)
 	$('#tabler').DataTable(options);
