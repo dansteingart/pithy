@@ -148,6 +148,8 @@ const editor = CodeMirror(editorContainer, {
     "Cmd-Q": function(cm){ cm.foldCode(cm.getCursor());},
     'Cmd-/': function(cm){cm.execCommand('toggleComment')},
     'Ctrl-/': function(cm){cm.execCommand('toggleComment')},
+    'Ctrl-Y': function(cm){cm.execCommand('foldAll')},
+    "Cmd-I": cm => cm.commands.unfoldAll(cm),
     'Cmd-Alt-Up': 'addCursorToPrevLine',
     'Cmd-Alt-Down': 'addCursorToNextLine'},
   foldGutter: true,

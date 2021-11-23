@@ -6,6 +6,7 @@
     <script src="/static/js/jquery-3.6.0.min.js"></script>
 	<script src="/static/js/moment.min.js"></script>
 	<script src="/static/js/jquery.dataTables.min.js"></script>
+	<script src="/static/js/dataTables.scroller.min.js"></script>
 
 <style>
 body
@@ -162,14 +163,14 @@ function table_maker(data)
 	out+='</table>'
 	options = {
                     paging: true, //turn off paging
-                    pageLength: 20,
-					bPaginate: false,
                     bLengthChange: false,
 					bInfo : false,
-					pagingType: "simple",
 					order: [[1,'desc']],
-					keys: true,
-					deferRender: true
+					deferRender:    true,
+					scrollY:        500,
+					scrollCollapse: true,
+					scroller:       true
+
                 }
 	$("#code").html(out)
 	$('#tabler').DataTable(options);

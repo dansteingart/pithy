@@ -37,9 +37,7 @@ function authentication(req, res, next) {
   var auth = new Buffer.from(authheader.split(' ')[1],'base64').toString().split(':');
   var user = auth[0];
   var pass = auth[1];
-  //if (user == 'admin' && pass == 'password') {next();} 
   if(users.hasOwnProperty(user) && users[user]==pass){next();}
-
   else {
       var err = new Error('You are not authenticated!');
       res.setHeader('WWW-Authenticate', 'Basic');
@@ -82,6 +80,7 @@ for (i in basics)
 
 app.use('/dist',express.static('dist'));
 app.use('/static',express.static('static'));
+app.use('/images',express.static('images'));
 app.use('/node_modules',express.static('node_modules'));
 
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -130,7 +129,7 @@ app.post("/check_exists/",(req,res)=>{
   //first, see if we've got anything in memory/peristence
   foo = utils.getYDoc(codename).getText('codemirror').toString();
     if (foo.length == 0){
-      console.log(`Cannot find ${codename}.py in memory, looking in code`);
+      console.log(`Cannot find ${codename}.py in persistence, looking in code`);
       //if not, try to open up file from code and inject into codemirror 
       if (fs.existsSync(`code/${codename}.py`))
       {
@@ -152,7 +151,7 @@ app.post("/check_exists/",(req,res)=>{
         action = "inserted template"
       }
     }
-    else { console.log(`Found ${codename} in memory`) }
+    else { console.log(`Found ${codename} in persistence`) }
   res.send({'action':action})
 })
 

@@ -13,6 +13,7 @@ matplotlib.use('agg')
 from pylab import *
 rcParams['mathtext.fontset'] = 'stixsans'
 from matplotlib import rc, font_manager
+import json 
 
 font_dirs = ['/Users/dan/Code/pityh/fonts/']
 font_files = font_manager.findSystemFonts(fontpaths=font_dirs)
@@ -53,18 +54,24 @@ def showimg(im,tip=".png",width=None,dpi=150):
     else: print('##_holder_##:',"/"+image)
     
 
-def showme(tip="png",kind="static",width=None,height=None,inline=False,dpi=150):
+
+def showme(tip="png",kind="encode",width=None,height=None,css=None,inline=False,dpi=150):
     tim = str(int(time.time()))	
     image = 'images/pithy_img_'+str(int(time.time()*1000))+"."+tip
-    w = ""
-    h = ""
+
+    s = w = h = None
+    if css != None: s = json.dumps(css)
     if width != None: w = "width:"+str(width)+"px;"
     if height != None: h = "height:"+str(height)+"px;"
-    s = "style='%s%s'" %(w,h)
-    #strang = '<img '+s+' src=/'+image+'>'
-    if kind == "static": 
+    if s == None: s = "style='%s%s'" %(w,h)    
+
+    if kind == "encode": 
         print(imager64(tip=tip,dpi=dpi,style=s), end=' ')
         if not inline: print("")
+ 
+    elif (kind == "static"):
+        savefig(image,dpi=dpi,bbox_inches="tight")
+        print(f'<img src="{image}" style="{s}">')
 
     else: 
         savefig(image,dpi=dpi,bbox_inches="tight")
