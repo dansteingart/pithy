@@ -203,7 +203,7 @@ ykeys.observe(event =>{
   if (ykeys.get('running') == true) 
   {
     $("#run").prop("disabled",true);
-    $("#status").html(`Running for ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
+    $("#status").html(`running for ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
   }
   else 
   {

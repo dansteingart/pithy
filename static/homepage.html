@@ -111,7 +111,8 @@ label {font:Helvetica;font-size:16px;text-transform:lowercase;;}
 } */
 
  #tabler.dataTable td { padding: 2 0 0 0; max-width:200px;} 
- #tabler.dataTable th { border: none; } 
+ #tabler.dataTable thead td { border: none; } 
+ #tabler.dataTable tfoot td { border: none; } 
  #tabler.dataTable.no-footer { border: none; } 
 
  .dataTables_paginate {display: none;}
@@ -163,10 +164,13 @@ function table_maker(data)
 	out+='</table>'
 	options = {
                     paging: true, //turn off paging
+					bPaginate: false,
+                    bLengthChange: false, //selectbox for pagination extent
+					bInfo : true, //show total number of entries
 					order: [[1,'desc']],
 					deferRender:    true,
-					scrollY:        500,
-					scrollCollapse: true,
+					scrollY:        800, //length of scrollbar
+					scrollCollapse: true, //hide scrollbar 
 					scroller:       true
                 }
 	$("#code").html(out)

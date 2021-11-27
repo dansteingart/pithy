@@ -23,6 +23,16 @@ var glob = require("glob")
 const server = http.createServer(app)
 
 
+var DEBUG = (function(){
+  var timestamp = function(){};
+  timestamp.toString = function(){
+      return "[" + (new Date).toISOString() + "]";    
+  };
+
+  return {
+      log: console.log.bind(console, '%s', timestamp)
+  }
+})();
 
 
 function authentication(req, res, next) {
@@ -61,12 +71,12 @@ for (d in dirs)
 {
 	dird = dirs[d].toString()
 	try
-	{ fs.mkdirSync(dird); console.log(dird+" has been made");}
-	catch (e){console.log(dird+" is in place")}
+	{ fs.mkdirSync(dird); DEBUG.log(dird+" has been made");}
+	catch (e){DEBUG.log(dird+" is in place")}
 }
 
-console.log(`timeout set to ${pithy_timeout}`)
-console.log(`python set to ${pithy_bin}`)
+DEBUG.log(`timeout set to ${pithy_timeout}`)
+DEBUG.log(`python set to ${pithy_bin}`)
 
 //if first run make password file
 if (!fs.existsSync("assets/pass.json")){fs.writeFileSync("assets/pass.json",`{"user":"pass"}`)}
@@ -129,11 +139,11 @@ app.post("/check_exists/",(req,res)=>{
   //first, see if we've got anything in memory/peristence
   foo = utils.getYDoc(codename).getText('codemirror').toString();
     if (foo.length == 0){
-      console.log(`Cannot find ${codename}.py in persistence, looking in code`);
+      DEBUG.log(`cannot find ${codename}.py in persistence, looking in code`);
       //if not, try to open up file from code and inject into codemirror 
       if (fs.existsSync(`code/${codename}.py`))
       {
-        console.log(`Inserting from code/${codename}.py`);
+        DEBUG.log(`inserting from code/${codename}.py`);
         bits = fs.readFileSync(`code/${codename}.py`).toString();
         mem = utils.getYDoc(codename).getText('codemirror')
         mem.delete(0,mem.length);
@@ -143,7 +153,7 @@ app.post("/check_exists/",(req,res)=>{
       //if nothing, send template
       else
       {
-        console.log(`Doesn't seem to exist, inserting template`);
+        DEBUG.log(`doesn't seem to exist, inserting template`);
         bits = fs.readFileSync(`static/template.txt`).toString()
         mem = utils.getYDoc(codename).getText('codemirror')
         mem.delete(0,mem.length);
@@ -151,7 +161,7 @@ app.post("/check_exists/",(req,res)=>{
         action = "inserted template"
       }
     }
-    else { console.log(`Found ${codename} in persistence`) }
+    else { DEBUG.log(`found ${codename} in persistence`) }
   res.send({'action':action})
 })
 
@@ -269,7 +279,11 @@ function runner(codename){
   
   //Look for timeout in code
   var to  = pithy_timeout;
-  try {to = parseInt(code.match(/##pithytimeout=[\d*].*\n/g)[0].split("=")[1].trim())}
+  var ft = ""
+  try {
+    to = parseInt(code.match(/##pithytimeout=[\d*].*\n/g)[0].split("=")[1].trim())
+    ft = `with a timeout after ${to} seconds`
+  }
   catch {to = pithy_timeout;}
 
 
@@ -277,9 +291,13 @@ function runner(codename){
   var bin = pithy_bin;
   try {
     bin = code.match(/#!.*\n/g)[0].split("!")[1].trim()
-    console.log(`running ${codename} with python overidden to ${bin}`)
   }
   catch (err) {bin = pithy_bin}
+  
+  
+  DEBUG.log(`running ${codename} using ${bin} ${ft}`)
+
+
 
   ks[codename] = utils.getYDoc(codename).getMap(codename+"_keys");
   ks[codename].set("running",true);
@@ -295,6 +313,10 @@ function runner(codename){
     ks[codename].set("running",false);
     ks[codename].set("exit_code",exit_code);
     ks[codename].set("killed",ps[codename]['killed']);
+    var eco = ""
+    if (ps[codename]['killed']) eco = `was killed`
+    else eco = `finished with code ${exit_code}`
+    DEBUG.log(`${codename} ${eco} after ${new Date().getTime()-tss[codename]} ms`)
     clearInterval(ts[codename]);})
   return ps[codename]
 }
@@ -313,4 +335,4 @@ server.on('upgrade', (request, socket, head) => {
    wss.handleUpgrade(request, socket, head, handleAuth)
  })
 server.listen({ host, port })
-console.log(`running at '${host}' on port ${port}`)
+DEBUG.log(`running at '${host}' on port ${port}`)
