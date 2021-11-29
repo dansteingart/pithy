@@ -224,6 +224,9 @@ app.post('/get_history/',function(req,res)
   codename = data['code']
   histval  = data['history']
   old_code = fs.readFileSync(`${histbase+histval}`).toString();
+  //new history format with sensible stuff
+  try {old_code = JSON.parse(old_code)['code']}
+  catch {old_code = old_code}
   ycm = utils.getYDoc(codename).getText('codemirror')
   ycm.delete(0,ycm.length);
   ycm.insert(0,old_code);
@@ -260,13 +263,14 @@ app.post("/copy_code/",(req,res)=>{
 
 app.post("/run/",(req,res) => {
   data = req.body
-  getme = runner(data['code'])
+  user = new Buffer.from(req.headers.authorization.split(' ')[1],'base64').toString().split(':')[0]
+  getme = runner(data['code'],user)
   res.send({'state':getme});
 });
 
 
 
-function runner(codename){
+function runner(codename,user="user"){
 
   code = utils.getYDoc(codename).getText('codemirror').toString();
   try { have = fs.readFileSync("code/"+codename+".py").toString();}
@@ -274,7 +278,12 @@ function runner(codename){
   if (code != have) {
         time = new Date().getTime().toString()
         fs.writeFileSync("code/"+codename+".py",code)
-        fs.writeFileSync(`${histbase}${codename}_${time}`,code);
+        out = {}
+        out['code'] = code;
+        out['user'] = user;
+        out['time'] = time;
+        fs.writeFileSync(`${histbase}${codename}_${time}`,JSON.stringify(out));
+
   }
   
   //Look for timeout in code
