@@ -19,8 +19,17 @@ const pithy_timeout = process.env.PITHY_TIMEOUT || 0
 var Y = require("yjs");
 const { spawn } = require('child_process');
 var glob = require("glob")
-
 const server = http.createServer(app)
+const sqlite3 = require("sqlite3").verbose()
+db = new sqlite3.Database("runs.db")
+db.run(`CREATE TABLE IF NOT EXISTS runs(id INTEGER PRIMARY KEY, 
+                          code TEXT NOT NULL, 
+                          user TEXT NOT NULL, 
+                          run_time INTEGER, 
+                          exit_code INTEGER, 
+                          exit_type TEXT)`)
+
+
 
 
 var DEBUG = (function(){
@@ -268,6 +277,23 @@ app.post("/run/",(req,res) => {
   res.send({'state':getme});
 });
 
+// logger
+function newrow(ti,codename,user)
+{
+  db.run(`INSERT INTO runs (id,code,user)
+          VALUES (${ti},'${codename}','${user}')`)
+}
+
+function editrow(ti,rt,ec,et)
+{
+      db.run(`UPDATE runs
+              SET run_time = ${rt},
+                  exit_code = ${ec},
+                  exit_type = '${et}'
+              WHERE
+                  id =  ${ti}`)
+}
+
 
 
 function runner(codename,user="user"){
@@ -315,6 +341,9 @@ function runner(codename,user="user"){
   tss[codename] = new Date().getTime();
   ts[codename] = setInterval(function(){ks[codename].set('runtime',new Date().getTime()-tss[codename])},10);
   ps[codename] = spawn("timeout",[to,bin,`-u`,`code/${codename}.py`]);
+
+  newrow(tss[codename],codename,user)
+
   ps[codename].stdout.on('data',(d) => {os[codename].insert(os[codename].length,`${d}`)})
   ps[codename].stderr.on('data',(err) => {os[codename].insert(os[codename].length,`<div class='error'>${err}</div>`)})
   ps[codename].on('error',(err) => {os[codename].insert(os[codename].length,`<div class='error'>${err}</div>`)})
@@ -325,7 +354,9 @@ function runner(codename,user="user"){
     var eco = ""
     if (ps[codename]['killed']) eco = `was killed`
     else eco = `finished with code ${exit_code}`
-    DEBUG.log(`${codename} ${eco} after ${new Date().getTime()-tss[codename]} ms`)
+    var rt = new Date().getTime()-tss[codename];
+    DEBUG.log(`${codename} ${eco} after ${rt} ms`)
+    editrow(tss[codename],rt,exit_code,eco);
     clearInterval(ts[codename]);})
   return ps[codename]
 }

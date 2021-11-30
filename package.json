@@ -13,6 +13,7 @@
     "node-ejdb-lite": "^3.4.5",
     "node-inspect": "^2.0.0",
     "node-json-db": "^1.4.1",
+    "sqlite3": "^4.2.0",
     "webpack": "^5.63.0",
     "y-codemirror": "^3.0.0",
     "y-codemirror.next": "^0.1.0",
