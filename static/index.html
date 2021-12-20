@@ -1,38 +1,10 @@
 <head>
 <script src="/static/js/yball.js"></script>
+<script src="/dist/monaco.bundle.js"></script>
 <script src="/static/js/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="/static/style/main-style.css">
-<link rel="stylesheet" href="/static/style/codemirror.css">
-<link rel="stylesheet" href="/static/style/foldgutter.css">
-<link rel="stylesheet" href="/static/style/3024-day.css">
-<link rel="stylesheet" href="/static/style/3024-night.css">
-<link rel="stylesheet" href="/static/style/ambiance.css">
-<link rel="stylesheet" href="/static/style/darcula.css">
-<link rel="stylesheet" href="/static/style/base16-dark.css">
-<link rel="stylesheet" href="/static/style/base16-light.css">
-<link rel="stylesheet" href="/static/style/blackboard.css">
-<link rel="stylesheet" href="/static/style/cobalt.css">
-<link rel="stylesheet" href="/static/style/eclipse.css">
-<link rel="stylesheet" href="/static/style/elegant.css">
-<link rel="stylesheet" href="/static/style/erlang-dark.css">
-<link rel="stylesheet" href="/static/style/lesser-dark.css">
-<link rel="stylesheet" href="/static/style/midnight.css">
-<link rel="stylesheet" href="/static/style/mbo.css">
-<link rel="stylesheet" href="/static/style/monokai.css">
-<link rel="stylesheet" href="/static/style/duotone-dark.css">
-<link rel="stylesheet" href="/static/style/neat.css">
-<link rel="stylesheet" href=/static/style/docs.css>
-<script src="/static/js/codemirror.js"></script>
-<script src="/static/js/foldcode.js"></script>
-<script src="/static/js/foldgutter.js"></script>
-<script src="/static/js/brace-fold.js"></script>
-<script src="/static/js/indent-fold.js"></script>
-<script src="/static/js/comment-fold.js"></script>
-<script src="/static/js/comment.js"></script>
-<script src="/static/js/continuecomment.js"></script>
+
 <script src="/static/js/moment.min.js"></script>
-<script src="/static/js/python.js"></script>
-<script src="/static/js/sublime.js"></script>
 <script src="/static/js/numeral.min.js"></script>
 <script src="/static/js/hotkeys.min.js"></script>
 <style>
@@ -82,6 +54,15 @@ body, html {
     .cm-editor .cm-content { font-family: "Courier" }
 
 
+    .Monaco
+    {
+          position:absolute; left:0; top:0;
+          width:50%; height:100%; max-height:100% !important;
+          margin:0; padding:0;
+          overflow:hidden;
+
+    }
+    
     .CodeMirror
     {
       float:left;
@@ -112,7 +93,7 @@ body, html {
 </head>
 <body>
 
-<div id="editor" class="editor" class="left""></div>
+<div id="editor" class="Monaco" class="left""></div>
 <div id="right" class="right">
   <div class="menu_bar">
 		<span id="status" style="height:10px;"></span> 
@@ -137,27 +118,38 @@ body, html {
 
 <script>
 const editorContainer = $("#editor")[0];
-const editor = CodeMirror(editorContainer, {
-  mode: 'python',
-  lineNumbers: true,
-  styleActiveLine: true,
-  matchBrackets: true,
-  lineWrapping: true,
-  keyMap: 'sublime',
-  extraKeys: {
-    "Cmd-Q": function(cm){ cm.foldCode(cm.getCursor());},
-    'Cmd-/': function(cm){cm.execCommand('toggleComment')},
-    'Ctrl-/': function(cm){cm.execCommand('toggleComment')},
-    'Ctrl-Y': function(cm){cm.execCommand('foldAll')},
-    "Cmd-I": cm => cm.commands.unfoldAll(cm),
-    'Cmd-Alt-Up': 'addCursorToPrevLine',
-    'Cmd-Alt-Down': 'addCursorToNextLine'},
-  foldGutter: true,
-  gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]
+// const editor = CodeMirror(editorContainer, {
+//   mode: 'python',
+//   lineNumbers: true,
+//   styleActiveLine: true,
+//   matchBrackets: true,
+//   lineWrapping: true,
+//   keyMap: 'sublime',
+//   extraKeys: {
+//     "Cmd-Q": function(cm){ cm.foldCode(cm.getCursor());},
+//     'Cmd-/': function(cm){cm.execCommand('toggleComment')},
+//     'Ctrl-/': function(cm){cm.execCommand('toggleComment')},
+//     'Ctrl-Y': function(cm){cm.execCommand('foldAll')},
+//     "Cmd-I": cm => cm.commands.unfoldAll(cm),
+//     'Cmd-Alt-Up': 'addCursorToPrevLine',
+//     'Cmd-Alt-Down': 'addCursorToNextLine'},
+//   foldGutter: true,
+//   gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]
 
-})
-editor.setOption("theme","cobalt");
-editor.setOption("readOnly",true);
+// })
+// editor.setOption("theme","cobalt");
+// editor.setOption("readOnly",true);
+
+const editor = monaco.editor.create(/** @type {HTMLElement} */ (document.getElementById('editor')), {
+    value: '',
+    language: 'python',
+    theme: 'vs-dark',
+    fontSize: '15pt',
+    wordBasedSuggestions: false,
+    minimap: {enabled: false},
+    wordWrap: true,
+    automaticLayout: true
+  })
 
 //setup 
 code_name = window.location.pathname.split("/")[1];
@@ -174,12 +166,12 @@ wsProvider.on('status', event => {
     setTimeout(check_exists,500);
     $("#status").html("Connected")
 
-    editor.setOption("readOnly", false);
-    editor.focus();
+    // editor.setOption("readOnly", false);
+    // editor.focus();
   }
   else if (event.status == "disconnected") 
   {
-    editor.setOption("readOnly", true);
+    // editor.setOption("readOnly", true);
     $("#status").html("<span style='color:red'>Disconnected</span> ")
 
   }
@@ -188,8 +180,9 @@ wsProvider.on('status', event => {
 
 //Setup and Bind CM
 const yCm = ydoc.getText('codemirror')
-const yUndoManager = new Y.UndoManager(yCm)
-const binding = new CodemirrorBinding(yCm, editor, wsProvider.awareness, { yUndoManager })
+// const yUndoManager = new Y.UndoManager(yCm)
+//const binding = new CodemirrorBinding(yCm, editor, wsProvider.awareness, { yUndoManager })
+const binding = new MonacoBinding(yCm, /** @type {monaco.editor.ITextModel} */ (editor.getModel()), new Set([editor]), wsProvider.awareness)
 
 //setup and bind output pane
 const yO = ydoc.getText(code_name+'_output')
@@ -275,8 +268,27 @@ function kill()
 }
 $("#kill").click(function(){kill()});
 
-editor.addKeyMap({'Cmd-Enter': function(cm){run();}});
-editor.addKeyMap({'Cmd-K': function(cm){kill();}});
+// editor.addKeyMap({'Cmd-Enter': function(cm){run();}});
+// editor.addKeyMap({'Cmd-K': function(cm){kill();}});
+
+editor.addAction({
+                id: "runCode",
+                label: "Run Code",
+                keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+                contextMenuGroupId: "2_execution",
+                //precondition: monaco.blockContext,
+                run: () => {run()},
+      });
+
+editor.addAction({
+          id: "killCode",
+          label: "Kill Code",
+          keybindings: [monaco.KeyMod.CtrlCmd  | monaco.KeyMod.Shift | monaco.KeyCode.Enter],
+          contextMenuGroupId: "2_execution",
+          //precondition: monaco.blockContext,
+          run: () => {kill()},
+});
+
 
 history();
 
