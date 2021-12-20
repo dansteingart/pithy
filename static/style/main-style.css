@@ -4,7 +4,6 @@ body
 	font-size: 14px;
 	margin-left: auto;
 	margin-right: auto;
-	/* width: 800px; */
 	text-rendering: optimizeLegibility;
 }
 
@@ -13,7 +12,6 @@ img
 	width: 100%;
 }
 
-/* scrollbar style from http://maxvoltar.com/, http://almaer.com/scrollbar/debug.html */
 
 ::-webkit-scrollbar {
     width: 6px;
@@ -50,7 +48,6 @@ img
 {
 	font-family: Verdana;
 	font-size: 30px;
-	/* //background: rgb(200,200,200); */
 	padding: 5px;
 	text-align: left;
 	font-weight:bold;
@@ -187,16 +184,6 @@ h3
 	text-align: justify;
 }
 
-textarea
-{
-    margin: auto auto;
-	width:100%;
-	font-size: 14px;
-}
-
-
-
-
 
 .selectig
 {
@@ -229,31 +216,24 @@ input:focus {outline: none; }
 {
 	float:right;
 	width:50%;
-	height:95%;
-	
+	height:98%;
+
 }
 
 .images
 {
+
 		width:100%;
-		overflow: auto;
-		overflow-y: auto;
-		overflow-x:hidden;		
-		height:100%;
+		height: 100%;
+		/* background-color: red; */
+		/* overflow-y: scroll;
+		overflow-x:hidden;	 */
 		white-space: pre-wrap;
-
+		overflow-x: hidden;
+		overflow-y: auto;
 
 }
 
-.credit
-{
-	color: silver;
-	size: 10px;
-	text-align: right;
-	position:absolute; 
-	bottom:10;
-	right:100;
-}
 
 .menu_bar
 {
