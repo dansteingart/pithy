@@ -104,6 +104,14 @@ const editor = monaco.editor.create(/** @type {HTMLElement} */ (document.getElem
     automaticLayout: true
   })
 
+fetch('/static/themes/Cobalt.json')
+.then(data => data.json())
+.then(data => {
+  monaco.editor.defineTheme('monokai', data);
+  monaco.editor.setTheme('monokai');
+})
+
+
 //setup 
 code_name = window.location.pathname.split("/")[1];
 document.title = code_name
