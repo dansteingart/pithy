@@ -119,12 +119,12 @@ wsProvider.on('status', event => {
     setTimeout(check_exists,500);
     $("#status").html("Connected")
 
-    // editor.setOption("readOnly", false);
-    // editor.focus();
+    editor.updateOptions({ readOnly: false }) 
+    editor.focus();
   }
   else if (event.status == "disconnected") 
   {
-    // editor.setOption("readOnly", true);
+    editor.updateOptions({ readOnly: true }) 
     $("#status").html("<span style='color:red'>Disconnected</span> ")
 
   }
