@@ -214,12 +214,21 @@ function forkcode(){
 
 
 //rest of code!
+waiting = false;
 function run()
 {
   //ykeys.set('running',true);
   payload = {'code':code_name};
-  if ($("#run").prop("disabled") == false) $.post('/run/',payload,function(data){console.log(data)});
-  history()
+  if (($("#run").prop("disabled") == false) & (waiting == false))
+  {
+    waiting = true;
+    $.post('/run/',payload,(data) => {
+      waiting = false;
+      console.log(data)
+      history()
+    });
+  }
+  else {console.log("HOLD YOUR HORSES")}
 }
 $("#run").click(function(){run()});
 
