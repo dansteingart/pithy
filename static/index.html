@@ -125,7 +125,7 @@ wsProvider.on('status', event => {
   {
     check_running();
     setTimeout(check_exists,500);
-    $("#status").html("Connected")
+    $("#status").html("connected")
 
     editor.updateOptions({ readOnly: false }) 
     editor.focus();
@@ -222,6 +222,8 @@ function run()
   if (($("#run").prop("disabled") == false) & (waiting == false))
   {
     waiting = true;
+    $("#status").html("wait a sec")
+
     $.post('/run/',payload,(data) => {
       waiting = false;
       console.log(data)
