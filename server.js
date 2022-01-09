@@ -183,7 +183,9 @@ app.post("/check_running/",(req,res)=>{
   else if (ps[data['code']]['killed']) out['running'] = false
 
   if (out['running']) out['ps'] = ps[data['code']]
-  
+  if (out['running']==false) clearInterval(ts[data['code']])
+
+
   res.send(out)
 
  });

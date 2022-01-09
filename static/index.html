@@ -216,6 +216,7 @@ function forkcode(){
 //rest of code!
 function run()
 {
+  ykeys.set('running',true);
   payload = {'code':code_name};
   if ($("#run").prop("disabled") == false) $.post('/run/',payload,function(data){console.log(data)});
   history()
