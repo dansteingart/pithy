@@ -168,7 +168,7 @@ ykeys.observe(event =>{
     {
       if  (ykeys.get("killed")) $("#status").html(`killed at ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
       else if (ykeys.get("exit_code")==124) $("#status").html(`timeout at ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`)
-      else $("#status").html(`finshed after ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
+      else $("#status").html(`finished after ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
     }
 
   }
