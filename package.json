@@ -1,7 +1,6 @@
 {
   "dependencies": {
     "body-parser": "^1.19.0",
-    "codemirror": "^5.63.3",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-basic-auth": "^1.2.0",
@@ -10,7 +9,6 @@
     "glob": "^7.2.0",
     "http-server": "^14.0.0",
     "monaco-editor": "^0.30.1",
-    "node-ejdb-lite": "^3.4.5",
     "node-inspect": "^2.0.0",
     "node-json-db": "^1.4.1",
     "sqlite3": "^4.2.0",
