@@ -73,28 +73,6 @@ body, html {
 </div>
 <script>
 const editorContainer = $("#editor")[0];
-// const editor = CodeMirror(editorContainer, {
-//   mode: 'python',
-//   lineNumbers: true,
-//   styleActiveLine: true,
-//   matchBrackets: true,
-//   lineWrapping: true,
-//   keyMap: 'sublime',
-//   extraKeys: {
-//     "Cmd-Q": function(cm){ cm.foldCode(cm.getCursor());},
-//     'Cmd-/': function(cm){cm.execCommand('toggleComment')},
-//     'Ctrl-/': function(cm){cm.execCommand('toggleComment')},
-//     'Ctrl-Y': function(cm){cm.execCommand('foldAll')},
-//     "Cmd-I": cm => cm.commands.unfoldAll(cm),
-//     'Cmd-Alt-Up': 'addCursorToPrevLine',
-//     'Cmd-Alt-Down': 'addCursorToNextLine'},
-//   foldGutter: true,
-//   gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]
-
-// })
-// editor.setOption("theme","cobalt");
-// editor.setOption("readOnly",true);
-
 const editor = monaco.editor.create(/** @type {HTMLElement} */ (document.getElementById('editor')), {
     value: '',
     language: 'python',
@@ -111,7 +89,11 @@ fetch('/static/themes/Cobalt.json')
 .then(data => {
   monaco.editor.defineTheme('monokai', data);
   monaco.editor.setTheme('monokai');
+
 })
+
+//fix Curtis Found Bug
+editor.getModel().setEOL(monaco.editor.EndOfLinePreference.CR)
 
 
 //setup 
@@ -303,6 +285,15 @@ editor.addAction({
           //precondition: monaco.blockContext,
           run: () => {toggle_states()},
 });
+
+// editor.addAction({
+//           id: "enter_stuff",
+//           label: "Just A Carriage Return",
+//           keybindings: [monaco.KeyCode.Enter],
+//           //precondition: monaco.blockContext,
+//           run: () => {toggle_states()},
+// });
+
 
 $(window).keydown((e) =>
   {
