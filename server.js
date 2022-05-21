@@ -318,7 +318,7 @@ function runner(codename,user="user"){
   var to  = pithy_timeout;
   var ft = ""
   try {
-    to = parseInt(code.match(/##pithytimeout=[\d*].*\n/g)[0].split("=")[1].trim())
+    to = parseInt(code.match(/##pithytimeout=[\d*].*(\r\n|\r|\n)/g)[0].split("=")[1].trim())
     ft = `with a timeout after ${to} seconds`
   }
   catch {to = pithy_timeout;}
@@ -327,7 +327,7 @@ function runner(codename,user="user"){
   //Look for different python version in code 
   var bin = pithy_bin;
   try {
-    bin = code.match(/#!.*\n/g)[0].split("!")[1].trim()
+    bin = code.match(/#!.*(\r\n|\r|\n)/g)[0].split("!")[1].trim()
   }
   catch (err) {bin = pithy_bin}
   
