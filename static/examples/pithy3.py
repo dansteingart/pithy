@@ -14,7 +14,7 @@ rcParams['mathtext.fontset'] = 'stixsans'
 from matplotlib import rc, font_manager
 import json 
 
-font_dirs = ['/Users/dan/Code/pityh/fonts/']
+font_dirs = ['fonts/']
 font_files = font_manager.findSystemFonts(fontpaths=font_dirs)
 for font_file in font_files:
     try:
