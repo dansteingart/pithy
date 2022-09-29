@@ -8,4 +8,4 @@ images/*
 files/*
 assets/*
 results/*
-runs.db
+*.db
