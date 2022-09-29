@@ -9,3 +9,5 @@ files/*
 assets/*
 results/*
 runs.db
+pstart.sh
+sstart.sh
