@@ -1,5 +1,4 @@
-#! /Users/dan/.pyenv/shims/python3
-
+#! python
 from __future__ import print_function
 import numpy
 import matplotlib
@@ -15,7 +14,7 @@ rcParams['mathtext.fontset'] = 'stixsans'
 from matplotlib import rc, font_manager
 import json 
 
-font_dirs = ['/Users/dan/Code/pityh/fonts/']
+font_dirs = ['fonts/']
 font_files = font_manager.findSystemFonts(fontpaths=font_dirs)
 for font_file in font_files:
     try:
@@ -55,7 +54,7 @@ def showimg(im,tip=".png",width=None,dpi=150):
     
 
 
-def showme(tip="png",kind="encode",width=None,height=None,css=None,inline=False,dpi=150):
+def showme(tip="png", kind="encode", width=None, height=None, css=None, inline=False, dpi=150,transparent=False):
     tim = str(int(time.time()))	
     image = 'images/pithy_img_'+str(int(time.time()*1000))+"."+tip
 
@@ -63,19 +62,18 @@ def showme(tip="png",kind="encode",width=None,height=None,css=None,inline=False,
     if css != None: s = json.dumps(css)
     if width != None: w = "width:"+str(width)+"px;"
     if height != None: h = "height:"+str(height)+"px;"
-    if s == None: s = "style='%s%s'" %(w,h)    
+    if s == None: s = "style='%s%s'" %(w,h)
 
     if kind == "encode": 
         print(imager64(tip=tip,dpi=dpi,style=s), end=' ')
         if not inline: print("")
- 
     elif (kind == "static"):
-        savefig(image,dpi=dpi,bbox_inches="tight")
+        savefig(image,dpi=dpi,bbox_inches="tight",transparent=transparent)
         print(f'<img src="{image}" style="{s}">')
-
     else: 
-        savefig(image,dpi=dpi,bbox_inches="tight")
+        savefig(image,dpi=dpi,bbox_inches="tight",transparent=transparent)
         print('##_dynamic_##:',kind,':',tim,':',"/"+image)
+
 
 
 
@@ -97,11 +95,14 @@ def smooth(x,window_len=11,window='flat'):
     if x.size < window_len:
         raise ValueError("Input vector needs to be bigger than window size.")
 
+
     if window_len<3:
         return x
 
+
     if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
         raise ValueError("Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'")
+
 
     s=numpy.r_[x[window_len-1:0:-1],x,x[-1:-window_len:-1]]
     #print(len(s))
@@ -147,5 +148,6 @@ if __name__ == "__main__":
     a = linspace(0,1,100)
     for i in logspace(-1,1,10):
         plot(a,a**i)
-    showme(tip="svg")
+    showme(tip="svg",kind="static")
     clf()
+

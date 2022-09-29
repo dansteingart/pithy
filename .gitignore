@@ -8,4 +8,10 @@ images/*
 files/*
 assets/*
 results/*
+<<<<<<< HEAD
 *.db
+=======
+runs.db
+pstart.sh
+sstart.sh
+>>>>>>> c6307127fea04ee4bd9bec6622425012d73a86ae
