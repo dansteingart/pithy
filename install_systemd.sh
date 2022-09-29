@@ -4,6 +4,9 @@
 NODE=$(which node)
 echo $NODE
 
+PYTHON=$(which python)
+echo $PYTHON
+
 #pithy
 echo "#!/bin/bash
 PORT=8001 $NODE server.js" > pstart.sh
@@ -23,6 +26,7 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=1
+Environment=PITHY_BIN=$PYTHON
 User=$USER
 WorkingDirectory=$PWD
 ExecStart=/bin/bash $PWD/pstart.sh
@@ -40,6 +44,7 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=1
+Environment=PITHY_BIN=$PYTHON
 User=$USER
 WorkingDirectory=$PWD
 ExecStart=/bin/bash $PWD/sstart.sh
