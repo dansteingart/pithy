@@ -319,27 +319,27 @@ function resizer5000(dir)
 function resizerm(w)
 {
 
-  $("#editor").width(w)
-  $("#right").width(window.outerWidth-w)
+  $("#editor").width(`${(w/window.outerWidth)*100}%`)
+  $("#right").width(`${((window.outerWidth-w)/(window.outerWidth))*100}%`)
 
 }
 
-hotkeys('shift+cmd+right', function (event, handler){resizer5000(-10)});
-hotkeys('shift+cmd+left', function (event, handler) {resizer5000(+10)});
+// hotkeys('shift+cmd+right', function (event, handler){resizer5000(-10)});
+// hotkeys('shift+cmd+left', function (event, handler) {resizer5000(+10)});
 
-editor.addAction({
-                id: "resize right",
-                label: "resize right",
-                keybindings: [monaco.KeyMod.Shift | monaco.KeyMod.CtrlCmd | monaco.KeyCode.RightArrow],
-                run: () => {resizer5000(-10)},
-      });
+// editor.addAction({
+//                 id: "resize right",
+//                 label: "resize right",
+//                 keybindings: [monaco.KeyMod.Shift | monaco.KeyMod.CtrlCmd | monaco.KeyCode.RightArrow],
+//                 run: () => {resizer5000(-10)},
+//       });
 
-editor.addAction({
-                id: "resize left",
-                label: "resize left",
-                keybindings: [monaco.KeyMod.Shift |monaco.KeyMod.CtrlCmd | monaco.KeyCode.LeftArrow],
-                run: () => {resizer5000(+10)},
-      });
+// editor.addAction({
+//                 id: "resize left",
+//                 label: "resize left",
+//                 keybindings: [monaco.KeyMod.Shift |monaco.KeyMod.CtrlCmd | monaco.KeyCode.LeftArrow],
+//                 run: () => {resizer5000(+10)},
+//       });
 
 
 
@@ -391,6 +391,7 @@ foo.mousedown(()=>{console.log("going!");drag=true})
 foo.mouseup(()=>{console.log("gone!")})
 document.addEventListener( 'mousemove', (e) => {if(drag) resizerm(e.pageX)});
 document.addEventListener('mouseup', () => drag=false);
+
 
 
 </script>
