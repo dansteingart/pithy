@@ -392,6 +392,28 @@ foo.mouseup(()=>{console.log("gone!")})
 document.addEventListener( 'mousemove', (e) => {if(drag) resizerm(e.pageX)});
 document.addEventListener('mouseup', () => drag=false);
 
+//popout like it used to
+
+function newresults(){
+	ww = 500;
+	leftish = screen.width-ww;
+	specs = 'toolbar=no,menubar=no,resizable=yes,width='+ww+',height='+ww+',top=0,left='+leftish
+	console.log(specs)
+	window.open(window.location.pathname,window.location.pathname,specs);
+  all_code()
+}
+
+if (window.toolbar.visible == false) all_output();
+
+
+$(window).keydown((e) =>
+  {
+    ev = e.originalEvent.code;
+    if (ev == "F10") toggle_states();
+    if (ev == "F9") newresults();
+  }
+);
+
 
 
 </script>
