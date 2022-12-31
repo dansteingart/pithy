@@ -73,12 +73,14 @@ body, html {
 </div>
 <script>
 const editorContainer = $("#editor")[0];
+wBS = true; //word base suggestion default
+
 const editor = monaco.editor.create(/** @type {HTMLElement} */ (document.getElementById('editor')), {
     value: '',
     language: 'python',
     theme: 'vs-dark',
     fontSize: '15pt',
-    wordBasedSuggestions: false,
+    wordBasedSuggestions: wBS,
     minimap: {enabled: false},
     wordWrap: true,
     automaticLayout: true
@@ -405,12 +407,21 @@ function newresults(){
 
 if (window.toolbar.visible == false) all_output();
 
+//toggle sort "auto" complete
+function toggle_wbs()
+{
+  wBS = !wBS;
+  console.log("tooglasd")
+  editor.updateOptions({wordBasedSuggestions:wBS});
+}
 
 $(window).keydown((e) =>
   {
     ev = e.originalEvent.code;
     if (ev == "F10") toggle_states();
     if (ev == "F9") newresults();
+    if (ev == "F2") toggle_wbs();
+
   }
 );
 
