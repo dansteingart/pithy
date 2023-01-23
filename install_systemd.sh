@@ -9,6 +9,7 @@ echo $PYTHON
 
 #pithy
 echo "#!/bin/bash
+rm -rf persist/
 PORT=8001 $NODE server.js" > pstart.sh
 
 #shower
