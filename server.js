@@ -18,10 +18,28 @@ const pithy_bin = process.env.PITHY_BIN || "python3"
 const pithy_timeout = process.env.PITHY_TIMEOUT || 0
 var Y = require("yjs");
 const { spawn } = require('child_process');
-var glob = require("glob")
+var glob = require("glob");
+const { time } = require('console');
 const server = http.createServer(app)
 const sqlite3 = require("sqlite3").verbose()
-db = new sqlite3.Database("runs.db")
+db  = new sqlite3.Database("runs.db")
+cdb = new sqlite3.Database("code.db")
+
+
+
+cdb.run(`CREATE TABLE IF NOT EXISTS code (
+    name TEXT PRIMARY KEY,
+    code TEXT,
+    time integer);`);
+
+cdb.run(`CREATE TABLE IF NOT EXISTS history (
+  time INTEGER PRIMARY KEY,
+  name TEXT,
+  code TEXT);`);
+  
+
+cdb.run(`CREATE INDEX IF NOT EXISTS idx_hist_name ON history (name);`);
+  
 db.run(`CREATE TABLE IF NOT EXISTS runs(id INTEGER PRIMARY KEY, 
                           code TEXT NOT NULL, 
                           user TEXT NOT NULL, 
@@ -42,6 +60,21 @@ var DEBUG = (function(){
       log: console.log.bind(console, '%s', timestamp)
   }
 })();
+
+
+function writecdb(name,code)
+{
+  var tti = new Date().getTime();
+  var sql = 'INSERT OR REPLACE INTO code (name,code,time) VALUES (?,?,?)';
+  cdb.run(sql,[name,code,tti]);
+}
+
+function writecdbhist(name,code)
+{
+  var tti = new Date().getTime();
+  var sql = 'INSERT INTO history (time,name,code) VALUES (?,?,?)';
+  cdb.run(sql,[tti,name,code]);
+}
 
 
 function authentication(req, res, next) {
@@ -193,13 +226,20 @@ app.post("/check_running/",(req,res)=>{
 
 app.post('/history/', function(req, res)
  {
+  console.log("hist debug")
+  var t1 = new Date().getTime();
+  console.log(new Date().getTime() - t1);
+
    data = req.body;
    codename = data['code']
    length = "_1314970891000".length //get length of timestamp
    structure = `${histbase + codename}*`
    thing_list = []
  
-   fils  = fs.readdirSync(histbase)
+
+   console.log(new Date().getTime() - t1);
+
+   fils  = fs.promises.readdir(histbase)
    for (i in fils)
    {
      if (fils[i].search(`${codename}_`) > -1)
@@ -208,6 +248,8 @@ app.post('/history/', function(req, res)
      }
    }
  
+   console.log(new Date().getTime() - t1);
+
    fils = thing_list
    fils.sort()
    fils.reverse()
@@ -226,6 +268,10 @@ app.post('/history/', function(req, res)
      hist_list.push([fils[i],date.toISOString()])
    }
  
+
+   console.log(new Date().getTime() - t1);
+
+
    res.json({'history':hist_list})
  });
 
@@ -267,6 +313,7 @@ app.post("/copy_code/",(req,res)=>{
   {
     code = utils.getYDoc(codename).getText('codemirror').toString();
     fs.writeFileSync(nfn,code)
+    //writecdb(nfn,code);
     res.send({'status':'success','new_code':copyto})
   }
 })
@@ -304,13 +351,16 @@ function runner(codename,user="user"){
   try { have = fs.readFileSync("code/"+codename+".py").toString();}
   catch(e) {have = ""}
   if (code != have) {
-        time = new Date().getTime().toString()
-        fs.writeFileSync("code/"+codename+".py",code)
+        tts = new Date().getTime().toString()
+        fs.writeFileSync("code/"+codename+".py",code);
+       //writecdb(codename+".py",code);
         out = {}
         out['code'] = code;
         out['user'] = user;
-        out['time'] = time;
-        fs.writeFileSync(`${histbase}${codename}_${time}`,JSON.stringify(out));
+        out['time'] = tts;
+        fs.writeFileSync(`${histbase}${codename}_${tts}`,JSON.stringify(out));
+        //writecdbhist(codename+".py",JSON.stringify(out));
+
 
   }
   
