@@ -239,15 +239,16 @@ app.post('/history/', function(req, res)
 
    console.log(new Date().getTime() - t1);
 
-   fils  = fs.promises.readdir(histbase)
-   for (i in fils)
-   {
-     if (fils[i].search(`${codename}_`) > -1)
-     {
-       thing_list.push(fils[i])
-     }
-   }
- 
+   //fils  = fs.readdirSync(histbase)
+   fs.promises.readdir(histbase).then( fils =>
+    {
+      for (i in fils)
+      {
+        if (fils[i].search(`${codename}_`) > -1)
+        {
+          thing_list.push(fils[i])
+        }
+      }
    console.log(new Date().getTime() - t1);
 
    fils = thing_list
@@ -273,6 +274,8 @@ app.post('/history/', function(req, res)
 
 
    res.json({'history':hist_list})
+  });
+
  });
 
 app.post('/get_history/',function(req,res)
