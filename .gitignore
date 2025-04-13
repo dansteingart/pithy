@@ -1,0 +1,15 @@
+dist/
+node_modules/
+persist/
+ydoc.db
+code.db 
+persist/ 
+code/ 
+assets/ 
+files/ 
+images/ 
+results/ 
+code_stamped/ 
+temp_results/ 
+runs.db 
+.DS_Store

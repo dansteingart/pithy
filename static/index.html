@@ -1,0 +1,436 @@
+<head>
+<link rel="icon" type="image/x-icon" href="/static/images/favicon.png">
+
+<script src="/static/js/yball.js"></script>
+<script src="/dist/monaco.bundle.js"></script>
+<script src="/static/js/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="/static/style/main-style.css">
+
+<script src="/static/js/moment.min.js"></script>
+<script src="/static/js/numeral.min.js"></script>
+<script src="/static/js/hotkeys.min.js"></script>
+<style>
+
+body, html {
+  /* height: 100%; */
+  background-color: white;
+  overflow-wrap: break-word;
+
+}
+
+.yRemoteSelection {
+  background-color: rgb(250, 129, 0, .5)
+}
+.yRemoteSelectionHead {
+    position: absolute;
+    border-left: orange solid 2px;
+    border-top: orange solid 2px;
+    border-bottom: orange solid 2px;
+    height: 100%;
+    box-sizing: border-box;
+}
+.yRemoteSelectionHead::after {
+    position: absolute;
+    content: ' ';
+    border: 3px solid orange;
+    border-radius: 4px;
+    left: -4px;
+    top: -5px;
+}
+
+.Monaco {
+      position:absolute; left:0; top:0;
+      width:50%; /*height:100%; max-height:100% !important;*/
+      height: 100%;
+      margin:0; padding:0;
+      overflow:hidden;
+
+}
+
+
+
+
+
+
+
+</style>
+
+
+</head>
+<body>
+
+<div id="editor" class="Monaco" class="left""></div>
+<div id="right" class="right">
+<div class="menu_bar">
+		<span id="status" style="height:10px;"></span> 
+		<button id="run"   title="run">r</button>  
+		<button id="kill"  title="kill">k</button>  
+    <button id="copyto" title="fork code">c</button> 
+    <span id="history_box"></span> 
+</div>
+
+  <div id="output" class="images"></div>
+</div>
+<script>
+const editorContainer = $("#editor")[0];
+wBS = true; //word base suggestion default
+
+const editor = monaco.editor.create(/** @type {HTMLElement} */ (document.getElementById('editor')), {
+    value: '',
+    language: 'python',
+    theme: 'vs-dark',
+    fontSize: '15pt',
+    wordBasedSuggestions: wBS,
+    minimap: {enabled: false},
+    wordWrap: true,
+    automaticLayout: true
+  })
+
+fetch('/static/themes/Cobalt.json')
+.then(data => data.json())
+.then(data => {
+  monaco.editor.defineTheme('monokai', data);
+  monaco.editor.setTheme('monokai');
+
+})
+
+//fix Curtis Found Bug
+editor.getModel().setEOL(monaco.editor.EndOfLinePreference.CR)
+
+
+//setup 
+code_name = window.location.pathname.split("/")[1];
+document.title = code_name
+
+cdk = code_name+"_keys";
+const ydoc = new Y.Doc()
+const wsProvider = new WebsocketProvider(window.location.origin.replace("http","ws"), code_name, ydoc)
+wsProvider.on('status', event => {
+  console.log(event.status)
+  if (event.status == "connected") 
+  {
+    check_running();
+    setTimeout(check_exists,500);
+    $("#status").html("connected")
+
+    editor.updateOptions({ readOnly: false }) 
+    editor.focus();
+  }
+  else if (event.status == "disconnected") 
+  {
+    editor.updateOptions({ readOnly: true }) 
+    $("#status").html("<span style='color:red'>Disconnected</span> ")
+
+  }
+
+})
+
+//Setup and Bind CM
+const yCm = ydoc.getText('codemirror')
+// const yUndoManager = new Y.UndoManager(yCm)
+//const binding = new CodemirrorBinding(yCm, editor, wsProvider.awareness, { yUndoManager })
+const binding = new MonacoBinding(yCm, /** @type {monaco.editor.ITextModel} */ (editor.getModel()), new Set([editor]), wsProvider.awareness)
+
+//setup and bind output pane
+const yO = ydoc.getText(code_name+'_output')
+yO.observe(event => {
+  $("#output").html(yO.toString());
+})
+
+//set flags to mark running
+const ykeys = ydoc.getMap(cdk)
+ykeys.observe(event =>{
+  if (ykeys.get('running') == true) 
+  {
+    $("#run").prop("disabled",true);
+    $("#status").html(`running for ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
+  }
+  else 
+  {
+    $("#run").prop("disabled",false);
+    if (ykeys.get("runtime") > 0) 
+    {
+      if  (ykeys.get("killed")) $("#status").html(`killed at ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
+      else if (ykeys.get("exit_code")==124) $("#status").html(`timeout at ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`)
+      else $("#status").html(`finished after ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
+    }
+
+  }
+
+} )
+
+//check to see if code is running and match up codes
+function check_running()
+{
+  $.post("/check_running/",{'code':code_name}, function(data)
+  {
+    ykeys.set('running',data['running']);
+    console.log(data);
+  })
+}
+
+function check_exists()
+{
+  $.post("/check_exists/",{'code':code_name}, function(data)
+  {
+    console.log(data);
+  })
+}
+
+$("#copyto").click(function(){
+	forkcode();
+});
+
+function forkcode(){
+	var marker = window.prompt("Copy This Code As:",code_name+"_copy");
+	if (marker != null & marker != "")
+	{
+		$.post("/copy_code/",
+		  {code:code_name,copy_to:marker},
+		  function(data){
+        if (data['status'] == "success")  window.location.href = data['new_code'];
+        else alert(data['status'])
+			}
+		)
+	}
+	
+
+	
+}
+
+
+//rest of code!
+waiting = false;
+function run()
+{
+  //ykeys.set('running',true);
+  payload = {'code':code_name};
+  if (($("#run").prop("disabled") == false) & (waiting == false))
+  {
+    waiting = true;
+    $("#status").html("wait a sec")
+
+    $.post('/run/',payload,(data) => {
+      waiting = false;
+      console.log(data)
+      history()
+    });
+  }
+  else {console.log("HOLD YOUR HORSES")}
+}
+$("#run").click(function(){run()});
+
+function kill()
+{
+  payload = {'code':code_name};
+  $.post('/kill/',payload,function(data){console.log(data)});
+}
+$("#kill").click(function(){kill()});
+
+//screen states
+sStates = 0 ; //0 = 50/50 , 1 = all code 2 = all output
+function all_code()
+{
+  $("#editor").css("width","100%")
+  $("#right").css("width","0%")
+
+}
+
+function all_output()
+{
+  $("#editor").css("width","0%")
+  $("#right").css("width","100%")
+}
+
+function split_5050()
+{
+  $("#editor").css("width","50%")
+  $("#right").css("width","50%")
+}
+
+function toggle_states()
+{
+  sStates +=1;
+  if (sStates > 2) sStates = 0
+  if      (sStates == 1) all_code(); 
+  else if (sStates == 2) all_output();
+  else if (sStates == 0) split_5050();
+}
+
+
+// editor.addKeyMap({'Cmd-Enter': function(cm){run();}});
+// editor.addKeyMap({'Cmd-K': function(cm){kill();}});
+
+editor.addAction({
+                id: "runCode",
+                label: "Run Code",
+                keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+                contextMenuGroupId: "2_execution",
+                //precondition: monaco.blockContext,
+                run: () => {run()},
+      });
+
+editor.addAction({
+          id: "killCode",
+          label: "Kill Code",
+          keybindings: [monaco.KeyMod.CtrlCmd  | monaco.KeyMod.Shift | monaco.KeyCode.Enter],
+          contextMenuGroupId: "2_execution",
+          //precondition: monaco.blockContext,
+          run: () => {kill()},
+});
+
+editor.addAction({
+          id: "screenState",
+          label: "Change Screen State",
+          keybindings: [monaco.KeyCode.F10],
+          contextMenuGroupId: "3_screenstate",
+          //precondition: monaco.blockContext,
+          run: () => {toggle_states()},
+});
+
+// editor.addAction({
+//           id: "enter_stuff",
+//           label: "Just A Carriage Return",
+//           keybindings: [monaco.KeyCode.Enter],
+//           //precondition: monaco.blockContext,
+//           run: () => {toggle_states()},
+// });
+
+
+$(window).keydown((e) =>
+  {
+    ev = e.originalEvent.code;
+    if (ev == "F10") toggle_states();
+  }
+);
+
+hotkeys('cmd+enter', function (event, handler){run();});
+hotkeys('shift+cmd+enter', function (event, handler){kill();});
+hotkeys('F10', function (event, handler){toggle_states();});
+
+function resizer5000(dir)
+{
+  ew = $("#editor").width()
+  ow = $("#right").width()
+
+  $("#editor").width(ew-dir)
+  $("#right").width(ow+dir)
+
+}
+
+function resizerm(w)
+{
+
+  $("#editor").width(`${(w/window.outerWidth)*100}%`)
+  $("#right").width(`${((window.outerWidth-w)/(window.outerWidth))*100}%`)
+
+}
+
+// hotkeys('shift+cmd+right', function (event, handler){resizer5000(-10)});
+// hotkeys('shift+cmd+left', function (event, handler) {resizer5000(+10)});
+
+// editor.addAction({
+//                 id: "resize right",
+//                 label: "resize right",
+//                 keybindings: [monaco.KeyMod.Shift | monaco.KeyMod.CtrlCmd | monaco.KeyCode.RightArrow],
+//                 run: () => {resizer5000(-10)},
+//       });
+
+// editor.addAction({
+//                 id: "resize left",
+//                 label: "resize left",
+//                 keybindings: [monaco.KeyMod.Shift |monaco.KeyMod.CtrlCmd | monaco.KeyCode.LeftArrow],
+//                 run: () => {resizer5000(+10)},
+//       });
+
+
+
+history();
+
+//Cursor Set
+user = "";
+$.post("/get_user/",function(data){
+  user=data['user'];
+  binding.awareness.setLocalStateField('user', { color: '#008833', name: user });
+})
+
+
+function history(){
+  $.post("/history/",{'code':code_name},(data)=>{
+    console.log(data)
+    out = data['history']
+    if (out == undefined) out = []
+    if (out.length > 1)
+    {
+      selecters = "<select id='histories' class='selectig'>"
+      for (i in out)
+      {
+          ttt = out[i][0]
+          ut = ttt.substr(ttt.length-13,ttt.length)
+          ttt = ttt.substr(0,ttt.length-14)
+          ut = parseInt(ut)
+          d = new Date()
+          d.setTime(ut)
+          now = moment(ut).local().format("MMM D YYYY hh:mm:ss a")
+          if (ttt == code_name) selecters += '<option value="'+out[i][0]+'">'+now+'</option>'			
+      }
+      selecters += "</select>"
+      $("#history_box").html("history:"+selecters)
+      $("#histories").change(function(){get_data()})}
+  });
+}
+
+function get_data(){
+	val = $("#histories").val();
+  $.post("/get_history/",{'code':code_name,'history':val},(data)=>{console.log(data);})
+}
+
+
+// dragger5000
+foo = $('.scrollbar.vertical')
+drag = false;
+foo.mousedown(()=>{console.log("going!");drag=true})
+foo.mouseup(()=>{console.log("gone!")})
+document.addEventListener( 'mousemove', (e) => {if(drag) resizerm(e.pageX)});
+document.addEventListener('mouseup', () => drag=false);
+
+//popout like it used to
+
+function newresults(){
+	ww = 500;
+	leftish = screen.width-ww;
+	specs = 'toolbar=no,menubar=no,resizable=yes,width='+ww+',height='+ww+',top=0,left='+leftish
+	console.log(specs)
+	window.open(window.location.pathname,window.location.pathname,specs);
+  all_code()
+}
+
+if (window.toolbar.visible == false) all_output();
+
+//toggle sort "auto" complete
+function toggle_wbs()
+{
+  wBS = !wBS;
+  console.log("tooglasd")
+  editor.updateOptions({wordBasedSuggestions:wBS});
+}
+
+$(window).keydown((e) =>
+  {
+    ev = e.originalEvent.code;
+    if (ev == "F10") toggle_states();
+    if (ev == "F9") newresults();
+    if (ev == "F2") toggle_wbs();
+
+  }
+);
+
+
+//once more, with feeling
+//fix Curtis Found Bug
+editor.getModel().setEOL(monaco.editor.EndOfLinePreference.CR)
+
+
+
+</script>
+</body>

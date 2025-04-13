@@ -1,0 +1,243 @@
+<html>
+<head>
+	<title>pithy</title>
+	<link rel="icon" type="image/x-icon" href="/static/images/favicon.png">
+	<link rel=StyleSheet HREF="/static/style/main-style.css">
+	<link rel=StyleSheet HREF="/static/style/jquery.dataTables.min.css">	
+    <script src="/static/js/jquery-3.6.0.min.js"></script>
+	<script src="/static/js/moment.min.js"></script>
+	<script src="/static/js/jquery.dataTables.min.js"></script>
+	<script src="/static/js/dataTables.scroller.min.js"></script>
+
+<style>
+body
+{
+	margin: 20px 20px;
+}
+
+.title
+{
+	font-family: Helvetica;
+	color:silver;
+	font-size: 40px;
+	
+}
+
+h2
+{
+	margin-bottom:0;
+}
+
+.newpage 
+{
+	color: #222222;
+	font-size: 25px;
+}
+
+.searchbox
+{
+	border-radius: 0px;
+	border-top: none;
+	border-left: none;
+	border-right: none;
+	border-bottom: solid #444 .5px;
+	font-size: 16px;
+	width: 25%;
+
+}
+.newpagebox
+{
+	border-radius: 0px;
+	border-top: none;
+	border-left: none;
+	border-right: none;
+	border-bottom: solid #444 .5px;
+	font-size: 25px;
+	width: 40%;
+
+}
+
+.selectedcode
+{
+	background:#ccc;
+	color: #444
+}
+
+.goButton
+{
+	font-size:25;
+	width: 45px;
+	height: 35px;
+}
+
+.colheader
+{
+	color: #777;
+	font-size: 20px;
+	padding-bottom:5px;
+}
+
+
+.buffer {height:30px; }
+
+div#left {
+    float: left;
+    width: 33%;
+	height: 70%;
+	
+	
+}
+div#right {
+    float: right;
+    width: 33%;
+	height: 70%;
+	
+}
+div#middle {
+    padding: 0px 160px 5px 160px;
+    margin: 0px;
+	height: 70%;
+	
+	
+	
+}
+
+label {font:Helvetica;font-size:16px;text-transform:lowercase;;}
+
+/* .simplist {
+	list-style: none;
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+	width:100%
+} */
+
+ #tabler.dataTable td { padding: 2 0 0 0; max-width:200px;} 
+ #tabler.dataTable thead td { border: none; } 
+ #tabler.dataTable tfoot td { border: none; } 
+ #tabler.dataTable.no-footer { border: none; } 
+
+ .dataTables_paginate {display: none;}
+
+ .selectface { font-style: underline;} 
+
+</style>
+
+</head>
+<body>
+	<div class="title" id="headface"></div>
+	<div id="news" class="newpage">  <span id="whoops"></span></div>
+	<div id="code"></div> 
+
+
+	</div>	
+</body>
+
+
+<script>
+var pathname = window.location.origin;
+var page = pathname.split("//")[1].split(".")[0] //get subdomain
+
+$("#headface").html("pithy")
+$("#news").prepend("new page -> "+pathname+"/<span id='newpage'></span> </input><button class='goButton' onclick='goThere()'>go</button>")
+
+console.log("Let's Get Data")
+$.post("/code_list/",function(data){console.log("Got Data");table_maker(data)})
+
+function table_maker(data)
+{
+	out = "<table id='tabler'>\n"
+	out+= `<thead>
+            <tr>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>`
+	for (i in data['files'])
+	{
+		core = data['files'][i][0].split("/")[1].replace(".py","")
+		//ts  = new Date(data['files'][i][1]).toLocaleString('en-US', { timeZone: "MST" });
+		ts = moment(data['files'][i][1]).format("YYYY-MM-DD HH:mm:ss")
+		link = `<a attr='code' href="${core}">${core}</a>`
+
+		out += `<tr><td>${link}</td><td>${ts}</tr></td>\n`
+
+	}
+	out+='</table>'
+	options = {
+                    paging: true, //turn off paging
+					bPaginate: false,
+                    bLengthChange: false, //selectbox for pagination extent
+					bInfo : true, //show total number of entries
+					order: [[1,'desc']],
+					deferRender:    true,
+					scrollY:        800, //length of scrollbar
+					scrollCollapse: true, //hide scrollbar 
+					scroller:       true
+                }
+	$("#code").html(out)
+	$('#tabler').DataTable(options);
+	$("#newpage").html($(".dataTables_filter"));
+	$("#tabler_filter").css("display","inline")
+	$("#tabler_filter").children().css("font-size",0)
+	$("#tabler_filter").children().children().addClass("newpagebox") 
+
+}
+
+function goThere()
+{
+	foo = $(".newpagebox").val()
+	if (foo.length > 0 && foo != "files"  && foo != "files/")
+	{ 
+		destination = pathname+"/"+foo
+		window.location = destination
+	}
+	else
+	{
+		$("#whoops").hide()
+		$("#whoops").html("try again")
+		$("#whoops").fadeIn("slow")
+		$("#whoops").fadeOut("slow")
+	}
+	
+}
+
+pos = -1
+selectedstyle = "background:#ccc;color:#333"
+selectout = false;
+$(window).keydown(function(event){
+	codes = $("[attr=code]")
+	codes.parent().parent().removeAttr("style",selectedstyle)
+	selectout = false;
+	if (event.which == 38 || event.which ==  40) 
+	{
+		selectout = true;
+		// codes = $("[attr=code]")
+		// codes.removeAttr("style","color:blue")
+		if (event.which == 38) pos = pos -1;
+		if (event.which == 40) pos = pos +1
+		if (pos < 0) pos = 0;
+		if (pos >= codes.length) pos = codes.length-1;
+		console.log(codes[pos].innerText)
+		codes[pos].parentElement.parentElement.setAttribute("style",selectedstyle)
+	}
+
+	else if (event.which == 13) 
+	{
+		if (selectout = true){
+			console.log(`going to ${codes[pos].innerText}`)
+			$(".newpagebox").val(codes[pos].innerText)
+			goThere()
+	
+		} 
+	}
+
+	else {$(".newpagebox").focus()}
+
+
+})
+
+
+
+</script>
+
+</html>
