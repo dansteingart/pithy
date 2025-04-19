@@ -15,10 +15,10 @@ window.WebsocketProvider = WebsocketProvider
 window.MonacoBinding = MonacoBinding
 window.monaco = monaco
 window.normalizeUrl = normalizeUrl
-window.MonacoLanguageClient = MonacoLanguageClient
-window.rpc = rpc
-window.ReconnectingWebSocket = ReconnectingWebSocket
-window.CloseAction = CloseAction
-window.ErrorAction = ErrorAction
-window.createMessageConnection = createMessageConnection
+// window.MonacoLanguageClient = MonacoLanguageClient
+// window.rpc = rpc
+// window.ReconnectingWebSocket = ReconnectingWebSocket
+// window.CloseAction = CloseAction
+// window.ErrorAction = ErrorAction
+// window.createMessageConnection = createMessageConnection
 

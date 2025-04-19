@@ -19,6 +19,7 @@
     "monaco-editor": "^0.44.0",
     "monaco-editor-webpack-plugin": "^7.1.0",
     "monaco-languageclient": "^9.5.0",
+    "node-fetch": "^2.7.0",
     "normalize-url": "^8.0.1",
     "reconnecting-websocket": "^4.4.0",
     "sqlite3": "^5.1.7",

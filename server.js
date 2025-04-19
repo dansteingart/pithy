@@ -14,6 +14,8 @@ var fs = require('fs')
 const app = express();
 const host = process.env.HOST || '0.0.0.0'
 const port = process.env.PORT || 1234
+const sk = process.env.OPENWEBUIAPI_KEY || undefined
+const openwebuiserver = process.env.OPENWEBUISERVER || undefined
 const pithy_bin = process.env.PITHY_BIN || "python3"
 const pithy_timeout = process.env.PITHY_TIMEOUT || 0
 //var Y = require("yjs");
@@ -22,9 +24,12 @@ var glob = require("glob");
 const { time } = require('console');
 const server = http.createServer(app)
 const sqlite3 = require("sqlite3").verbose()
+const fetch = require('node-fetch');
+
 db  = new sqlite3.Database("runs.db")
 cdb = new sqlite3.Database("code.db")
 
+console.log(sk)
 
 
 cdb.run(`CREATE TABLE IF NOT EXISTS code (
@@ -60,6 +65,44 @@ var DEBUG = (function(){
       log: console.log.bind(console, '%s', timestamp)
   }
 })();
+
+
+function steaksauce(ask)
+{
+  console.log(sk)
+  const url = `${openwebuiserver}/api/chat/completions`;
+  const headers = {
+      'Authorization': `Bearer ${sk}`,
+      'Content-Type': 'application/json'
+  };
+  const data = {
+      model: "gpt-4o-mini",
+      messages: [
+          {
+              role: "user",
+              content: `(only return python code and commented lines as this is going directly into a code editor, do not escape with a markdown code bloc, always replace plt.show() with showme())  ${ask}`
+          }
+      ]
+  };
+
+  return fetch(url, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(foo => {
+      const clean = foo.choices[0].message.content;
+      return clean;
+  })
+  .catch(err => {
+      console.error("Error:", err);
+      throw err;
+  });
+}
+
+
+
 
 
 function writecdb(name,code)
@@ -420,6 +463,17 @@ function runner(codename,user="user"){
     res.send({'state':ps[data['code']]});
  });
  
+
+
+ app.post("/steaksauce/",(req,res)=>
+  {
+    data = req.body;
+    ask = data['ask']
+    steaksauce(ask).then((code)=>
+    {
+      res.send({'code':code})
+    })
+  })
 
 
 //all else needs that SPLAT
