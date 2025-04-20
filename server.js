@@ -92,7 +92,7 @@ function steaksauce(ask)
   })
   .then(response => response.json())
   .then(foo => {
-      const clean = foo.choices[0].message.content;
+      var clean = foo.choices[0].message.content;
       clean = clean.replace(/plt\.show\(\)/g,"showme()")
       return clean;
   })
