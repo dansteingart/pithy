@@ -80,7 +80,7 @@ function steaksauce(ask)
       messages: [
           {
               role: "user",
-              content: `(only return python code and commented lines as this is going directly into a code editor, do not escape with a markdown code bloc, always replace plt.show() with showme(). If using solid python use this code motify to display (only return python code and commented lines as this is going directly into a code editor, do not escape with a markdown code bloc.)  ${ask}`
+              content: `(only return python code and commented lines as this is going directly into a code editor, do not escape with a markdown code block) ${ask}`
           }
       ]
   };
