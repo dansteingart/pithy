@@ -80,12 +80,7 @@ function steaksauce(ask)
       messages: [
           {
               role: "user",
-              content: `(only return python code and commented lines as this is going directly into a code editor, do not escape with a markdown code bloc, always replace plt.show() with showme(). If using solid python use this code motify to display (only return python code and commented lines as this is going directly into a code editor, do not escape with a markdown code bloc, always replace plt.show() with showme(). 
-              fn = "fn"
-stl = psp.stl_maker(final_model,fn)
-stl.show()
-stl.link()
-)  ${ask}`
+              content: `(only return python code and commented lines as this is going directly into a code editor, do not escape with a markdown code bloc, always replace plt.show() with showme(). If using solid python use this code motify to display (only return python code and commented lines as this is going directly into a code editor, do not escape with a markdown code bloc.)  ${ask}`
           }
       ]
   };
@@ -98,6 +93,7 @@ stl.link()
   .then(response => response.json())
   .then(foo => {
       const clean = foo.choices[0].message.content;
+      clean = clean.replace(/plt\.show\(\)/g,"showme()")
       return clean;
   })
   .catch(err => {
