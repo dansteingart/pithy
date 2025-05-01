@@ -125,6 +125,54 @@ wsProvider.on('status', event => {
 
 })
 
+
+
+
+function steaksauce()
+{
+      // Get the current cursor position
+      const position = editor.getPosition();
+      const selection = editor.getSelection();
+      editor.executeEdits("", [{
+        range: new monaco.Range(position.lineNumber+1, 0, position.lineNumber+1, 0),
+        text: `\n# working please wait...`,
+        forceMoveMarkers: true  }]);  
+
+      editor.updateOptions({ readOnly: true });
+      // Retrieve the selected text using the model
+      const selectedText = editor.getModel().getValueInRange(selection);
+
+      $.post("/steaksauce/",json={'ask':selectedText}).then((data)=>{
+        editor.updateOptions({ readOnly: false });  
+      //   editor.executeEdits("", [{
+      //   range: new monaco.Range(position.lineNumber+1, 0, position.lineNumber+1, 0),
+      //   text: `\n${data['code']}`,
+      //   forceMoveMarkers: true
+      // }]);  
+        // Get the model from the editor
+        const model = editor.getModel();
+
+        // Find all matches of the text you want to replace
+        const matches = model.findMatches('# working please wait...', true, false, false, null, true);
+
+        // Prepare replacement edits for each match
+        const edits = matches.map(match => {
+          return {
+            range: match.range,
+            text: data['code'],
+          };
+    });
+
+    // Apply all the edits at once
+    editor.executeEdits('replace-all', edits);
+      
+    })
+
+  // Create an edit operation
+}
+
+
+
 //Setup and Bind CM
 const yCm = ydoc.getText('codemirror')
 // const yUndoManager = new Y.UndoManager(yCm)
@@ -421,6 +469,8 @@ $(window).keydown((e) =>
     if (ev == "F10") toggle_states();
     if (ev == "F9") newresults();
     if (ev == "F2") toggle_wbs();
+    if (ev == "F4") steaksauce();
+
 
   }
 );
