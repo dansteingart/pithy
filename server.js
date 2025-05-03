@@ -435,7 +435,7 @@ function runner(codename,user="user"){
   os[codename] = utils.getYDoc(codename).getText(codename+'_output')
   os[codename].delete(0,os[codename].length);
   tss[codename] = new Date().getTime();
-  ts[codename] = setInterval(function(){ks[codename].set('runtime',new Date().getTime()-tss[codename])},10);
+  ts[codename] = setInterval(function(){ks[codename].set('runtime',new Date().getTime()-tss[codename])},100);
   ps[codename] = spawn("timeout",[to,bin,`-u`,`code/${codename}.py`]);
 	
   newrow(tss[codename],codename,user)
