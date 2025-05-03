@@ -1,5 +1,6 @@
 <head>
 <link rel="icon" type="image/x-icon" href="/static/images/favicon.png">
+
 <script src="/dist/monaco.bundle.js"></script>
 <script src="/static/js/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="/static/style/main-style.css">
@@ -131,14 +132,6 @@ wsProvider.on('status', event => {
 })
 
 
-const awareness = wsProvider.awareness
-
-// You can observe when a user updates their awareness information
-awareness.on('change', changes => {
-  // Whenever somebody updates their awareness information,
-  // we log all awareness information from all users.
-  console.log(editor.getPosition())
-})
 
 
 
