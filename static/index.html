@@ -147,8 +147,7 @@ function steaksauce()
     forceMoveMarkers: true  }]);  
 
   const selectedText = editor.getModel().getValueInRange(selection);
-
-  $.post("/steaksauce/",json={'ask':selectedText,'page':code_name}).then((data)=>{})
+  $.post("/steaksauce/",json={'ask':selectedText,'page':code_name}).then((data)=>{console.log(data)})
   
 }
 
@@ -198,24 +197,32 @@ ykeys.observe(event =>{
 
   }
 
-  if (event['keysChanged'].has('sauceitdownyoudotoomuch') ) 
+  if (event['keysChanged'].has('sauceitdownyoudotoomuch') & ykeys.get('steaksauce'))
   {
     var tokes = ykeys.get('sauceitdownyoudotoomuch')['choices'][0]['delta']['content'];
     console.log(tokes,ycount)
     ycount += 1;
     // Get the current cursor position
-    const position = editor.getPosition();
 
-    // Insert the `food` text at the current cursor position
-    editor.executeEdits("", [{
-      range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
-      text: `${tokes} come\n`,
-      //forceMoveMarkers: true
-    }]);
-    //editor.setPosition({ lineNumber: position.lineNumber, column: position.column + food.length});
-    //editor.focus();
+    const cursorPosition = editor.getPosition(); // Get the current cursor position
+
+    // Calculate the index in the shared text (yCm) based on the cursor position
+    const model = editor.getModel();
+    const offset = model.getOffsetAt(cursorPosition);
+
+    // Insert the text at the calculated offset
+    yCm.insert(offset, tokes);
+
+
+
+
     }
 
+
+  if (event['keysChanged'].has('fullsauce'))
+  {
+    console.log(ykeys.get('fullsauce'))
+  }
 
 } )
 

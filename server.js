@@ -490,6 +490,7 @@ function steaksauce(ask,page) {
   console.log(ks)
   ks[page].set("steaksauce",true);
 
+  total = ""
   return fetch(url, {
     method: 'POST',
     headers: headers,
@@ -501,15 +502,21 @@ function steaksauce(ask,page) {
           // Print each chunk of the streaming JSON data
           try {
             food = JSON.parse(chunk.toString().replace("data: ","").trim())
+            if (food.choices[0].delta.content != undefined)
+            {
             ks[page].set("sauceitdownyoudotoomuch",food);
+            total += food.choices[0].delta.content          
+            }
           }
           catch (e) {}
  
           
         });
         response.body.on('end', () => {
-          resolve();
           ks[page].set("steaksauce",false);
+          ks[page].set("fullsauce",total);
+          resolve(total);
+
         });
         response.body.on('error', (err) => {
           reject(err);
