@@ -1,4 +1,3 @@
-
 /**
  * @type {any}
  */
@@ -65,46 +64,6 @@ var DEBUG = (function(){
       log: console.log.bind(console, '%s', timestamp)
   }
 })();
-
-
-function steaksauce(ask)
-{
-  console.log(sk)
-  const url = `${openwebuiserver}/api/chat/completions`;
-  const headers = {
-      'Authorization': `Bearer ${sk}`,
-      'Content-Type': 'application/json'
-  };
-  const data = {
-      model: "gpt-4o-mini",
-      messages: [
-          {
-              role: "user",
-              content: `(only return python code and commented lines as this is going directly into a code editor, do not escape with a markdown code block) ${ask}`
-          }
-      ]
-  };
-
-  return fetch(url, {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify(data)
-  })
-  .then(response => response.json())
-  .then(foo => {
-      var clean = foo.choices[0].message.content;
-      clean = clean.replace(/plt\.show\(\)/g,"showme()")
-      return clean;
-  })
-  .catch(err => {
-      console.error("Error:", err);
-      throw err;
-  });
-}
-
-
-
-
 
 function writecdb(name,code)
 {
@@ -428,6 +387,12 @@ function runner(codename,user="user"){
   
   DEBUG.log(`running ${codename} using ${bin} ${ft}`)
 
+  var delay = 10;
+  function updateTime()
+  {
+    ks[codename].set('runtime',new Date().getTime()-tss[codename])
+    if (ks[codename].get('running')) setTimeout(updateTime, delay);
+  }
 
 
   ks[codename] = utils.getYDoc(codename).getMap(codename+"_keys");
@@ -435,7 +400,8 @@ function runner(codename,user="user"){
   os[codename] = utils.getYDoc(codename).getText(codename+'_output')
   os[codename].delete(0,os[codename].length);
   tss[codename] = new Date().getTime();
-  ts[codename] = setInterval(function(){ks[codename].set('runtime',new Date().getTime()-tss[codename])},100);
+  //ts[codename] = setInterval(function(){ks[codename].set('runtime',new Date().getTime()-tss[codename])},100);
+  ts[codename] = setTimeout(updateTime, delay);
   ps[codename] = spawn("timeout",[to,bin,`-u`,`code/${codename}.py`]);
 	
   newrow(tss[codename],codename,user)
@@ -453,8 +419,9 @@ function runner(codename,user="user"){
     var rt = new Date().getTime()-tss[codename];
     DEBUG.log(`${codename} ${eco} after ${rt} ms`)
     editrow(tss[codename],rt,exit_code,eco);
-    clearInterval(ts[codename]);})
-  return ps[codename]
+    //clearInterval(ts[codename]);})
+    clearTimeout(ts[codename]);})
+    return ps[codename]
 }
 
  app.post("/kill/", (req,res)=>
@@ -469,8 +436,10 @@ function runner(codename,user="user"){
  app.post("/steaksauce/",(req,res)=>
   {
     data = req.body;
+    console.log(data)
     ask = data['ask']
-    steaksauce(ask).then((code)=>
+    page = data['page']
+    steaksauce(ask,page).then((code)=>
     {
       res.send({'code':code})
     })
@@ -498,3 +467,59 @@ server.on('upgrade', (request, socket, head) => {
  })
 server.listen({ host, port })
 DEBUG.log(`running at '${host}' on port ${port}`)
+
+
+
+function steaksauce(ask,page) {
+  const url = `${openwebuiserver}/api/chat/completions`;
+  const headers = {
+    'Authorization': `Bearer ${sk}`,
+    'Content-Type': 'application/json'
+  };
+  const data = {
+    model: "gpt-4o-mini",
+    stream: true,
+    messages: [
+      {
+        role: "user",
+        content: `(only return python code and commented lines as this is going directly into a code editor, do not escape with a markdown code block) ${ask}`
+      }
+    ]
+  };
+  food = ""
+  console.log(ks)
+  ks[page].set("steaksauce",true);
+
+  ks[page].set("sauceitdownyoudotoomuch",food);
+
+  return fetch(url, {
+    method: 'POST',
+    headers: headers,
+    body: JSON.stringify(data)
+  })
+    .then(response => {
+      return new Promise((resolve, reject) => {
+        response.body.on('data', (chunk) => {
+          // Print each chunk of the streaming JSON data
+          try {
+            food = JSON.parse(chunk.toString().replace("data: ","").replace("\n",""))['choices'][0]['delta']['content']
+          }
+          catch (e) {}
+          ks[page].set("sauceitdownyoudotoomuch",food);
+
+          
+        });
+        response.body.on('end', () => {
+          resolve();
+          ks[page].set("steaksauce",false);
+        });
+        response.body.on('error', (err) => {
+          reject(err);
+        });
+      });
+    })
+    .catch(err => {
+      console.error("Error:", err);
+      throw err;
+    });
+}
