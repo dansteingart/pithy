@@ -146,38 +146,10 @@ function steaksauce()
     text: `\n# working please wait...`,
     forceMoveMarkers: true  }]);  
 
-  //editor.updateOptions({ readOnly: true });
-  // Retrieve the selected text using the model
   const selectedText = editor.getModel().getValueInRange(selection);
 
-  $.post("/steaksauce/",json={'ask':selectedText,'page':code_name}).then((data)=>{
-    editor.updateOptions({ readOnly: false });  
-  //   editor.executeEdits("", [{
-  //   range: new monaco.Range(position.lineNumber+1, 0, position.lineNumber+1, 0),
-  //   text: `\n${data['code']}`,
-  //   forceMoveMarkers: true
-  // }]);  
-    // Get the model from the editor
-    const model = editor.getModel();
-
-    // Find all matches of the text you want to replace
-    const matches = model.findMatches('# working please wait...', true, false, false, null, true);
-
-    // Prepare replacement edits for each match
-    const edits = matches.map(match => {
-      return {
-        range: match.range,
-        text: data['code'],
-      };
-});
-
-// Apply all the edits at once
-editor.executeEdits('replace-all', edits);
+  $.post("/steaksauce/",json={'ask':selectedText,'page':code_name}).then((data)=>{})
   
-})
-  
-  // Create an edit operation
-
 }
 
 
@@ -206,9 +178,10 @@ yO.observe(event => {
 
 //set flags to mark running
 const ykeys = ydoc.getMap(cdk)
+last_chunk_time = 0;
+ycount = 0;
 ykeys.observe(event =>{
-  console.log(ykeys.toJSON())
-  if (ykeys.get('running') == true) 
+  if (ykeys.get('running') & event['keysChanged'].has('runtime') ) 
   {
     $("#run").prop("disabled",true);
     $("#status").html(`running for ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
@@ -225,33 +198,23 @@ ykeys.observe(event =>{
 
   }
 
-  if (ykeys.get('steaksauce') == true) 
+  if (event['keysChanged'].has('sauceitdownyoudotoomuch') ) 
   {
+    var tokes = ykeys.get('sauceitdownyoudotoomuch')['choices'][0]['delta']['content'];
+    console.log(tokes,ycount)
+    ycount += 1;
+    // Get the current cursor position
     const position = editor.getPosition();
-    console.log("steaksauce")
-    food = ykeys.get('sauceitdownyoudotoomuch')
-    // editor.executeEdits("", [{
-    //   range: new monaco.Range(position.lineNumber, 1, position.lineNumber, 1),
-    //   text: `${food}`,
-    //   forceMoveMarkers: true
-    // }]); 
-    const textToInsert = food;
 
-    // Insert the text at the current position
+    // Insert the `food` text at the current cursor position
     editor.executeEdits("", [{
-        range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
-        text: textToInsert,
-        forceMoveMarkers: true
+      range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+      text: `${tokes} come\n`,
+      //forceMoveMarkers: true
     }]);
-
-    // Move the cursor forward by the length of the inserted text
-    editor.setPosition({
-        lineNumber: position.lineNumber,
-        column: position.column + textToInsert.length
-    });
-
-
-  }
+    //editor.setPosition({ lineNumber: position.lineNumber, column: position.column + food.length});
+    //editor.focus();
+    }
 
 
 } )

@@ -490,8 +490,6 @@ function steaksauce(ask,page) {
   console.log(ks)
   ks[page].set("steaksauce",true);
 
-  ks[page].set("sauceitdownyoudotoomuch",food);
-
   return fetch(url, {
     method: 'POST',
     headers: headers,
@@ -502,11 +500,11 @@ function steaksauce(ask,page) {
         response.body.on('data', (chunk) => {
           // Print each chunk of the streaming JSON data
           try {
-            food = JSON.parse(chunk.toString().replace("data: ","").replace("\n",""))['choices'][0]['delta']['content']
+            food = JSON.parse(chunk.toString().replace("data: ","").trim())
+            ks[page].set("sauceitdownyoudotoomuch",food);
           }
           catch (e) {}
-          ks[page].set("sauceitdownyoudotoomuch",food);
-
+ 
           
         });
         response.body.on('end', () => {
