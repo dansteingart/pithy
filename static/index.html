@@ -146,38 +146,9 @@ function steaksauce()
     text: `\n# working please wait...`,
     forceMoveMarkers: true  }]);  
 
-  editor.updateOptions({ readOnly: true });
-  // Retrieve the selected text using the model
   const selectedText = editor.getModel().getValueInRange(selection);
-
-  $.post("/steaksauce/",json={'ask':selectedText}).then((data)=>{
-    editor.updateOptions({ readOnly: false });  
-  //   editor.executeEdits("", [{
-  //   range: new monaco.Range(position.lineNumber+1, 0, position.lineNumber+1, 0),
-  //   text: `\n${data['code']}`,
-  //   forceMoveMarkers: true
-  // }]);  
-    // Get the model from the editor
-    const model = editor.getModel();
-
-    // Find all matches of the text you want to replace
-    const matches = model.findMatches('# working please wait...', true, false, false, null, true);
-
-    // Prepare replacement edits for each match
-    const edits = matches.map(match => {
-      return {
-        range: match.range,
-        text: data['code'],
-      };
-});
-
-// Apply all the edits at once
-editor.executeEdits('replace-all', edits);
+  $.post("/steaksauce/",json={'ask':selectedText,'page':code_name}).then((data)=>{console.log(data)})
   
-})
-  
-  // Create an edit operation
-
 }
 
 
@@ -206,8 +177,11 @@ yO.observe(event => {
 
 //set flags to mark running
 const ykeys = ydoc.getMap(cdk)
+last_chunk_time = 0;
+ycount = 0;
+ypos = 0;
 ykeys.observe(event =>{
-  if (ykeys.get('running') == true) 
+  if (ykeys.get('running') & event['keysChanged'].has('runtime') ) 
   {
     $("#run").prop("disabled",true);
     $("#status").html(`running for ${numeral(ykeys.get("runtime")/1000).format("0.00")} s`);
@@ -223,6 +197,35 @@ ykeys.observe(event =>{
     }
 
   }
+
+  if (event['keysChanged'].has('sauceitdownyoudotoomuch') & ykeys.get('steaksauce'))
+  {
+    var tokes = ykeys.get('sauceitdownyoudotoomuch')['choices'][0]['delta']['content'];
+    console.log(tokes,ycount)
+    ycount += 1;
+
+    const cursorPosition = editor.getPosition(); // Get the current cursor position
+    const findText = "# working please wait..."; // Text to find
+    const yCmContent = yCm.toString();
+    const startIndex = yCmContent.indexOf(findText);
+
+      if (startIndex !== -1) {
+        // Calculate the end index of the text to replace
+        const endIndex = startIndex + findText.length;
+
+        // Perform the replacement
+        yCm.delete(startIndex, findText.length); // Delete the old text
+        yCm.insert(startIndex, tokes); // Insert the new text
+        ypos = startIndex+tokes.length;
+
+      } else {
+
+        yCm.insert(ypos, tokes);
+        ypos = ypos+tokes.length;
+      }    
+
+
+    }
 
 } )
 
