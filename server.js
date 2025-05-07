@@ -182,6 +182,9 @@ app.post("/check_exists/",(req,res)=>{
   data = req.body;
   codename = data['code'];
   action = "none"
+
+  ks[codename] = utils.getYDoc(codename).getMap(codename+"_keys");
+
   //first, see if we've got anything in memory/peristence
   foo = utils.getYDoc(codename).getText('codemirror').toString();
     if (foo.length == 0){
@@ -394,8 +397,7 @@ function runner(codename,user="user"){
     if (ks[codename].get('running')) setTimeout(updateTime, delay);
   }
 
-
-  ks[codename] = utils.getYDoc(codename).getMap(codename+"_keys");
+ //ks[codename] = utils.getYDoc(codename).getMap(codename+"_keys");
   ks[codename].set("running",true);
   os[codename] = utils.getYDoc(codename).getText(codename+'_output')
   os[codename].delete(0,os[codename].length);
@@ -448,6 +450,7 @@ function runner(codename,user="user"){
 
 //all else needs that SPLAT
  app.get('/*splat', (req, res) => {
+
   DEBUG.log(`splat ${req.params[0]}`);
   if (req.params[0] == "") res.sendFile('homepage.html', { root: __dirname+"/static" })
   else res.sendFile('index.html', { root: __dirname+"/static" });
