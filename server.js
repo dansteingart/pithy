@@ -442,7 +442,9 @@ function runner(codename,user="user"){
     ask = data['ask']
     page = data['page']
     position = data['position']
-    steaksauce(ask,page,position).then((code)=> { res.send({'code':code}) })
+    try {conversationId = ks[page].get("conversationId")}
+    catch (e) {conversationId = undefined};
+    steaksauce(ask,page,position,conversationId).then((code)=> { res.send({'code':code}) })
 
   })
 
@@ -471,7 +473,7 @@ server.listen({ host, port })
 DEBUG.log(`running at '${host}' on port ${port}`)
 
 
-function steaksauce(ask,page,position) {
+function steaksauce(ask,page,position,conversationId=undefined) {
   const url = `${openwebuiserver}/api/chat/completions`;
   const headers = {
     'Authorization': `Bearer ${sk}`,
@@ -480,16 +482,19 @@ function steaksauce(ask,page,position) {
   const data = {
     model: "gpt-4o-mini",
     stream: true,
+    conversationId: conversationId,
     messages: [
       {
         role: "user",
-        content: `(only return python code and commented lines as this is going directly into a code editor, do not escape with a markdown code block) ${ask}`
+        content: `(only return python code and commented lines as this is going directly into a code editor, do not escape with a markdown code block) ${ask}`,
+        conversationId: conversationId
       }
     ]
   };
   food = ""
   ks[page].set("steaksauce",true);
   ks[page].set("steaksauce_pos",parseInt(position));
+  ks[page].set("conversationId",conversationId);
 
   total = ""
   return fetch(url, {
@@ -510,6 +515,7 @@ function steaksauce(ask,page,position) {
             ycm = utils.getYDoc(codename).getText('codemirror')
             ycm.insert(pos,food.choices[0].delta.content);
             ks[page].set("steaksauce_pos",pos+food.choices[0].delta.content.length);
+            ks[page].set("conversationId",food['id']);
             total += food.choices[0].delta.content          
             }
           }
