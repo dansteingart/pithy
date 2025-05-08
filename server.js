@@ -489,7 +489,7 @@ function steaksauce(ask,page,position) {
   };
   food = ""
   ks[page].set("steaksauce",true);
-  ks[page].set("steaksauce_pos",position);
+  ks[page].set("steaksauce_pos",parseInt(position));
 
   total = ""
   return fetch(url, {
