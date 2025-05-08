@@ -147,7 +147,8 @@ function steaksauce()
     forceMoveMarkers: true  }]);  
 
   const selectedText = editor.getModel().getValueInRange(selection);
-  $.post("/steaksauce/",json={'ask':selectedText,'page':code_name}).then((data)=>{console.log(data)})
+  cursorPosition = editor.getModel().getOffsetAt(editor.getPosition())
+  $.post("/steaksauce/",json={'ask':selectedText,'page':code_name,'position':cursorPosition}).then((data)=>{console.log(data)})
   
 }
 

@@ -441,10 +441,9 @@ function runner(codename,user="user"){
     console.log(data)
     ask = data['ask']
     page = data['page']
-    steaksauce(ask,page).then((code)=>
-    {
-      res.send({'code':code})
-    })
+    position = data['position']
+    steaksauce(ask,page,position).then((code)=> { res.send({'code':code}) })
+
   })
 
 
@@ -472,8 +471,7 @@ server.listen({ host, port })
 DEBUG.log(`running at '${host}' on port ${port}`)
 
 
-
-function steaksauce(ask,page) {
+function steaksauce(ask,page,position) {
   const url = `${openwebuiserver}/api/chat/completions`;
   const headers = {
     'Authorization': `Bearer ${sk}`,
@@ -490,8 +488,8 @@ function steaksauce(ask,page) {
     ]
   };
   food = ""
-  console.log(ks)
   ks[page].set("steaksauce",true);
+  ks[page].set("steaksauce_pos",position);
 
   total = ""
   return fetch(url, {
@@ -507,7 +505,11 @@ function steaksauce(ask,page) {
             food = JSON.parse(chunk.toString().replace("data: ","").trim())
             if (food.choices[0].delta.content != undefined)
             {
-            ks[page].set("sauceitdownyoudotoomuch",food);
+            //ks[page].set("sauceitdownyoudotoomuch",food);
+            pos = ks[page].get("steaksauce_pos");
+            ycm = utils.getYDoc(codename).getText('codemirror')
+            ycm.insert(pos,food.choices[0].delta.content);
+            ks[page].set("steaksauce_pos",pos+food.choices[0].delta.content.length);
             total += food.choices[0].delta.content          
             }
           }
