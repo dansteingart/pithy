@@ -19,6 +19,9 @@
     "yjs": "^13.5.20"
   },
   "devDependencies": {
+    "css-loader": "^7.1.2",
+    "file-loader": "^6.2.0",
+    "style-loader": "^4.0.0",
     "webpack-cli": "^4.9.1"
   }
 }

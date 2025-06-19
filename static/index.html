@@ -44,7 +44,26 @@ body, html {
       height: 100%;
       margin:0; padding:0;
       overflow:hidden;
+}
 
+.claude-completion-loading::after {
+      content: '🤖💭';
+      background: rgba(0, 123, 204, 0.1);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+      animation: pulse 1.5s infinite;
+}
+
+.claude-ghost-text {
+      color: #999 !important;
+      font-style: italic !important;
+      opacity: 0.6 !important;
+}
+
+@keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
 }
 
 
@@ -127,6 +146,1210 @@ wsProvider.on('status', event => {
 
 
 
+
+// Claude Chat Functions
+let claudeChatHistory = [];
+
+function formatMarkdownText(text) {
+    return text
+        // Code blocks
+        .replace(/```(\w*)\n([\s\S]*?)\n```/g, '<pre style="background: #f5f5f5; padding: 8px; border-radius: 3px; overflow-x: auto; border: 1px solid #ddd; font-family: monospace;"><code>$2</code></pre>')
+        // Inline code
+        .replace(/`([^`]+)`/g, '<code style="background: #f5f5f5; padding: 2px 4px; border-radius: 3px; font-family: monospace;">$1</code>')
+        // Bold text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        // Italic text
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        // Line breaks
+        .replace(/\n/g, '<br>')
+        // Headers
+        .replace(/^### (.*$)/gm, '<h4 style="margin: 16px 0 8px 0; color: #333;">$1</h4>')
+        .replace(/^## (.*$)/gm, '<h3 style="margin: 16px 0 8px 0; color: #333;">$1</h3>')
+        .replace(/^# (.*$)/gm, '<h2 style="margin: 16px 0 8px 0; color: #333;">$1</h2>');
+}
+
+function openClaudeChat() {
+    // Create popup window similar to newresults()
+    const ww = 500;
+    const hh = 700;
+    const leftish = screen.width - ww - 20;
+    const specs = `toolbar=no,menubar=no,resizable=yes,width=${ww},height=${hh},top=50,left=${leftish}`;
+    console.log('Opening Claude chat popup:', specs);
+    
+    // Open the chat window with a special URL parameter
+    const chatWindow = window.open(`${window.location.pathname}?claude_chat=1`, 'claude_chat', specs);
+    
+    if (chatWindow) {
+        chatWindow.focus();
+    } else {
+        alert('Popup blocked! Please allow popups for this site to use Claude chat.');
+    }
+}
+
+function createChatModal() {
+    const modal = document.createElement('div');
+    modal.id = 'claude-chat-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 10%;
+        right: 10px;
+        width: 450px;
+        height: 70%;
+        background: #1e1e1e;
+        border: 2px solid #007acc;
+        border-radius: 8px;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        font-family: 'Consolas', 'Monaco', monospace;
+        box-shadow: 0 8px 32px rgba(0, 123, 204, 0.3);
+        overflow: hidden;
+    `;
+    
+    modal.innerHTML = `
+        <div style="
+            padding: 16px; 
+            border-bottom: 2px solid #007acc; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            background: #2d2d2d;
+            min-height: 60px;
+        ">
+            <div>
+                <h3 style="margin: 0; color: var(--vscode-editor-foreground, #d4d4d4);">💬 Claude</h3>
+                <div style="font-size: 11px; color: var(--vscode-descriptionForeground, #999); margin-top: 2px;">
+                    ${code_name}
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button id="claude-clear-history" style="
+                    background: var(--vscode-button-secondaryBackground, #5a5d5e);
+                    color: var(--vscode-button-secondaryForeground, #ffffff);
+                    border: none; 
+                    padding: 4px 8px; 
+                    font-size: 10px; 
+                    border-radius: 3px; 
+                    cursor: pointer;
+                ">Clear</button>
+                <button id="claude-chat-close" style="background: none; border: none; color: var(--vscode-editor-foreground, #d4d4d4); font-size: 18px; cursor: pointer; padding: 4px;">&times;</button>
+            </div>
+        </div>
+        <div id="claude-chat-messages" style="
+            flex: 1; 
+            padding: 12px; 
+            overflow-y: auto; 
+            color: var(--vscode-editor-foreground, #d4d4d4);
+        "></div>
+        <div style="
+            padding: 12px; 
+            border-top: 1px solid var(--vscode-widget-border, #454545);
+            background: var(--vscode-editor-background, #1e1e1e);
+        ">
+            <div style="display: flex; gap: 6px; margin-bottom: 6px;">
+                <select id="modal-model-selector" style="
+                    padding: 6px; 
+                    background: var(--vscode-input-background, #3c3c3c); 
+                    border: 1px solid var(--vscode-input-border, #454545); 
+                    color: var(--vscode-input-foreground, #cccccc); 
+                    border-radius: 4px;
+                    font-size: 11px;
+                    min-width: 100px;
+                ">
+                    <option value="claude">Claude</option>
+                </select>
+                <input id="claude-chat-input" type="text" placeholder="Ask Claude..." style="
+                    flex: 1; 
+                    padding: 6px; 
+                    background: var(--vscode-input-background, #3c3c3c); 
+                    border: 1px solid var(--vscode-input-border, #454545); 
+                    color: var(--vscode-input-foreground, #cccccc); 
+                    border-radius: 4px;
+                    font-size: 12px;
+                ">
+                <button id="claude-chat-send" style="
+                    padding: 6px 12px; 
+                    background: var(--vscode-button-background, #0e639c); 
+                    color: var(--vscode-button-foreground, #ffffff); 
+                    border: none; 
+                    border-radius: 4px; 
+                    cursor: pointer;
+                    font-size: 12px;
+                ">Send</button>
+            </div>
+            <div style="font-size: 10px; color: var(--vscode-descriptionForeground, #999);">
+                Real-time streaming • Direct code edits
+            </div>
+        </div>
+    `;
+    
+    // Add event listeners
+    modal.querySelector('#claude-chat-close').onclick = () => modal.remove();
+    modal.querySelector('#claude-chat-send').onclick = () => sendClaudeMessage();
+    modal.querySelector('#claude-clear-history').onclick = () => clearChatHistory();
+    modal.querySelector('#claude-chat-input').onkeypress = (e) => {
+        if (e.key === 'Enter') sendClaudeMessage();
+    };
+    
+    // Make modal draggable
+    let isDragging = false;
+    let currentX, currentY, initialX, initialY;
+    const header = modal.querySelector('div');
+    
+    header.style.cursor = 'move';
+    header.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        initialX = e.clientX - modal.offsetLeft;
+        initialY = e.clientY - modal.offsetTop;
+        e.preventDefault();
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+            modal.style.left = currentX + 'px';
+            modal.style.top = currentY + 'px';
+            modal.style.right = 'auto'; // Remove right positioning when dragging
+        }
+    });
+    
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+    
+    // Load available models for the selector
+    loadAvailableModels();
+    
+    return modal;
+}
+
+function createPopupChatInterface() {
+    // Create a full-window chat interface for the popup
+    document.body.style.cssText = `
+        margin: 0;
+        padding: 0;
+        background: white;
+        color: black;
+        overflow: hidden;
+        font-family: Helvetica, Arial, sans-serif;
+    `;
+    
+    const chatContainer = document.createElement('div');
+    chatContainer.id = 'popup-chat-container';
+    chatContainer.style.cssText = `
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: white;
+    `;
+    
+    chatContainer.innerHTML = `
+        <div style="
+            padding: 5px 5px 5px 16px; 
+            border-bottom: 1px solid #ccc; 
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 60px;
+        ">
+            <div>
+                <span style="margin: 0; color: black; font-family:helvetica">💬 Claude connected to <span style="color:red;">${code_name}</span></span>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button id="popup-clear-history" style="background: none; border: none; color: black; font-size: 18px;">🧹</button>
+                <button onclick="window.close()" style="
+                    background: none; 
+                    border: none; 
+                    color: black; 
+                    font-size: 18px; 
+                    cursor: pointer; 
+                    padding: 4px;
+                ">&times;</button>
+            </div>
+        </div>
+        <div id="popup-chat-messages" style="
+            flex: 1; 
+            padding: 16px; 
+            overflow-y: auto; 
+            background: white;
+        "></div>
+        <div style="
+            padding: 16px; 
+            border-top: 1px solid #ccc;
+            background: white;
+        ">
+            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                <select id="popup-model-selector" style="
+                    padding: 8px; 
+                    background: white; 
+                    border: 1px solid #ccc; 
+                    color: black; 
+                    font-size: 12px;
+                    font-family: Helvetica, Arial, sans-serif;
+                    border-radius: 4px;
+                    min-width: 120px;
+                ">
+                    <option value="claude">Claude</option>
+                </select>
+                <input id="popup-chat-input" type="text" placeholder="Ask Claude about your code..." style="
+                    flex: 1; 
+                    padding: 10px; 
+                    background: white; 
+                    border: 1px solid #ccc; 
+                    color: black; 
+                    font-size: 14px;
+                    font-family: Helvetica, Arial, sans-serif;
+                ">
+                <button id="popup-chat-send" style="background: none; border: none; color: black; font-size: 18px;">✈️</button>
+            </div>
+            <div style="font-size: 11px; color: #666; text-align: center;">
+                Real-time streaming responses • Direct code editing • Press Enter to send
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(chatContainer);
+    
+    // Add event listeners for popup chat
+    document.getElementById('popup-chat-send').onclick = () => sendPopupClaudeMessage();
+    document.getElementById('popup-clear-history').onclick = () => clearChatHistory();
+    document.getElementById('popup-chat-input').onkeypress = (e) => {
+        if (e.key === 'Enter') sendPopupClaudeMessage();
+    };
+    
+    // Load chat history
+    loadChatHistory();
+    
+    // Load available models for the selector
+    loadAvailableModels();
+    
+    // Focus the input
+    setTimeout(() => {
+        document.getElementById('popup-chat-input').focus();
+    }, 100);
+}
+
+function sendClaudeMessage() {
+    const input = document.querySelector('#claude-chat-input');
+    const message = input.value.trim();
+    if (!message) return;
+    
+    input.value = '';
+    
+    // Get selected model
+    const modelSelector = document.querySelector('#modal-model-selector');
+    const selectedModel = modelSelector ? modelSelector.value : 'claude';
+    
+    // Get current code context
+    const currentCode = editor.getValue();
+    const selection = editor.getSelection();
+    const selectedText = editor.getModel().getValueInRange(selection);
+    
+    // Prepare context for Claude
+    let contextualMessage = message;
+    if (selectedText) {
+        contextualMessage = `Selected code:\n\`\`\`python\n${selectedText}\n\`\`\`\n\nQuestion: ${message}`;
+    } else {
+        contextualMessage = `Full code context:\n\`\`\`python\n${currentCode}\n\`\`\`\n\nQuestion: ${message}`;
+    }
+    
+    // Add user message to local history immediately for UI responsiveness
+    claudeChatHistory.push({ role: 'user', content: message, timestamp: Date.now() });
+    displayChatHistory();
+    
+    // Start streaming response
+    streamClaudeResponse(contextualMessage, currentCode, selectedModel);
+}
+
+function sendPopupClaudeMessage() {
+    const input = document.querySelector('#popup-chat-input');
+    const message = input.value.trim();
+    if (!message) return;
+    
+    input.value = '';
+    
+    // Get selected model
+    const modelSelector = document.querySelector('#popup-model-selector');
+    const selectedModel = modelSelector ? modelSelector.value : 'claude';
+    
+    // Get current code context from Y.js document
+    let currentCode = '';
+    let contextualMessage = message;
+    
+    try {
+        // Access the same Y.js document that the main editor uses
+        const ydoc = new Y.Doc();
+        const wsProvider = new WebsocketProvider(window.location.origin.replace("http","ws"), code_name, ydoc);
+        const yCm = ydoc.getText('codemirror');
+        
+        // Wait a moment for the Y.js connection to sync
+        setTimeout(() => {
+            currentCode = yCm.toString();
+            
+            if (currentCode && currentCode.trim()) {
+                contextualMessage = `Full code context:\n\`\`\`python\n${currentCode}\n\`\`\`\n\nQuestion: ${message}`;
+            } else {
+                contextualMessage = `Question: ${message} (No code available yet - editor may be empty)`;
+            }
+            
+            // Add user message to local history immediately for UI responsiveness
+            claudeChatHistory.push({ role: 'user', content: message, timestamp: Date.now() });
+            displayChatHistory();
+            
+            // Start streaming response
+            streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel);
+        }, 100);
+        
+    } catch (e) {
+        console.log('Could not access Y.js document:', e);
+        contextualMessage = `Question: ${message}`;
+        
+        // Add user message to local history immediately for UI responsiveness
+        claudeChatHistory.push({ role: 'user', content: message, timestamp: Date.now() });
+        displayChatHistory();
+        
+        // Start streaming response
+        streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel);
+    }
+}
+
+function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'claude') {
+    const messagesDiv = document.querySelector('#claude-chat-messages');
+    
+    // Create streaming response
+    const responseDiv = document.createElement('div');
+    responseDiv.style.cssText = `
+        margin-bottom: 12px;
+        padding: 12px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        background: #f9f9f9;
+        font-size: 14px;
+        font-family: Helvetica, Arial, sans-serif;
+    `;
+    
+    responseDiv.innerHTML = `
+        <div style="font-weight: bold; color: #cc6600; margin-bottom: 4px;">Claude</div>
+        <div id="streaming-content" style="color: black;">💭 Thinking...</div>
+    `;
+    
+    messagesDiv.appendChild(responseDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    
+    let fullResponse = '';
+    let hasStarted = false;
+    
+    fetch('/claude_chat_stream/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            ask: contextualMessage,
+            page_name: code_name,
+            current_code: currentCode,
+            selected_model: selectedModel
+        })
+    })
+    .then(response => {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        
+        function readStream() {
+            reader.read().then(({ done, value }) => {
+                if (done) {
+                    claudeChatHistory.push({ 
+                        role: 'assistant', 
+                        content: fullResponse, 
+                        timestamp: Date.now() 
+                    });
+                    return;
+                }
+                
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n');
+                
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const data = JSON.parse(line.slice(6));
+                            
+                            if (data.type === 'chunk' && data.text) {
+                                if (!hasStarted) {
+                                    hasStarted = true;
+                                    document.getElementById('streaming-content').textContent = '';
+                                }
+                                
+                                fullResponse += data.text;
+                                document.getElementById('streaming-content').innerHTML = formatMarkdownText(fullResponse);
+                                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                            } else if (data.type === 'complete') {
+                                // Check for code edits in the full response if not already detected
+                                let hasCodeEdit = data.has_code_edit;
+                                let codeEdit = data.code_edit;
+                                
+                                if (!hasCodeEdit) {
+                                    const editMatch = fullResponse.match(/```edit\n([\s\S]*?)\n```/);
+                                    if (editMatch) {
+                                        hasCodeEdit = true;
+                                        codeEdit = editMatch[1];
+                                    }
+                                }
+                                
+                                if (hasCodeEdit && codeEdit) {
+                                    handleCodeEdit(codeEdit, fullResponse);
+                                }
+                                return;
+                            }
+                        } catch (e) {
+                            // Skip malformed JSON
+                        }
+                    }
+                }
+                
+                readStream();
+            });
+        }
+        
+        readStream();
+    })
+    .catch(error => {
+        document.getElementById('streaming-content').innerHTML = '<span style="color: #ff6b6b;">Error connecting to Claude</span>';
+    });
+}
+
+function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel = 'claude') {
+    const messagesDiv = document.querySelector('#popup-chat-messages');
+    
+    // Create streaming response
+    const responseDiv = document.createElement('div');
+    responseDiv.style.cssText = `
+        margin-bottom: 12px;
+        padding: 12px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        background: #f9f9f9;
+        font-size: 14px;
+        font-family: Helvetica, Arial, sans-serif;
+    `;
+    
+    responseDiv.innerHTML = `
+        <div style="font-weight: bold; color: #cc6600; margin-bottom: 4px;">Claude</div>
+        <div id="popup-streaming-content" style="color: black;">💭 Thinking...</div>
+    `;
+    
+    messagesDiv.appendChild(responseDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    
+    let fullResponse = '';
+    let hasStarted = false;
+    
+    fetch('/claude_chat_stream/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            ask: contextualMessage,
+            page_name: code_name,
+            current_code: currentCode,
+            selected_model: selectedModel
+        })
+    })
+    .then(response => {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        
+        function readStream() {
+            reader.read().then(({ done, value }) => {
+                if (done) {
+                    claudeChatHistory.push({ 
+                        role: 'assistant', 
+                        content: fullResponse, 
+                        timestamp: Date.now() 
+                    });
+                    return;
+                }
+                
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n');
+                
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const data = JSON.parse(line.slice(6));
+                            
+                            if (data.type === 'chunk' && data.text) {
+                                if (!hasStarted) {
+                                    hasStarted = true;
+                                    document.getElementById('popup-streaming-content').textContent = '';
+                                }
+                                
+                                fullResponse += data.text;
+                                document.getElementById('popup-streaming-content').innerHTML = formatMarkdownText(fullResponse);
+                                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                            } else if (data.type === 'complete') {
+                                // Check for code edits in the full response if not already detected
+                                let hasCodeEdit = data.has_code_edit;
+                                let codeEdit = data.code_edit;
+                                
+                                if (!hasCodeEdit) {
+                                    const editMatch = fullResponse.match(/```edit\n([\s\S]*?)\n```/);
+                                    if (editMatch) {
+                                        hasCodeEdit = true;
+                                        codeEdit = editMatch[1];
+                                    }
+                                }
+                                
+                                if (hasCodeEdit && codeEdit) {
+                                    handlePopupCodeEdit(codeEdit, fullResponse);
+                                }
+                                return;
+                            }
+                        } catch (e) {
+                            // Skip malformed JSON
+                        }
+                    }
+                }
+                
+                readStream();
+            });
+        }
+        
+        readStream();
+    })
+    .catch(error => {
+        document.getElementById('popup-streaming-content').innerHTML = '<span style="color: #ff6b6b;">Error connecting to Claude</span>';
+    });
+}
+
+function loadChatHistory() {
+    $.post("/get_chat_history/", {'page_name': code_name}).then((data) => {
+        claudeChatHistory = data.history.map(msg => ({
+            role: msg.role,
+            content: msg.content,
+            timestamp: msg.timestamp
+        }));
+        displayChatHistory();
+    }).catch((error) => {
+        console.error("Error loading chat history:", error);
+        claudeChatHistory = [];
+        displayChatHistory();
+    });
+}
+
+function loadAvailableModels() {
+    $.post("/ollama_models/", {}).then((data) => {
+        const popupSelector = document.getElementById('popup-model-selector');
+        const modalSelector = document.getElementById('modal-model-selector');
+        
+        // Add Ollama models to both selectors
+        if (data.models && data.models.length > 0) {
+            data.models.forEach(model => {
+                if (popupSelector) {
+                    const option = document.createElement('option');
+                    option.value = 'ollama:' + model;
+                    option.textContent = model + ' (Local)';
+                    popupSelector.appendChild(option);
+                }
+                if (modalSelector) {
+                    const option = document.createElement('option');
+                    option.value = 'ollama:' + model;
+                    option.textContent = model + ' (Local)';
+                    modalSelector.appendChild(option);
+                }
+            });
+        }
+    }).catch((error) => {
+        console.log("Ollama models not available:", error);
+    });
+}
+
+function clearChatHistory() {
+    if (confirm(`Clear all chat history for "${code_name}"? This cannot be undone.`)) {
+        $.post("/clear_chat_history/", {'page_name': code_name}).then((data) => {
+            claudeChatHistory = [];
+            displayChatHistory();
+        }).catch((error) => {
+            console.error("Error clearing chat history:", error);
+            alert("Failed to clear chat history. Please try again.");
+        });
+    }
+}
+
+function handleCodeEdit(newCode, originalResponse) {
+    // Add a subtle inline option to the streaming content instead of blocking modal
+    const streamingContent = document.getElementById('streaming-content');
+    if (streamingContent) {
+        // Add the code edit option right in the message
+        const codeEditOption = document.createElement('div');
+        codeEditOption.style.cssText = `
+            margin-top: 12px;
+            padding: 12px;
+            background: #e8f4fd;
+            border: 1px solid #b3d9ff;
+            border-radius: 6px;
+            font-family: Helvetica, Arial, sans-serif;
+        `;
+        
+        codeEditOption.innerHTML = `
+            <div style="margin-bottom: 8px; font-size: 13px; color: #0066cc; font-weight: bold;">
+                🛠️ Code Update Available
+            </div>
+            <div style="margin-bottom: 12px; font-size: 12px; color: #666;">
+                Apply these changes to your editor?
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button id="apply-modal-edit" style="
+                    padding: 6px 16px;
+                    border: none;
+                    background: #007acc;
+                    color: white;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    font-weight: bold;
+                    font-family: Helvetica, Arial, sans-serif;
+                ">Apply to Editor</button>
+                <button id="dismiss-modal-edit" style="
+                    padding: 6px 16px;
+                    border: 1px solid #ccc;
+                    background: white;
+                    color: #666;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    font-family: Helvetica, Arial, sans-serif;
+                ">Dismiss</button>
+            </div>
+        `;
+        
+        streamingContent.appendChild(codeEditOption);
+        
+        // Add event listeners
+        document.getElementById('apply-modal-edit').onclick = () => {
+            codeEditOption.innerHTML = `
+                <div style="color: #007acc; font-size: 12px; font-weight: bold;">
+                    ✅ Applying changes to editor...
+                </div>
+            `;
+            applyCodeEdit(newCode);
+        };
+        
+        document.getElementById('dismiss-modal-edit').onclick = () => {
+            codeEditOption.remove();
+        };
+    }
+}
+
+function createCodeEditModal(newCode, originalResponse) {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 20000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    
+    modal.innerHTML = `
+        <div style="
+            background: var(--vscode-editor-background, #1e1e1e);
+            border: 1px solid var(--vscode-widget-border, #454545);
+            border-radius: 8px;
+            width: 80%;
+            max-width: 1000px;
+            height: 80%;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Consolas', 'Monaco', monospace;
+        ">
+            <div style="padding: 16px; border-bottom: 1px solid var(--vscode-widget-border, #454545);">
+                <h3 style="margin: 0; color: var(--vscode-editor-foreground, #d4d4d4);">
+                    🤖 Claude wants to update your code
+                </h3>
+                <p style="margin: 8px 0 0 0; color: var(--vscode-descriptionForeground, #999); font-size: 14px;">
+                    Review the changes below and choose whether to apply them.
+                </p>
+            </div>
+            
+            <div style="flex: 1; display: flex; overflow: hidden;">
+                <div style="flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--vscode-widget-border, #454545);">
+                    <div style="padding: 8px 16px; background: var(--vscode-titleBar-activeBackground, #2d2d2d); font-weight: bold; color: var(--vscode-editor-foreground, #d4d4d4);">
+                        Current Code
+                    </div>
+                    <textarea readonly style="
+                        flex: 1;
+                        background: var(--vscode-editor-background, #1e1e1e);
+                        color: var(--vscode-editor-foreground, #d4d4d4);
+                        border: none;
+                        padding: 16px;
+                        font-family: 'Consolas', 'Monaco', monospace;
+                        font-size: 14px;
+                        resize: none;
+                        outline: none;
+                    ">${editor.getValue()}</textarea>
+                </div>
+                
+                <div style="flex: 1; display: flex; flex-direction: column;">
+                    <div style="padding: 8px 16px; background: var(--vscode-titleBar-activeBackground, #2d2d2d); font-weight: bold; color: var(--vscode-editor-foreground, #d4d4d4);">
+                        Claude's Changes
+                    </div>
+                    <textarea readonly style="
+                        flex: 1;
+                        background: var(--vscode-editor-background, #1e1e1e);
+                        color: var(--vscode-editor-foreground, #d4d4d4);
+                        border: none;
+                        padding: 16px;
+                        font-family: 'Consolas', 'Monaco', monospace;
+                        font-size: 14px;
+                        resize: none;
+                        outline: none;
+                    ">${newCode}</textarea>
+                </div>
+            </div>
+            
+            <div style="padding: 16px; border-top: 1px solid var(--vscode-widget-border, #454545); display: flex; justify-content: space-between; align-items: center;">
+                <div style="color: var(--vscode-descriptionForeground, #999); font-size: 12px;">
+                    💡 Tip: You can always undo changes with Cmd/Ctrl+Z
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button id="cancel-edit" style="
+                        background: var(--vscode-button-secondaryBackground, #5a5d5e);
+                        color: var(--vscode-button-secondaryForeground, #ffffff);
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    ">Cancel</button>
+                    <button id="apply-edit" style="
+                        background: var(--vscode-button-background, #0e639c);
+                        color: var(--vscode-button-foreground, #ffffff);
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    ">Apply Changes</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add event listeners
+    modal.querySelector('#cancel-edit').onclick = () => modal.remove();
+    modal.querySelector('#apply-edit').onclick = () => {
+        applyCodeEdit(newCode);
+        modal.remove();
+    };
+    
+    // Close on background click
+    modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+    };
+    
+    return modal;
+}
+
+function applyCodeEdit(newCode) {
+    // Replace the entire editor content
+    editor.setValue(newCode);
+    
+    // Focus the editor
+    editor.focus();
+    
+    // Show success message briefly
+    const statusDiv = document.getElementById('status');
+    const originalStatus = statusDiv.innerHTML;
+    statusDiv.innerHTML = '✅ Code updated by Claude';
+    statusDiv.style.color = '#4FC1FF';
+    
+    setTimeout(() => {
+        statusDiv.innerHTML = originalStatus;
+        statusDiv.style.color = '';
+    }, 3000);
+}
+
+function handlePopupCodeEdit(newCode, originalResponse) {
+    // Add a subtle inline option to the streaming content instead of blocking modal
+    const streamingContent = document.getElementById('popup-streaming-content');
+    if (streamingContent) {
+        // Add the code edit option right in the message
+        const codeEditOption = document.createElement('div');
+        codeEditOption.style.cssText = `
+            margin-top: 12px;
+            padding: 12px;
+            background: #e8f4fd;
+            border: 1px solid #b3d9ff;
+            border-radius: 6px;
+            font-family: Helvetica, Arial, sans-serif;
+        `;
+        
+        codeEditOption.innerHTML = `
+            <div style="margin-bottom: 8px; font-size: 13px; color: #0066cc; font-weight: bold;">
+                🛠️ Code Update Available
+            </div>
+            <div style="margin-bottom: 12px; font-size: 12px; color: #666;">
+                Apply these changes to your main editor?
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button id="apply-subtle-edit" style="
+                    padding: 6px 16px;
+                    border: none;
+                    background: #007acc;
+                    color: white;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    font-weight: bold;
+                    font-family: Helvetica, Arial, sans-serif;
+                ">Apply to Editor</button>
+                <button id="dismiss-subtle-edit" style="
+                    padding: 6px 16px;
+                    border: 1px solid #ccc;
+                    background: white;
+                    color: #666;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    font-family: Helvetica, Arial, sans-serif;
+                ">Dismiss</button>
+            </div>
+        `;
+        
+        streamingContent.appendChild(codeEditOption);
+        
+        // Add event listeners
+        document.getElementById('apply-subtle-edit').onclick = () => {
+            codeEditOption.innerHTML = `
+                <div style="color: #007acc; font-size: 12px; font-weight: bold;">
+                    ✅ Applying changes to main editor...
+                </div>
+            `;
+            applyCodeChanges(newCode);
+        };
+        
+        document.getElementById('dismiss-subtle-edit').onclick = () => {
+            codeEditOption.remove();
+        };
+    }
+}
+
+function applyCodeChanges(newCode) {
+    try {
+        // Access the same Y.js document that the main editor uses
+        const ydoc = new Y.Doc();
+        const wsProvider = new WebsocketProvider(window.location.origin.replace("http","ws"), code_name, ydoc);
+        const yCm = ydoc.getText('codemirror');
+        
+        // Wait for Y.js connection to sync, then update the document
+        setTimeout(() => {
+            // Replace the entire content in the shared Y.js document
+            yCm.delete(0, yCm.length);
+            yCm.insert(0, newCode);
+            
+            // Show success message in popup
+            const statusDiv = document.createElement('div');
+            statusDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #007acc;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 4px;
+                z-index: 10000;
+                font-weight: bold;
+                font-family: Helvetica, Arial, sans-serif;
+            `;
+            statusDiv.textContent = '✅ Code updated in main editor';
+            document.body.appendChild(statusDiv);
+            
+            setTimeout(() => {
+                statusDiv.remove();
+            }, 3000);
+            
+            // Disconnect the provider after the update
+            setTimeout(() => {
+                wsProvider.disconnect();
+            }, 1000);
+        }, 200);
+        
+    } catch (e) {
+        console.error('Error updating Y.js document:', e);
+        // Create a proper error modal instead of alert
+        const errorModal = document.createElement('div');
+        errorModal.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff4444;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            z-index: 10000;
+            font-family: Helvetica, Arial, sans-serif;
+        `;
+        errorModal.textContent = '❌ Could not update editor. Please copy manually.';
+        document.body.appendChild(errorModal);
+        
+        setTimeout(() => {
+            errorModal.remove();
+        }, 5000);
+    }
+}
+
+// Modal functions for Claude chat interface
+
+function displayChatHistory() {
+    // Check if we're in popup or modal mode
+    const messagesDiv = document.querySelector('#claude-chat-messages') || document.querySelector('#popup-chat-messages');
+    if (!messagesDiv) return;
+    
+    messagesDiv.innerHTML = '';
+    claudeChatHistory.forEach(msg => {
+        const msgDiv = document.createElement('div');
+        msgDiv.style.cssText = `
+            margin-bottom: 16px;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background: ${msg.role === 'user' ? '#f0f8ff' : '#f9f9f9'};
+            font-family: Helvetica, Arial, sans-serif;
+        `;
+        
+        const timestamp = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+        
+        // Format the content to handle code blocks properly
+        let formattedContent = msg.content;
+        
+        // Check if this is a message with code context (contains "Full code context:" or "Selected code:")
+        if (formattedContent.includes('Full code context:') || formattedContent.includes('Selected code:')) {
+            // This is a user message with code context - only show the actual question
+            const questionMatch = formattedContent.match(/Question: (.+)$/);
+            if (questionMatch) {
+                formattedContent = questionMatch[1];
+            }
+        } else {
+            // Handle code blocks in Claude's responses using the markdown formatter
+            formattedContent = formatMarkdownText(formattedContent);
+        }
+        
+        msgDiv.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-weight: bold; color: ${msg.role === 'user' ? '#0066cc' : '#cc6600'};">
+                    ${msg.role === 'user' ? 'You' : 'Claude'}
+                </span>
+                ${timestamp ? `<span style="font-size: 11px; color: #666;">${timestamp}</span>` : ''}
+            </div>
+            <div style="line-height: 1.4;">${formattedContent}</div>
+        `;
+        messagesDiv.appendChild(msgDiv);
+    });
+    
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+// Chat functions now handled in popup window
+
+function claudeExplainCode() {
+    const selection = editor.getSelection();
+    const selectedText = editor.getModel().getValueInRange(selection);
+    
+    if (!selectedText) {
+        openClaudeChat();
+        setTimeout(() => {
+            const input = document.querySelector('#claude-chat-input');
+            if (input) input.value = 'Please explain this entire code file';
+        }, 100);
+        return;
+    }
+    
+    openClaudeChat();
+    setTimeout(() => {
+        const input = document.querySelector('#claude-chat-input');
+        if (input) {
+            input.value = 'Explain this selected code';
+            sendClaudeMessage();
+        }
+    }, 100);
+}
+
+function claudeDebugCode() {
+    const selection = editor.getSelection();
+    const selectedText = editor.getModel().getValueInRange(selection);
+    
+    openClaudeChat();
+    setTimeout(() => {
+        const input = document.querySelector('#claude-chat-input');
+        if (input) {
+            input.value = selectedText ? 'Find bugs in this selected code' : 'Help me debug this code';
+            sendClaudeMessage();
+        }
+    }, 100);
+}
+
+function claudeOptimizeCode() {
+    const selection = editor.getSelection();
+    const selectedText = editor.getModel().getValueInRange(selection);
+    
+    openClaudeChat();
+    setTimeout(() => {
+        const input = document.querySelector('#claude-chat-input');
+        if (input) {
+            input.value = selectedText ? 'Optimize this selected code' : 'How can I optimize this code?';
+            sendClaudeMessage();
+        }
+    }, 100);
+}
+
+let currentSuggestion = null;
+let suggestionDecorations = [];
+
+function claudeCompleteCode() {
+    const position = editor.getPosition();
+    const model = editor.getModel();
+    const currentLine = model.getLineContent(position.lineNumber);
+    const textBeforeCursor = currentLine.substring(0, position.column - 1);
+    const fullCode = model.getValue();
+    
+    console.log('Claude completion triggered:', {
+        textBeforeCursor,
+        endsWithDot: textBeforeCursor.endsWith('.'),
+        position
+    });
+    
+    // Don't suggest if line is empty or just whitespace (but allow dots)
+    if (!textBeforeCursor.trim()) return;
+    
+    // Send completion request to dedicated endpoint
+    fetch('/claude_complete/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            text_before_cursor: textBeforeCursor,
+            full_code: fullCode
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Completion response:', data);
+        
+        if (data.completion && data.completion.trim()) {
+            // Show ghost text for regular completions (not dot completions)
+            showInlineCompletion(position, data.completion, false);
+        } else {
+            console.log('No completion received or empty completion');
+        }
+    })
+    .catch(error => {
+        console.error('Claude completion error:', error);
+    });
+}
+
+
+function showInlineCompletion(position, completion, isDotCompletion = false) {
+    console.log('Showing inline completion:', { completion, isDotCompletion, position });
+    
+    // Clear any existing suggestion
+    clearInlineCompletion();
+    
+    if (!completion.trim()) {
+        console.log('Empty completion, not showing');
+        return;
+    }
+    
+    currentSuggestion = {
+        position: position,
+        text: completion
+    };
+    
+    // Create ghost text decoration using Monaco's decoration API
+    suggestionDecorations = editor.deltaDecorations(suggestionDecorations, [{
+        range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+        options: {
+            isWholeLine: false,
+            afterContentClassName: 'claude-inline-suggestion'
+        }
+    }]);
+    
+    // Also add the ghost text as overlay widget for better visibility
+    const ghostTextElement = document.createElement('div');
+    ghostTextElement.className = 'claude-ghost-text-overlay';
+    ghostTextElement.textContent = completion;
+    ghostTextElement.style.cssText = `
+        position: absolute;
+        color: ${isDotCompletion ? '#666' : '#999'};
+        font-style: italic;
+        opacity: ${isDotCompletion ? '0.8' : '0.6'};
+        pointer-events: none;
+        font-family: inherit;
+        font-size: inherit;
+        white-space: pre;
+        ${isDotCompletion ? 'font-weight: 500;' : ''}
+    `;
+    
+    const coordinates = editor.getScrolledVisiblePosition(position);
+    if (coordinates) {
+        ghostTextElement.style.left = coordinates.left + 'px';
+        ghostTextElement.style.top = coordinates.top + 'px';
+        editor.getDomNode().appendChild(ghostTextElement);
+        currentSuggestion.ghostElement = ghostTextElement;
+    }
+    
+    // Set context key so Tab can accept the suggestion
+    hasClaudeSuggestionContext.set(true);
+}
+
+function clearInlineCompletion() {
+    if (suggestionDecorations.length > 0) {
+        suggestionDecorations = editor.deltaDecorations(suggestionDecorations, []);
+    }
+    if (currentSuggestion && currentSuggestion.ghostElement) {
+        currentSuggestion.ghostElement.remove();
+    }
+    currentSuggestion = null;
+    hasClaudeSuggestionContext.set(false);
+}
+
+function acceptInlineCompletion() {
+    if (currentSuggestion) {
+        const completionText = currentSuggestion.text;
+        
+        // Check if the completion includes plotting functions and we need pithy3 import
+        if ((completionText.includes('showme()') || 
+             completionText.includes('plot(') || 
+             completionText.includes('plt.') ||
+             completionText.includes('figure(') ||
+             completionText.includes('subplot(')) && 
+            !editor.getValue().includes('from pithy3 import')) {
+            
+            // Add pithy3 import at the top
+            const firstLine = editor.getModel().getLineContent(1);
+            const importLine = firstLine.trim() ? 'from pithy3 import *\n' : 'from pithy3 import *\n\n';
+            
+            editor.executeEdits('claude-add-import', [{
+                range: new monaco.Range(1, 1, 1, 1),
+                text: importLine
+            }]);
+        }
+        
+        // Insert the completion
+        editor.executeEdits('claude-accept-completion', [{
+            range: new monaco.Range(
+                currentSuggestion.position.lineNumber, 
+                currentSuggestion.position.column,
+                currentSuggestion.position.lineNumber, 
+                currentSuggestion.position.column
+            ),
+            text: completionText
+        }]);
+        clearInlineCompletion();
+    }
+}
 
 function steaksauce()
 {
@@ -336,6 +1559,147 @@ editor.addAction({
           run: () => {toggle_states()},
 });
 
+// Claude Chat Interface using Command Palette
+editor.addAction({
+          id: "claudeChat",
+          label: "Chat with Claude",
+          keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK],
+          contextMenuGroupId: "4_ai",
+          run: () => {openClaudeChat()},
+});
+
+editor.addAction({
+          id: "claudeExplain",
+          label: "Claude: Explain Selected Code",
+          keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyE],
+          contextMenuGroupId: "4_ai",
+          run: () => {claudeExplainCode()},
+});
+
+editor.addAction({
+          id: "claudeDebug",
+          label: "Claude: Debug This Code",
+          keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyD],
+          contextMenuGroupId: "4_ai",
+          run: () => {claudeDebugCode()},
+});
+
+editor.addAction({
+          id: "claudeOptimize",
+          label: "Claude: Optimize Selected Code",
+          keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyO],
+          contextMenuGroupId: "4_ai",
+          run: () => {claudeOptimizeCode()},
+});
+
+// Copilot-style code completion with Claude
+editor.addAction({
+          id: "claudeComplete",
+          label: "Claude: Complete Code (Copilot-style)",
+          keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyJ],
+          contextMenuGroupId: "4_ai",
+          run: () => {claudeCompleteCode()},
+});
+
+// Accept inline completion with Tab
+editor.addAction({
+          id: "acceptClaudeCompletion",
+          label: "Accept Claude Completion",
+          keybindings: [monaco.KeyCode.Tab],
+          precondition: 'hasClaudeSuggestion',
+          run: () => {acceptInlineCompletion()},
+});
+
+// Set up context key for when suggestions are available
+const hasClaudeSuggestionContext = editor.createContextKey('hasClaudeSuggestion', false);
+
+// Register Claude completion provider with Monaco
+let claudeCompletionProvider = null;
+
+function setupClaudeCompletionProvider() {
+    if (claudeCompletionProvider) {
+        claudeCompletionProvider.dispose();
+    }
+    
+    claudeCompletionProvider = monaco.languages.registerCompletionItemProvider('python', {
+        triggerCharacters: ['.'],
+        provideCompletionItems: async (model, position) => {
+            const textUntilPosition = model.getValueInRange({
+                startLineNumber: 1,
+                startColumn: 1,
+                endLineNumber: position.lineNumber,
+                endColumn: position.column
+            });
+            
+            const currentLine = model.getLineContent(position.lineNumber);
+            const textBeforeCursor = currentLine.substring(0, position.column - 1);
+            
+            // Only trigger for dot completions
+            if (!textBeforeCursor.endsWith('.')) {
+                return { suggestions: [] };
+            }
+            
+            console.log('Monaco provider triggered for:', textBeforeCursor);
+            
+            try {
+                const response = await fetch('/claude_complete/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text_before_cursor: textBeforeCursor,
+                        full_code: model.getValue()
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('Provider got response:', data);
+                
+                if (data.suggestions && Array.isArray(data.suggestions)) {
+                    const suggestions = data.suggestions.map((suggestion, index) => {
+                        const isMethod = suggestion.includes('()');
+                        const cleanSuggestion = suggestion.replace('()', '');
+                        
+                        return {
+                            label: {
+                                label: cleanSuggestion,
+                                detail: isMethod ? '()' : ''
+                            },
+                            kind: isMethod ? monaco.languages.CompletionItemKind.Method : monaco.languages.CompletionItemKind.Property,
+                            insertText: isMethod ? `${cleanSuggestion}()` : cleanSuggestion,
+                            documentation: `Claude suggests: ${suggestion}`,
+                            sortText: `${index.toString().padStart(2, '0')}_${suggestion}`,
+                            range: {
+                                startLineNumber: position.lineNumber,
+                                endLineNumber: position.lineNumber,
+                                startColumn: position.column,
+                                endColumn: position.column
+                            }
+                        };
+                    });
+                    
+                    return { suggestions };
+                }
+            } catch (error) {
+                console.error('Claude completion provider error:', error);
+            }
+            
+            return { suggestions: [] };
+        }
+    });
+}
+
+// Set up the completion provider
+setupClaudeCompletionProvider();
+
+// Handle regular completions and clear suggestions
+editor.onDidChangeModelContent((e) => {
+    clearInlineCompletion();
+});
+
+editor.onDidChangeCursorPosition(() => {
+    clearInlineCompletion();
+});
+
 // editor.addAction({
 //           id: "enter_stuff",
 //           label: "Just A Carriage Return",
@@ -455,6 +1819,17 @@ function newresults(){
 
 if (window.toolbar.visible == false) all_output();
 
+// Check if this is a Claude chat popup window
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('claude_chat') === '1') {
+    // Hide the main editor interface and show only chat
+    document.getElementById('editor').style.display = 'none';
+    document.getElementById('right').style.display = 'none';
+    
+    // Create full-window chat interface
+    createPopupChatInterface();
+}
+
 //toggle sort "auto" complete
 function toggle_wbs()
 {
@@ -467,9 +1842,11 @@ $(window).keydown((e) =>
   {
     ev = e.originalEvent.code;
     if (ev == "F10") toggle_states();
+    if (ev == "F8") openClaudeChat();
     if (ev == "F9") newresults();
     if (ev == "F2") toggle_wbs();
     if (ev == "F4") steaksauce();
+    if (ev == "F5") claudeCompleteCode();
 
 
   }

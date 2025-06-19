@@ -1,32 +1,29 @@
 /* eslint-env browser */
 
-import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 import { MonacoBinding } from 'y-monaco'
 import * as monaco from 'monaco-editor'
+
+// Use the globally available Y.js from yball.js
+const Y = window.Y;
 
 // @ts-ignore
 window.MonacoEnvironment = {
   getWorkerUrl: function (moduleId, label) {
     if (label === 'json') {
-      return '/monaco/dist/json.worker.bundle.js'
+      return '/dist/json.worker.bundle.js'
     }
     if (label === 'css') {
-      return '/monaco/dist/css.worker.bundle.js'
+      return '/dist/css.worker.bundle.js'
     }
     if (label === 'html') {
-      return '/monaco/dist/html.worker.bundle.js'
+      return '/dist/html.worker.bundle.js'
     }
     if (label === 'typescript' || label === 'javascript') {
-      return '/monaco/dist/ts.worker.bundle.js'
+      return '/dist/ts.worker.bundle.js'
     }
 
-    if (label === 'python') {
-      return '/monaco/dist/python.worker.bundle.js'
-    }
-
-
-    return '/monaco/dist/editor.worker.bundle.js'
+    return '/dist/editor.worker.bundle.js'
   }
 }
 

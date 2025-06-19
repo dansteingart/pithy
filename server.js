@@ -19,6 +19,7 @@ const openwebuiserver = process.env.OPENWEBUISERVER || undefined
 
 const pithy_bin = process.env.PITHY_BIN || "python3"
 const pithy_timeout = process.env.PITHY_TIMEOUT || 0
+const claude_api_key = process.env.CLAUDE_API_KEY || undefined
 var Y = require("yjs");
 const { spawn } = require('child_process');
 var glob = require("glob");
@@ -43,6 +44,17 @@ cdb.run(`CREATE TABLE IF NOT EXISTS history (
   
 
 cdb.run(`CREATE INDEX IF NOT EXISTS idx_hist_name ON history (name);`);
+
+// Claude chat history table
+cdb.run(`CREATE TABLE IF NOT EXISTS chat_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    page_name TEXT NOT NULL,
+    role TEXT NOT NULL,
+    content TEXT NOT NULL,
+    timestamp INTEGER NOT NULL
+);`);
+
+cdb.run(`CREATE INDEX IF NOT EXISTS idx_chat_page ON chat_history (page_name);`);
   
 db.run(`CREATE TABLE IF NOT EXISTS runs(id INTEGER PRIMARY KEY, 
                           code TEXT NOT NULL, 
@@ -89,6 +101,242 @@ function steaksauce(ask)
   });
 }
 
+function claudeChat(ask, currentCode = '', selectedModel = 'claude')
+{
+  console.log("Chat request:", ask, "Model:", selectedModel);
+  
+  // Route to different models based on selection
+  if (selectedModel.startsWith('ollama:')) {
+    const modelName = selectedModel.replace('ollama:', '');
+    return ollamaChat(ask, currentCode, modelName);
+  } else {
+    // Default Claude behavior
+    if (claude_api_key) {
+      return claudeApiDirect(ask, currentCode);
+    } else if (sk && openwebuiserver) {
+      return claudeApiOpenWebUI(ask);
+    } else {
+      return Promise.resolve("Claude API is not configured. Please set CLAUDE_API_KEY environment variable for direct Claude API access, or set OPENWEBUIAPI_KEY and OPENWEBUISERVER for OpenWebUI integration.");
+    }
+  }
+}
+
+function claudeApiDirect(ask, currentCode = '', isStreaming = false)
+{
+  console.log("Using direct Claude API", isStreaming ? "(streaming)" : "");
+  
+  const url = 'https://api.anthropic.com/v1/messages';
+  const headers = {
+      'x-api-key': claude_api_key,
+      'Content-Type': 'application/json',
+      'anthropic-version': '2023-06-01'
+  };
+  
+  const systemPrompt = `You are Claude, an AI assistant integrated into Pithy, a collaborative Python coding environment. 
+
+Your capabilities include:
+1. **Code Analysis** - Understand, explain, and debug Python code
+2. **Code Modification** - Make specific changes to improve code
+3. **Code Generation** - Create new code sections or complete programs
+
+**AVAILABLE LIBRARIES IN PITHY:**
+- **pithy3**: A custom library available via "from pithy3 import *" that includes:
+  - showme(): Display plots (use instead of plt.show())
+  - smooth(): Data smoothing function
+  - imager64(): Base64 image encoding
+  - showimg(), himg(): Image display utilities
+  - Pre-configured matplotlib with Helvetica fonts and better defaults
+  - All numpy/matplotlib functions available through pithy3
+
+**CODING CONVENTIONS:**
+- Always use "from pithy3 import *" for data visualization
+- Use showme() instead of plt.show() to display plots
+- Available: numpy, matplotlib (via pithy3), time, io, urllib, base64, json
+- Code runs in a collaborative environment with real-time sharing
+
+When users ask you to modify code, you can respond in two ways:
+1. **EXPLANATION ONLY** - Just explain what should be changed and why
+2. **DIRECT CODE EDIT** - Provide the exact code changes in a special format
+
+For DIRECT CODE EDITS, use this format:
+\`\`\`edit
+<FULL_NEW_CODE_CONTENT>
+\`\`\`
+
+The edit block should contain the COMPLETE new version of the code file. This will replace the entire file content.
+
+Current code context:
+\`\`\`python
+${currentCode}
+\`\`\`
+
+Be helpful, concise, and focus on improving the code quality and functionality using Pithy's available libraries.`;
+
+  const data = {
+      model: "claude-3-5-sonnet-20241022",
+      max_tokens: 4000,
+      messages: [
+          {
+              role: "user",
+              content: ask
+          }
+      ],
+      system: systemPrompt,
+      stream: isStreaming
+  };
+
+  if (isStreaming) {
+    // Return the fetch response directly for streaming
+    return fetch(url, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(data)
+    });
+  } else {
+    // Original non-streaming behavior
+    return fetch(url, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Claude API error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(response => {
+        if (!response.content || !response.content[0] || !response.content[0].text) {
+            throw new Error("Invalid response format from Claude API");
+        }
+        return response.content[0].text;
+    })
+    .catch(err => {
+        console.error("Claude API error:", err);
+        throw err;
+    });
+  }
+}
+
+function claudeApiOpenWebUI(ask)
+{
+  console.log("Using OpenWebUI fallback");
+  
+  const url = `${openwebuiserver}/api/chat/completions`;
+  const headers = {
+      'Authorization': `Bearer ${sk}`,
+      'Content-Type': 'application/json'
+  };
+  const data = {
+      model: "gpt-4o-mini",
+      messages: [
+          {
+              role: "system",
+              content: "You are Claude, an AI assistant integrated into a collaborative Python coding environment called Pithy. Help users understand, debug, optimize, and improve their Python code. Be concise but thorough in your explanations. When suggesting code changes, explain why they would be beneficial."
+          },
+          {
+              role: "user",
+              content: ask
+          }
+      ]
+  };
+
+  return fetch(url, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(data)
+  })
+  .then(response => {
+      if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+  })
+  .then(foo => {
+      if (!foo.choices || !foo.choices[0] || !foo.choices[0].message) {
+          throw new Error("Invalid response format from AI service");
+      }
+      return foo.choices[0].message.content;
+  })
+  .catch(err => {
+      console.error("OpenWebUI error:", err);
+      throw err;
+  });
+}
+
+function ollamaChat(ask, currentCode = '', modelName = 'qwen2.5-coder:1.5b-base')
+{
+  console.log(`Using Ollama model: ${modelName}`);
+  
+  const systemPrompt = `You are an AI assistant integrated into Pithy, a collaborative Python coding environment. 
+
+Your capabilities include:
+1. **Code Analysis** - Understand, explain, and debug Python code
+2. **Code Modification** - Make specific changes to improve code
+3. **Code Generation** - Create new code sections or complete programs
+
+**AVAILABLE LIBRARIES IN PITHY:**
+- **pithy3**: A custom library available via "from pithy3 import *" that includes:
+  - showme(): Display plots (use instead of plt.show())
+  - smooth(): Data smoothing function
+  - All numpy/matplotlib functions available through pithy3
+
+**CODING CONVENTIONS:**
+- Always use "from pithy3 import *" for data visualization
+- Use showme() instead of plt.show() to display plots
+
+For DIRECT CODE EDITS, use this format:
+\`\`\`edit
+<FULL_NEW_CODE_CONTENT>
+\`\`\`
+
+Current code context:
+\`\`\`python
+${currentCode}
+\`\`\`
+
+Be helpful, concise, and focus on improving the code quality and functionality using Pithy's available libraries.`;
+
+  const data = {
+      model: modelName,
+      messages: [
+          {
+              role: "system",
+              content: systemPrompt
+          },
+          {
+              role: "user", 
+              content: ask
+          }
+      ],
+      stream: false
+  };
+
+  return fetch('http://localhost:11434/api/chat', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+  })
+  .then(response => {
+      if (!response.ok) {
+          throw new Error(`Ollama error! status: ${response.status}`);
+      }
+      return response.json();
+  })
+  .then(response => {
+      if (!response.message || !response.message.content) {
+          throw new Error("Invalid response format from Ollama");
+      }
+      return response.message.content;
+  })
+  .catch(err => {
+      console.error("Ollama error:", err);
+      throw err;
+  });
+}
+
 
 
 
@@ -116,6 +364,28 @@ function writecdbhist(name,code)
   var tti = new Date().getTime();
   var sql = 'INSERT INTO history (time,name,code) VALUES (?,?,?)';
   cdb.run(sql,[tti,name,code]);
+}
+
+function saveChatMessage(pageName, role, content) {
+  const timestamp = new Date().getTime();
+  const sql = 'INSERT INTO chat_history (page_name, role, content, timestamp) VALUES (?, ?, ?, ?)';
+  cdb.run(sql, [pageName, role, content, timestamp], function(err) {
+    if (err) {
+      console.error('Error saving chat message:', err);
+    }
+  });
+}
+
+function getChatHistory(pageName, callback) {
+  const sql = 'SELECT role, content, timestamp FROM chat_history WHERE page_name = ? ORDER BY timestamp ASC';
+  cdb.all(sql, [pageName], function(err, rows) {
+    if (err) {
+      console.error('Error loading chat history:', err);
+      callback([]);
+    } else {
+      callback(rows || []);
+    }
+  });
 }
 
 
@@ -273,6 +543,342 @@ app.post("/check_running/",(req,res)=>{
     {
       res.send({'code':code})
     })
+  })
+
+ app.post("/claude_chat/",(req,res)=>
+  {
+    data = req.body;
+    ask = data['ask'];
+    pageName = data['page_name'] || 'default';
+    currentCode = data['current_code'] || '';
+    selectedModel = data['selected_model'] || 'claude';
+    
+    // Save user message to database
+    saveChatMessage(pageName, 'user', ask);
+    
+    claudeChat(ask, currentCode, selectedModel).then((response)=>
+    {
+      // Check if response contains code edit
+      const editMatch = response.match(/```edit\n([\s\S]*?)\n```/);
+      let hasCodeEdit = false;
+      let codeEdit = '';
+      
+      if (editMatch) {
+        hasCodeEdit = true;
+        codeEdit = editMatch[1];
+        console.log("Code edit detected for page:", pageName);
+      }
+      
+      // Save Claude's response to database
+      saveChatMessage(pageName, 'assistant', response);
+      
+      res.send({
+        'response': response,
+        'has_code_edit': hasCodeEdit,
+        'code_edit': codeEdit
+      });
+    }).catch((error) => {
+      console.error("Claude chat error:", error);
+      res.status(500).send({'error': 'Failed to get response from Claude'})
+    })
+  })
+
+ app.post("/get_chat_history/",(req,res)=>
+  {
+    data = req.body;
+    pageName = data['page_name'] || 'default';
+    
+    getChatHistory(pageName, (history) => {
+      res.send({'history': history});
+    });
+  })
+
+ app.post("/claude_chat_stream/",(req,res)=>
+  {
+    data = req.body;
+    ask = data['ask'];
+    pageName = data['page_name'] || 'default';
+    currentCode = data['current_code'] || '';
+    selectedModel = data['selected_model'] || 'claude';
+    
+    // Set up Server-Sent Events
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Cache-Control'
+    });
+
+    // Save user message to database
+    saveChatMessage(pageName, 'user', ask);
+
+    // Route to different models based on selection
+    if (selectedModel.startsWith('ollama:')) {
+      const modelName = selectedModel.replace('ollama:', '');
+      
+      // For Ollama models, we need to handle streaming differently since they don't support SSE
+      ollamaChat(ask, currentCode, modelName).then(response => {
+        let fullResponse = response;
+        
+        // Send the complete response as chunks to simulate streaming
+        const words = fullResponse.split(' ');
+        let currentText = '';
+        
+        function sendChunk(index) {
+          if (index < words.length) {
+            currentText += (index > 0 ? ' ' : '') + words[index];
+            res.write(`data: ${JSON.stringify({
+              type: 'chunk',
+              text: (index > 0 ? ' ' : '') + words[index]
+            })}\n\n`);
+            setTimeout(() => sendChunk(index + 1), 50);
+          } else {
+            // Check for code edits and save to database
+            const editMatch = fullResponse.match(/```edit\n([\s\S]*?)\n```/);
+            let hasCodeEdit = false;
+            let codeEdit = '';
+            
+            if (editMatch) {
+              hasCodeEdit = true;
+              codeEdit = editMatch[1];
+            }
+
+            // Save complete response to database
+            saveChatMessage(pageName, 'assistant', fullResponse);
+
+            // Send final event with code edit info
+            res.write(`data: ${JSON.stringify({
+              type: 'complete',
+              has_code_edit: hasCodeEdit,
+              code_edit: codeEdit
+            })}\n\n`);
+            res.end();
+          }
+        }
+        
+        sendChunk(0);
+      }).catch(error => {
+        console.error("Ollama streaming error:", error);
+        res.write(`data: ${JSON.stringify({error: 'Failed to get response from Ollama'})}\n\n`);
+        res.end();
+      });
+      
+      return;
+    }
+
+    // Default Claude streaming behavior
+    if (!claude_api_key) {
+      res.write(`data: ${JSON.stringify({error: 'Claude API key not configured'})}\n\n`);
+      res.end();
+      return;
+    }
+
+    claudeApiDirect(ask, currentCode, true).then(response => {
+      if (!response.ok) {
+        res.write(`data: ${JSON.stringify({error: `API error: ${response.status}`})}\n\n`);
+        res.end();
+        return;
+      }
+
+      let fullResponse = '';
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      function readStream() {
+        reader.read().then(({ done, value }) => {
+          if (done) {
+            // Stream finished - check for code edits and save to database
+            const editMatch = fullResponse.match(/```edit\n([\s\S]*?)\n```/);
+            let hasCodeEdit = false;
+            let codeEdit = '';
+            
+            if (editMatch) {
+              hasCodeEdit = true;
+              codeEdit = editMatch[1];
+            }
+
+            // Save complete response to database
+            saveChatMessage(pageName, 'assistant', fullResponse);
+
+            // Send final event with code edit info
+            res.write(`data: ${JSON.stringify({
+              type: 'complete',
+              has_code_edit: hasCodeEdit,
+              code_edit: codeEdit
+            })}\n\n`);
+            res.end();
+            return;
+          }
+
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const eventData = JSON.parse(line.slice(6));
+                if (eventData.type === 'content_block_delta' && eventData.delta && eventData.delta.text) {
+                  const text = eventData.delta.text;
+                  fullResponse += text;
+                  
+                  // Send the text chunk to client
+                  res.write(`data: ${JSON.stringify({
+                    type: 'chunk',
+                    text: text
+                  })}\n\n`);
+                }
+              } catch (e) {
+                // Skip malformed JSON
+              }
+            }
+          }
+
+          readStream();
+        }).catch(err => {
+          console.error('Stream reading error:', err);
+          res.write(`data: ${JSON.stringify({error: 'Stream reading error'})}\n\n`);
+          res.end();
+        });
+      }
+
+      readStream();
+    }).catch(error => {
+      console.error("Claude streaming error:", error);
+      res.write(`data: ${JSON.stringify({error: 'Failed to get response from Claude'})}\n\n`);
+      res.end();
+    });
+  })
+
+ app.post("/clear_chat_history/",(req,res)=>
+  {
+    data = req.body;
+    pageName = data['page_name'] || 'default';
+    
+    const sql = 'DELETE FROM chat_history WHERE page_name = ?';
+    cdb.run(sql, [pageName], function(err) {
+      if (err) {
+        console.error('Error clearing chat history:', err);
+        res.status(500).send({'error': 'Failed to clear chat history'});
+      } else {
+        res.send({'success': true, 'cleared': this.changes});
+      }
+    });
+  })
+
+ app.post("/ollama_models/",(req,res)=>
+  {
+    // Check what Ollama models are available
+    fetch('http://localhost:11434/api/tags')
+    .then(response => response.json())
+    .then(data => {
+      const models = data.models ? data.models.map(m => m.name) : [];
+      res.send({'models': models});
+    })
+    .catch(error => {
+      console.error('Ollama connection error:', error);
+      res.send({'models': [], 'error': 'Ollama not available'});
+    });
+  })
+
+ app.post("/claude_complete/",(req,res)=>
+  {
+    data = req.body;
+    textBeforeCursor = data['text_before_cursor'] || '';
+    fullCode = data['full_code'] || '';
+    
+    if (!claude_api_key) {
+      res.status(500).send({'error': 'Claude API key not configured'});
+      return;
+    }
+    
+    // Determine if this is a dot completion
+    const isDotCompletion = textBeforeCursor.endsWith('.');
+    
+    let completionPrompt;
+    if (isDotCompletion) {
+      // Extract the variable name before the dot
+      const varMatch = textBeforeCursor.match(/(\w+)\.$/);
+      const varName = varMatch ? varMatch[1] : 'unknown';
+      
+      // Enhanced prompt for multiple attribute/method suggestions
+      completionPrompt = `Analyze this Python variable and provide 6-8 relevant method/attribute suggestions.
+
+Variable: ${varName}
+Line: "${textBeforeCursor}"
+Full code context:
+\`\`\`python
+${fullCode}
+\`\`\`
+
+ANALYSIS STEPS:
+1. Look at how "${varName}" is defined/assigned in the code
+2. Determine its likely type (string, list, dict, numpy array, pandas DataFrame, etc.)
+3. Return appropriate methods/attributes for that type
+
+RESPONSE FORMAT: Return ONLY a JSON array like ["method1()", "method2()", "attribute1"]
+
+TYPE-SPECIFIC SUGGESTIONS:
+- String variables: ["split()", "replace()", "upper()", "lower()", "strip()", "find()", "startswith()", "endswith()"]
+- List variables: ["append()", "extend()", "pop()", "remove()", "sort()", "reverse()", "index()", "count()"]
+- Dict variables: ["keys()", "values()", "items()", "get()", "pop()", "update()", "clear()"]
+- Numpy arrays: ["shape", "dtype", "mean()", "sum()", "max()", "min()", "reshape()", "transpose()"]
+- Pandas DataFrame: ["head()", "tail()", "describe()", "info()", "groupby()", "drop()", "columns", "index"]
+- Matplotlib figures: ["savefig()", "tight_layout()", "add_subplot()", "suptitle()"]
+- File objects: ["read()", "write()", "close()", "readline()", "readlines()"]
+
+JSON array:`;
+    } else {
+      // Regular completion prompt
+      completionPrompt = `Complete this Python line (only return the completion text):
+Line: "${textBeforeCursor}"
+
+IMPORTANT: When suggesting matplotlib/plotting code, use pithy3 functions:
+- Use showme() instead of plt.show()
+- Use "from pithy3 import *" for plotting imports
+- Otherwise, suggest normal Python completions
+
+Return only the text needed to complete the line:`;
+    }
+    
+    claudeApiDirect(completionPrompt, '', false).then((response) => {
+      // Clean up the response to get just the completion
+      let completion = response.replace(/```python\n?/g, '').replace(/```\n?/g, '').trim();
+      
+      // Remove any leading text that matches what's already typed
+      if (completion.startsWith(textBeforeCursor)) {
+        completion = completion.substring(textBeforeCursor.length);
+      }
+      
+      // Handle different completion types
+      if (isDotCompletion) {
+        try {
+          // Try to parse as JSON array
+          let suggestions = JSON.parse(completion);
+          if (Array.isArray(suggestions)) {
+            res.send({'suggestions': suggestions, 'is_dot_completion': isDotCompletion});
+          } else {
+            // Fallback to single completion
+            completion = completion.split(/[\s\n\(\)]/)[0];
+            res.send({'completion': completion, 'is_dot_completion': isDotCompletion});
+          }
+        } catch (e) {
+          // If JSON parsing fails, treat as single completion
+          completion = completion.split(/[\s\n\(\)]/)[0];
+          res.send({'completion': completion, 'is_dot_completion': isDotCompletion});
+        }
+      } else {
+        // Remove any explanatory text - just get the code
+        const lines = completion.split('\n');
+        if (lines[0] && !lines[0].startsWith('#')) {
+          completion = lines[0];
+        }
+        res.send({'completion': completion, 'is_dot_completion': isDotCompletion});
+      }
+    }).catch((error) => {
+      console.error("Claude completion error:", error);
+      res.status(500).send({'error': 'Failed to get completion from Claude'});
+    });
   })
 
 
