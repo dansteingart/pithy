@@ -966,15 +966,12 @@ function setSendButtonToStopState() {
     
     if (modalSend) {
         modalSend.textContent = '🔴';
-        modalSend.style.background = '#d73a49';
+        modalSend.style.background = 'transparent';
         modalSend.title = 'Stop response';
     }
     if (popupSend) {
         popupSend.textContent = '🔴';
-        popupSend.style.background = '#d73a49';
-        popupSend.style.borderRadius = '4px';
-        popupSend.style.padding = '8px 12px';
-        popupSend.style.color = 'white';
+        popupSend.style.background = 'transparent';
         popupSend.title = 'Stop response';
     }
 }
@@ -985,15 +982,12 @@ function resetSendButtons() {
     
     if (modalSend) {
         modalSend.textContent = 'Send';
-        modalSend.style.background = 'var(--vscode-button-background, #0e639c)';
+        modalSend.style.background = 'transparent';
         modalSend.title = '';
     }
     if (popupSend) {
         popupSend.textContent = '✈️';
-        popupSend.style.background = 'none';
-        popupSend.style.borderRadius = '';
-        popupSend.style.padding = '';
-        popupSend.style.color = 'black';
+        popupSend.style.background = 'transparent';
         popupSend.title = '';
     }
 }
