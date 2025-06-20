@@ -240,9 +240,10 @@ function createChatModal() {
         </div>
         <div id="claude-chat-messages" style="
             flex: 1; 
-            padding: 12px; 
+            padding: 0; 
             overflow-y: auto; 
             color: var(--vscode-editor-foreground, #d4d4d4);
+            background: transparent;
         "></div>
         <div style="
             padding: 12px; 
@@ -413,7 +414,7 @@ function createPopupChatInterface() {
         </div>
         <div id="popup-chat-messages" style="
             flex: 1; 
-            padding: 16px; 
+            padding: 0; 
             overflow-y: auto; 
             background: white;
         "></div>
@@ -625,18 +626,18 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
     // Create streaming response
     const responseDiv = document.createElement('div');
     responseDiv.style.cssText = `
-        margin-bottom: 12px;
-        padding: 12px;
-        border-radius: 4px;
-        border: 1px solid #ddd;
-        background: #f9f9f9;
-        font-size: 14px;
+        width: 100%;
+        padding: 12px 16px;
+        background: #999999;
+        color: #000000;
         font-family: Helvetica, Arial, sans-serif;
+        margin: 0;
+        border-top: 1px solid #333333;
     `;
     
     responseDiv.innerHTML = `
-        <div style="font-weight: bold; color: #cc6600; margin-bottom: 4px;">${modelDisplayName}</div>
-        <div id="streaming-content" style="color: black;">💭 Thinking...</div>
+        <div style="font-weight: bold; color: #000000; margin-bottom: 4px;">${modelDisplayName}</div>
+        <div id="streaming-content" style="color: #000000;">💭 Thinking...</div>
     `;
     
     messagesDiv.appendChild(responseDiv);
@@ -750,18 +751,18 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
     // Create streaming response
     const responseDiv = document.createElement('div');
     responseDiv.style.cssText = `
-        margin-bottom: 12px;
-        padding: 12px;
-        border-radius: 4px;
-        border: 1px solid #ddd;
-        background: #f9f9f9;
-        font-size: 14px;
+        width: 100%;
+        padding: 12px 16px;
+        background: #999999;
+        color: #000000;
         font-family: Helvetica, Arial, sans-serif;
+        margin: 0;
+        border-top: 1px solid #333333;
     `;
     
     responseDiv.innerHTML = `
-        <div style="font-weight: bold; color: #cc6600; margin-bottom: 4px;">${modelDisplayName}</div>
-        <div id="popup-streaming-content" style="color: black;">💭 Thinking...</div>
+        <div style="font-weight: bold; color: #000000; margin-bottom: 4px;">${modelDisplayName}</div>
+        <div id="popup-streaming-content" style="color: #000000;">💭 Thinking...</div>
     `;
     
     messagesDiv.appendChild(responseDiv);
@@ -1034,17 +1035,17 @@ function handleCodeEdit(newCode, originalResponse) {
         codeEditOption.style.cssText = `
             margin-top: 12px;
             padding: 12px;
-            background: #e8f4fd;
-            border: 1px solid #b3d9ff;
+            background: #777777;
+            border: 1px solid #555555;
             border-radius: 6px;
             font-family: Helvetica, Arial, sans-serif;
         `;
         
         codeEditOption.innerHTML = `
-            <div style="margin-bottom: 8px; font-size: 13px; color: #0066cc; font-weight: bold;">
+            <div style="margin-bottom: 8px; font-size: 13px; color: #ffffff; font-weight: bold;">
                 🛠️ Code Update Available
             </div>
-            <div style="margin-bottom: 12px; font-size: 12px; color: #666;">
+            <div style="margin-bottom: 12px; font-size: 12px; color: #cccccc;">
                 Apply these changes to your editor?
             </div>
             <div style="display: flex; gap: 8px;">
@@ -1232,17 +1233,17 @@ function handlePopupCodeEdit(newCode, originalResponse) {
         codeEditOption.style.cssText = `
             margin-top: 12px;
             padding: 12px;
-            background: #e8f4fd;
-            border: 1px solid #b3d9ff;
+            background: #777777;
+            border: 1px solid #555555;
             border-radius: 6px;
             font-family: Helvetica, Arial, sans-serif;
         `;
         
         codeEditOption.innerHTML = `
-            <div style="margin-bottom: 8px; font-size: 13px; color: #0066cc; font-weight: bold;">
+            <div style="margin-bottom: 8px; font-size: 13px; color: #ffffff; font-weight: bold;">
                 🛠️ Code Update Available
             </div>
-            <div style="margin-bottom: 12px; font-size: 12px; color: #666;">
+            <div style="margin-bottom: 12px; font-size: 12px; color: #cccccc;">
                 Apply these changes to your main editor?
             </div>
             <div style="display: flex; gap: 8px;">
@@ -1359,15 +1360,16 @@ function displayChatHistory() {
     if (!messagesDiv) return;
     
     messagesDiv.innerHTML = '';
-    claudeChatHistory.forEach(msg => {
+    claudeChatHistory.forEach((msg, index) => {
         const msgDiv = document.createElement('div');
         msgDiv.style.cssText = `
-            margin-bottom: 16px;
-            padding: 12px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-            background: ${msg.role === 'user' ? '#f0f8ff' : '#f9f9f9'};
+            width: 100%;
+            padding: 12px 16px;
+            background: ${msg.role === 'user' ? '#555555' : '#999999'};
+            color: ${msg.role === 'user' ? '#ffffff' : '#000000'};
             font-family: Helvetica, Arial, sans-serif;
+            margin: 0;
+            ${index < claudeChatHistory.length - 1 ? 'border-bottom: 1px solid #333333;' : ''}
         `;
         
         const timestamp = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
@@ -1389,10 +1391,10 @@ function displayChatHistory() {
         
         msgDiv.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <span style="font-weight: bold; color: ${msg.role === 'user' ? '#0066cc' : '#cc6600'};">
+                <span style="font-weight: bold; color: ${msg.role === 'user' ? '#ffffff' : '#000000'};">
                     ${msg.role === 'user' ? 'You' : 'Claude'}
                 </span>
-                ${timestamp ? `<span style="font-size: 11px; color: #666;">${timestamp}</span>` : ''}
+                ${timestamp ? `<span style="font-size: 11px; color: ${msg.role === 'user' ? '#cccccc' : '#333333'};">${timestamp}</span>` : ''}
             </div>
             <div style="line-height: 1.4;">${formattedContent}</div>
         `;
