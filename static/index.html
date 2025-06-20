@@ -1100,17 +1100,22 @@ function navigateInputHistory(inputElement, direction) {
 }
 
 function handleCodeEdit(newCode, originalResponse) {
-    // Add a subtle inline option to the streaming content instead of blocking modal
-    const streamingContent = document.getElementById('streaming-content');
-    if (streamingContent) {
-        // Add the code edit option right in the message
+    // Add the code edit option after the chat messages, not inside them
+    const messagesDiv = document.querySelector('#claude-chat-messages');
+    if (messagesDiv) {
+        // Remove any existing code edit options
+        const existingOptions = messagesDiv.querySelectorAll('.code-edit-option');
+        existingOptions.forEach(option => option.remove());
+        
+        // Add the code edit option as a separate element after the messages
         const codeEditOption = document.createElement('div');
+        codeEditOption.className = 'code-edit-option';
         codeEditOption.style.cssText = `
-            margin-top: 12px;
-            padding: 12px;
-            background: #777777;
-            border: 1px solid #555555;
-            border-radius: 6px;
+            width: 100%;
+            margin: 0;
+            padding: 12px 16px;
+            background: #444444;
+            border-bottom: 1px solid #333333;
             font-family: Helvetica, Arial, sans-serif;
         `;
         
@@ -1125,7 +1130,7 @@ function handleCodeEdit(newCode, originalResponse) {
                 <button id="replace-modal-edit" style="
                     padding: 6px 10px;
                     border: none;
-                    background: transparent;
+                    background: #666666;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
@@ -1135,7 +1140,7 @@ function handleCodeEdit(newCode, originalResponse) {
                 <button id="insert-modal-edit" style="
                     padding: 6px 10px;
                     border: none;
-                    background: transparent;
+                    background: #666666;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
@@ -1145,7 +1150,7 @@ function handleCodeEdit(newCode, originalResponse) {
                 <button id="append-modal-edit" style="
                     padding: 6px 10px;
                     border: none;
-                    background: transparent;
+                    background: #666666;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
@@ -1155,7 +1160,7 @@ function handleCodeEdit(newCode, originalResponse) {
                 <button id="dismiss-modal-edit" style="
                     padding: 6px 10px;
                     border: none;
-                    background: transparent;
+                    background: #666666;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
@@ -1165,7 +1170,7 @@ function handleCodeEdit(newCode, originalResponse) {
             </div>
         `;
         
-        streamingContent.appendChild(codeEditOption);
+        messagesDiv.appendChild(codeEditOption);
         
         // Add event listeners
         document.getElementById('replace-modal-edit').onclick = () => {
@@ -1336,17 +1341,22 @@ function applyCodeEdit(newCode) {
 }
 
 function handlePopupCodeEdit(newCode, originalResponse) {
-    // Add a subtle inline option to the streaming content instead of blocking modal
-    const streamingContent = document.getElementById('popup-streaming-content');
-    if (streamingContent) {
-        // Add the code edit option right in the message
+    // Add the code edit option after the chat messages, not inside them
+    const messagesDiv = document.querySelector('#popup-chat-messages');
+    if (messagesDiv) {
+        // Remove any existing code edit options
+        const existingOptions = messagesDiv.querySelectorAll('.code-edit-option');
+        existingOptions.forEach(option => option.remove());
+        
+        // Add the code edit option as a separate element after the messages
         const codeEditOption = document.createElement('div');
+        codeEditOption.className = 'code-edit-option';
         codeEditOption.style.cssText = `
-            margin-top: 12px;
-            padding: 12px;
-            background: #777777;
-            border: 1px solid #555555;
-            border-radius: 6px;
+            width: 100%;
+            margin: 0;
+            padding: 12px 16px;
+            background: #444444;
+            border-bottom: 1px solid #333333;
             font-family: Helvetica, Arial, sans-serif;
         `;
         
@@ -1361,7 +1371,7 @@ function handlePopupCodeEdit(newCode, originalResponse) {
                 <button id="replace-subtle-edit" style="
                     padding: 6px 10px;
                     border: none;
-                    background: transparent;
+                    background: #666666;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
@@ -1371,7 +1381,7 @@ function handlePopupCodeEdit(newCode, originalResponse) {
                 <button id="insert-subtle-edit" style="
                     padding: 6px 10px;
                     border: none;
-                    background: transparent;
+                    background: #666666;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
@@ -1381,7 +1391,7 @@ function handlePopupCodeEdit(newCode, originalResponse) {
                 <button id="append-subtle-edit" style="
                     padding: 6px 10px;
                     border: none;
-                    background: transparent;
+                    background: #666666;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
@@ -1391,7 +1401,7 @@ function handlePopupCodeEdit(newCode, originalResponse) {
                 <button id="dismiss-subtle-edit" style="
                     padding: 6px 10px;
                     border: none;
-                    background: transparent;
+                    background: #666666;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
@@ -1401,7 +1411,7 @@ function handlePopupCodeEdit(newCode, originalResponse) {
             </div>
         `;
         
-        streamingContent.appendChild(codeEditOption);
+        messagesDiv.appendChild(codeEditOption);
         
         // Add event listeners
         document.getElementById('replace-subtle-edit').onclick = () => {
