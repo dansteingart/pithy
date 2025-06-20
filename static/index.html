@@ -701,6 +701,21 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
                                 document.getElementById('streaming-content').innerHTML = formatMarkdownText(fullResponse);
                                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
                             } else if (data.type === 'complete') {
+                                // Update the streaming message in history with final content
+                                const lastMessage = claudeChatHistory[claudeChatHistory.length - 1];
+                                if (lastMessage && lastMessage.isStreaming) {
+                                    lastMessage.content = fullResponse;
+                                    lastMessage.isStreaming = false;
+                                    delete lastMessage.model; // Remove temporary model property
+                                }
+                                
+                                // Reset button to send state when streaming is complete
+                                resetSendButtons();
+                                currentStreamController = null;
+                                
+                                // Redisplay to ensure final formatting is applied
+                                displayChatHistory();
+                                
                                 // Check for code edits in the full response if not already detected
                                 let hasCodeEdit = data.has_code_edit;
                                 let codeEdit = data.code_edit;
@@ -818,6 +833,21 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
                                 document.getElementById('popup-streaming-content').innerHTML = formatMarkdownText(fullResponse);
                                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
                             } else if (data.type === 'complete') {
+                                // Update the streaming message in history with final content
+                                const lastMessage = claudeChatHistory[claudeChatHistory.length - 1];
+                                if (lastMessage && lastMessage.isStreaming) {
+                                    lastMessage.content = fullResponse;
+                                    lastMessage.isStreaming = false;
+                                    delete lastMessage.model; // Remove temporary model property
+                                }
+                                
+                                // Reset button to send state when streaming is complete for popup
+                                resetSendButtons();
+                                currentStreamController = null;
+                                
+                                // Redisplay to ensure final formatting is applied
+                                displayChatHistory();
+                                
                                 // Check for code edits in the full response if not already detected
                                 let hasCodeEdit = data.has_code_edit;
                                 let codeEdit = data.code_edit;
