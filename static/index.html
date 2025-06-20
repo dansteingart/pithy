@@ -680,6 +680,10 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
                     
                     // Redisplay to ensure final formatting is applied
                     displayChatHistory();
+                    
+                    // Check for any code blocks in the final response
+                    checkForCodeBlocks(fullResponse);
+                    
                     return;
                 }
                 
@@ -835,6 +839,10 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
                     
                     // Redisplay to ensure final formatting is applied
                     displayChatHistory();
+                    
+                    // Check for any code blocks in the final response
+                    checkForCodeBlocksPopup(fullResponse);
+                    
                     return;
                 }
                 
@@ -2392,6 +2400,75 @@ function appendCodeToEndPopup(newCode) {
         
     } catch (e) {
         console.error('Error appending code:', e);
+    }
+}
+
+// Code block detection functions
+function checkForCodeBlocks(fullResponse) {
+    let hasCodeEdit = false;
+    let codeEdit = '';
+    
+    // First check for explicit edit blocks
+    const editMatch = fullResponse.match(/```edit\s*([\s\S]*?)\s*```/);
+    if (editMatch) {
+        hasCodeEdit = true;
+        codeEdit = editMatch[1].trim();
+    }
+    
+    // If no explicit edit, check for any code blocks
+    if (!hasCodeEdit) {
+        const patterns = [
+            /```python\s*([\s\S]*?)\s*```/,
+            /```\s*([\s\S]*?)\s*```/
+        ];
+        
+        for (const pattern of patterns) {
+            const match = fullResponse.match(pattern);
+            if (match && match[1].trim()) {
+                hasCodeEdit = true;
+                codeEdit = match[1].trim();
+                console.log('Found code block:', codeEdit);
+                break;
+            }
+        }
+    }
+    
+    if (hasCodeEdit && codeEdit) {
+        handleCodeEdit(codeEdit, fullResponse);
+    }
+}
+
+function checkForCodeBlocksPopup(fullResponse) {
+    let hasCodeEdit = false;
+    let codeEdit = '';
+    
+    // First check for explicit edit blocks
+    const editMatch = fullResponse.match(/```edit\s*([\s\S]*?)\s*```/);
+    if (editMatch) {
+        hasCodeEdit = true;
+        codeEdit = editMatch[1].trim();
+    }
+    
+    // If no explicit edit, check for any code blocks
+    if (!hasCodeEdit) {
+        const patterns = [
+            /```python\s*([\s\S]*?)\s*```/,
+            /```\s*([\s\S]*?)\s*```/
+        ];
+        
+        for (const pattern of patterns) {
+            const match = fullResponse.match(pattern);
+            if (match && match[1].trim()) {
+                hasCodeEdit = true;
+                codeEdit = match[1].trim();
+                console.log('Found code block:', codeEdit);
+                break;
+            }
+        }
+    }
+    
+    if (hasCodeEdit && codeEdit) {
+        handlePopupCodeEdit(codeEdit, fullResponse);
     }
 }
 
