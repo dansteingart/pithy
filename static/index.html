@@ -716,15 +716,29 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
                                 // Redisplay to ensure final formatting is applied
                                 displayChatHistory();
                                 
-                                // Check for code edits in the full response if not already detected
+                                // Check for any code blocks in the response
                                 let hasCodeEdit = data.has_code_edit;
                                 let codeEdit = data.code_edit;
                                 
+                                // First check for explicit edit blocks
                                 if (!hasCodeEdit) {
                                     const editMatch = fullResponse.match(/```edit\n([\s\S]*?)\n```/);
                                     if (editMatch) {
                                         hasCodeEdit = true;
                                         codeEdit = editMatch[1];
+                                    }
+                                }
+                                
+                                // If no explicit edit, check for any Python code blocks
+                                if (!hasCodeEdit) {
+                                    const codeMatches = fullResponse.match(/```(?:python)?\n([\s\S]*?)\n```/g);
+                                    if (codeMatches && codeMatches.length > 0) {
+                                        // Extract code from the first code block
+                                        const codeMatch = codeMatches[0].match(/```(?:python)?\n([\s\S]*?)\n```/);
+                                        if (codeMatch) {
+                                            hasCodeEdit = true;
+                                            codeEdit = codeMatch[1];
+                                        }
                                     }
                                 }
                                 
@@ -848,15 +862,29 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
                                 // Redisplay to ensure final formatting is applied
                                 displayChatHistory();
                                 
-                                // Check for code edits in the full response if not already detected
+                                // Check for any code blocks in the response
                                 let hasCodeEdit = data.has_code_edit;
                                 let codeEdit = data.code_edit;
                                 
+                                // First check for explicit edit blocks
                                 if (!hasCodeEdit) {
                                     const editMatch = fullResponse.match(/```edit\n([\s\S]*?)\n```/);
                                     if (editMatch) {
                                         hasCodeEdit = true;
                                         codeEdit = editMatch[1];
+                                    }
+                                }
+                                
+                                // If no explicit edit, check for any Python code blocks
+                                if (!hasCodeEdit) {
+                                    const codeMatches = fullResponse.match(/```(?:python)?\n([\s\S]*?)\n```/g);
+                                    if (codeMatches && codeMatches.length > 0) {
+                                        // Extract code from the first code block
+                                        const codeMatch = codeMatches[0].match(/```(?:python)?\n([\s\S]*?)\n```/);
+                                        if (codeMatch) {
+                                            hasCodeEdit = true;
+                                            codeEdit = codeMatch[1];
+                                        }
                                     }
                                 }
                                 
@@ -1062,45 +1090,83 @@ function handleCodeEdit(newCode, originalResponse) {
         
         codeEditOption.innerHTML = `
             <div style="margin-bottom: 8px; font-size: 13px; color: #ffffff; font-weight: bold;">
-                🛠️ Code Update Available
+                🛠️ Code Block Detected
             </div>
             <div style="margin-bottom: 12px; font-size: 12px; color: #cccccc;">
-                Apply these changes to your editor?
+                How would you like to apply this code?
             </div>
-            <div style="display: flex; gap: 8px;">
-                <button id="apply-modal-edit" style="
-                    padding: 8px 12px;
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button id="replace-modal-edit" style="
+                    padding: 6px 10px;
                     border: none;
                     background: transparent;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
-                    font-size: 16px;
+                    font-size: 12px;
                     font-family: Helvetica, Arial, sans-serif;
-                " title="Apply to Editor">✔️</button>
+                " title="Replace all editor content">🔄 Replace</button>
+                <button id="insert-modal-edit" style="
+                    padding: 6px 10px;
+                    border: none;
+                    background: transparent;
+                    color: white;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    font-family: Helvetica, Arial, sans-serif;
+                " title="Insert at cursor position">📝 Insert</button>
+                <button id="append-modal-edit" style="
+                    padding: 6px 10px;
+                    border: none;
+                    background: transparent;
+                    color: white;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    font-family: Helvetica, Arial, sans-serif;
+                " title="Append to end of file">➕ Append</button>
                 <button id="dismiss-modal-edit" style="
-                    padding: 8px 12px;
+                    padding: 6px 10px;
                     border: none;
                     background: transparent;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
-                    font-size: 16px;
+                    font-size: 12px;
                     font-family: Helvetica, Arial, sans-serif;
-                " title="Dismiss">❌</button>
+                " title="Dismiss">❌ Dismiss</button>
             </div>
         `;
         
         streamingContent.appendChild(codeEditOption);
         
         // Add event listeners
-        document.getElementById('apply-modal-edit').onclick = () => {
+        document.getElementById('replace-modal-edit').onclick = () => {
             codeEditOption.innerHTML = `
                 <div style="color: #007acc; font-size: 12px; font-weight: bold;">
-                    ✅ Applying changes to editor...
+                    ✅ Replacing editor content...
                 </div>
             `;
             applyCodeEdit(newCode);
+        };
+        
+        document.getElementById('insert-modal-edit').onclick = () => {
+            codeEditOption.innerHTML = `
+                <div style="color: #007acc; font-size: 12px; font-weight: bold;">
+                    ✅ Inserting code at cursor...
+                </div>
+            `;
+            insertCodeAtCursor(newCode);
+        };
+        
+        document.getElementById('append-modal-edit').onclick = () => {
+            codeEditOption.innerHTML = `
+                <div style="color: #007acc; font-size: 12px; font-weight: bold;">
+                    ✅ Appending code to end...
+                </div>
+            `;
+            appendCodeToEnd(newCode);
         };
         
         document.getElementById('dismiss-modal-edit').onclick = () => {
@@ -1260,45 +1326,83 @@ function handlePopupCodeEdit(newCode, originalResponse) {
         
         codeEditOption.innerHTML = `
             <div style="margin-bottom: 8px; font-size: 13px; color: #ffffff; font-weight: bold;">
-                🛠️ Code Update Available
+                🛠️ Code Block Detected
             </div>
             <div style="margin-bottom: 12px; font-size: 12px; color: #cccccc;">
-                Apply these changes to your main editor?
+                How would you like to apply this code?
             </div>
-            <div style="display: flex; gap: 8px;">
-                <button id="apply-subtle-edit" style="
-                    padding: 8px 12px;
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button id="replace-subtle-edit" style="
+                    padding: 6px 10px;
                     border: none;
                     background: transparent;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
-                    font-size: 16px;
+                    font-size: 12px;
                     font-family: Helvetica, Arial, sans-serif;
-                " title="Apply to Editor">✔️</button>
+                " title="Replace all editor content">🔄 Replace</button>
+                <button id="insert-subtle-edit" style="
+                    padding: 6px 10px;
+                    border: none;
+                    background: transparent;
+                    color: white;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    font-family: Helvetica, Arial, sans-serif;
+                " title="Insert at cursor position">📝 Insert</button>
+                <button id="append-subtle-edit" style="
+                    padding: 6px 10px;
+                    border: none;
+                    background: transparent;
+                    color: white;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    font-family: Helvetica, Arial, sans-serif;
+                " title="Append to end of file">➕ Append</button>
                 <button id="dismiss-subtle-edit" style="
-                    padding: 8px 12px;
+                    padding: 6px 10px;
                     border: none;
                     background: transparent;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
-                    font-size: 16px;
+                    font-size: 12px;
                     font-family: Helvetica, Arial, sans-serif;
-                " title="Dismiss">❌</button>
+                " title="Dismiss">❌ Dismiss</button>
             </div>
         `;
         
         streamingContent.appendChild(codeEditOption);
         
         // Add event listeners
-        document.getElementById('apply-subtle-edit').onclick = () => {
+        document.getElementById('replace-subtle-edit').onclick = () => {
             codeEditOption.innerHTML = `
                 <div style="color: #007acc; font-size: 12px; font-weight: bold;">
-                    ✅ Applying changes to main editor...
+                    ✅ Replacing editor content...
                 </div>
             `;
             applyCodeChanges(newCode);
+        };
+        
+        document.getElementById('insert-subtle-edit').onclick = () => {
+            codeEditOption.innerHTML = `
+                <div style="color: #007acc; font-size: 12px; font-weight: bold;">
+                    ✅ Inserting code at cursor...
+                </div>
+            `;
+            insertCodeAtCursorPopup(newCode);
+        };
+        
+        document.getElementById('append-subtle-edit').onclick = () => {
+            codeEditOption.innerHTML = `
+                <div style="color: #007acc; font-size: 12px; font-weight: bold;">
+                    ✅ Appending code to end...
+                </div>
+            `;
+            appendCodeToEndPopup(newCode);
         };
         
         document.getElementById('dismiss-subtle-edit').onclick = () => {
@@ -2137,7 +2241,141 @@ $(window).keydown((e) =>
 //fix Curtis Found Bug
 editor.getModel().setEOL(monaco.editor.EndOfLinePreference.CR)
 
+// Code insertion and append functions for modal interface
+function insertCodeAtCursor(newCode) {
+    const position = editor.getPosition();
+    editor.executeEdits('claude-insert-code', [{
+        range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+        text: newCode
+    }]);
+    
+    // Show success message briefly
+    const statusDiv = document.getElementById('status');
+    const originalStatus = statusDiv.innerHTML;
+    statusDiv.innerHTML = '✅ Code inserted by Claude';
+    statusDiv.style.color = '#4FC1FF';
+    
+    setTimeout(() => {
+        statusDiv.innerHTML = originalStatus;
+        statusDiv.style.color = '';
+    }, 3000);
+}
 
+function appendCodeToEnd(newCode) {
+    const model = editor.getModel();
+    const lineCount = model.getLineCount();
+    const lastLineContent = model.getLineContent(lineCount);
+    const insertPosition = {
+        lineNumber: lineCount,
+        column: lastLineContent.length + 1
+    };
+    
+    editor.executeEdits('claude-append-code', [{
+        range: new monaco.Range(insertPosition.lineNumber, insertPosition.column, insertPosition.lineNumber, insertPosition.column),
+        text: '\n' + newCode
+    }]);
+    
+    // Show success message briefly
+    const statusDiv = document.getElementById('status');
+    const originalStatus = statusDiv.innerHTML;
+    statusDiv.innerHTML = '✅ Code appended by Claude';
+    statusDiv.style.color = '#4FC1FF';
+    
+    setTimeout(() => {
+        statusDiv.innerHTML = originalStatus;
+        statusDiv.style.color = '';
+    }, 3000);
+}
+
+// Code insertion and append functions for popup interface (uses Y.js)
+function insertCodeAtCursorPopup(newCode) {
+    try {
+        // Access the same Y.js document that the main editor uses
+        const ydoc = new Y.Doc();
+        const wsProvider = new WebsocketProvider(window.location.origin.replace("http","ws"), code_name, ydoc);
+        const yCm = ydoc.getText('codemirror');
+        
+        // Wait for Y.js connection to sync, then insert at cursor
+        setTimeout(() => {
+            // For popup, we'll just append since we can't track cursor position
+            const currentContent = yCm.toString();
+            yCm.insert(currentContent.length, '\n' + newCode);
+            
+            // Show success message in popup
+            const statusDiv = document.createElement('div');
+            statusDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #007acc;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 4px;
+                z-index: 10000;
+                font-weight: bold;
+                font-family: Helvetica, Arial, sans-serif;
+            `;
+            statusDiv.textContent = '✅ Code inserted in main editor';
+            document.body.appendChild(statusDiv);
+            
+            setTimeout(() => {
+                statusDiv.remove();
+            }, 3000);
+            
+            // Disconnect the provider after the update
+            setTimeout(() => {
+                wsProvider.disconnect();
+            }, 1000);
+        }, 200);
+        
+    } catch (e) {
+        console.error('Error inserting code:', e);
+    }
+}
+
+function appendCodeToEndPopup(newCode) {
+    try {
+        // Access the same Y.js document that the main editor uses
+        const ydoc = new Y.Doc();
+        const wsProvider = new WebsocketProvider(window.location.origin.replace("http","ws"), code_name, ydoc);
+        const yCm = ydoc.getText('codemirror');
+        
+        // Wait for Y.js connection to sync, then append to end
+        setTimeout(() => {
+            const currentContent = yCm.toString();
+            yCm.insert(currentContent.length, '\n' + newCode);
+            
+            // Show success message in popup
+            const statusDiv = document.createElement('div');
+            statusDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #007acc;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 4px;
+                z-index: 10000;
+                font-weight: bold;
+                font-family: Helvetica, Arial, sans-serif;
+            `;
+            statusDiv.textContent = '✅ Code appended to main editor';
+            document.body.appendChild(statusDiv);
+            
+            setTimeout(() => {
+                statusDiv.remove();
+            }, 3000);
+            
+            // Disconnect the provider after the update
+            setTimeout(() => {
+                wsProvider.disconnect();
+            }, 1000);
+        }, 200);
+        
+    } catch (e) {
+        console.error('Error appending code:', e);
+    }
+}
 
 </script>
 </body>
