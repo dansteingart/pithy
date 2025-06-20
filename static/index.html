@@ -545,9 +545,8 @@ function sendClaudeMessage() {
     
     // Add user message to local history immediately for UI responsiveness
     claudeChatHistory.push({ role: 'user', content: message, timestamp: Date.now() });
-    displayChatHistory();
     
-    // Add placeholder for streaming response to history
+    // Add placeholder for streaming response to history AFTER user message
     claudeChatHistory.push({ role: 'assistant', content: '💭 Thinking...', timestamp: Date.now(), isStreaming: true });
     displayChatHistory();
     
@@ -598,9 +597,8 @@ function sendPopupClaudeMessage() {
             
             // Add user message to local history immediately for UI responsiveness
             claudeChatHistory.push({ role: 'user', content: message, timestamp: Date.now() });
-            displayChatHistory();
             
-            // Add placeholder for streaming response to history
+            // Add placeholder for streaming response to history AFTER user message
             claudeChatHistory.push({ role: 'assistant', content: '💭 Thinking...', timestamp: Date.now(), isStreaming: true });
             displayChatHistory();
             
@@ -614,9 +612,8 @@ function sendPopupClaudeMessage() {
         
         // Add user message to local history immediately for UI responsiveness
         claudeChatHistory.push({ role: 'user', content: message, timestamp: Date.now() });
-        displayChatHistory();
         
-        // Add placeholder for streaming response to history
+        // Add placeholder for streaming response to history AFTER user message
         claudeChatHistory.push({ role: 'assistant', content: '💭 Thinking...', timestamp: Date.now(), isStreaming: true });
         displayChatHistory();
         
@@ -680,6 +677,9 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
                     // Reset button to send state when streaming is complete
                     resetSendButtons();
                     currentStreamController = null;
+                    
+                    // Redisplay to ensure final formatting is applied
+                    displayChatHistory();
                     return;
                 }
                 
@@ -794,6 +794,9 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
                     // Reset button to send state when streaming is complete for popup
                     resetSendButtons();
                     currentStreamController = null;
+                    
+                    // Redisplay to ensure final formatting is applied
+                    displayChatHistory();
                     return;
                 }
                 
@@ -971,6 +974,7 @@ function setSendButtonToStopState() {
         popupSend.style.background = '#d73a49';
         popupSend.style.borderRadius = '4px';
         popupSend.style.padding = '8px 12px';
+        popupSend.style.color = 'white';
         popupSend.title = 'Stop response';
     }
 }
@@ -989,6 +993,7 @@ function resetSendButtons() {
         popupSend.style.background = 'none';
         popupSend.style.borderRadius = '';
         popupSend.style.padding = '';
+        popupSend.style.color = 'black';
         popupSend.title = '';
     }
 }
@@ -1042,7 +1047,7 @@ function handleCodeEdit(newCode, originalResponse) {
                 <button id="apply-modal-edit" style="
                     padding: 8px 12px;
                     border: none;
-                    background: #28a745;
+                    background: transparent;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
@@ -1052,7 +1057,7 @@ function handleCodeEdit(newCode, originalResponse) {
                 <button id="dismiss-modal-edit" style="
                     padding: 8px 12px;
                     border: none;
-                    background: #dc3545;
+                    background: transparent;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
@@ -1158,7 +1163,7 @@ function createCodeEditModal(newCode, originalResponse) {
                 </div>
                 <div style="display: flex; gap: 8px;">
                     <button id="cancel-edit" style="
-                        background: #dc3545;
+                        background: transparent;
                         color: #ffffff;
                         border: none;
                         padding: 8px 12px;
@@ -1167,7 +1172,7 @@ function createCodeEditModal(newCode, originalResponse) {
                         font-size: 16px;
                     " title="Cancel">❌</button>
                     <button id="apply-edit" style="
-                        background: #28a745;
+                        background: transparent;
                         color: #ffffff;
                         border: none;
                         padding: 8px 12px;
@@ -1240,7 +1245,7 @@ function handlePopupCodeEdit(newCode, originalResponse) {
                 <button id="apply-subtle-edit" style="
                     padding: 8px 12px;
                     border: none;
-                    background: #28a745;
+                    background: transparent;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
@@ -1250,7 +1255,7 @@ function handlePopupCodeEdit(newCode, originalResponse) {
                 <button id="dismiss-subtle-edit" style="
                     padding: 8px 12px;
                     border: none;
-                    background: #dc3545;
+                    background: transparent;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
