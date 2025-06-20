@@ -1049,26 +1049,25 @@ function handleCodeEdit(newCode, originalResponse) {
             </div>
             <div style="display: flex; gap: 8px;">
                 <button id="apply-modal-edit" style="
-                    padding: 6px 16px;
+                    padding: 8px 12px;
                     border: none;
-                    background: #007acc;
+                    background: #28a745;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
-                    font-size: 12px;
-                    font-weight: bold;
+                    font-size: 16px;
                     font-family: Helvetica, Arial, sans-serif;
-                ">Apply to Editor</button>
+                " title="Apply to Editor">✔️</button>
                 <button id="dismiss-modal-edit" style="
-                    padding: 6px 16px;
-                    border: 1px solid #ccc;
-                    background: white;
-                    color: #666;
+                    padding: 8px 12px;
+                    border: none;
+                    background: #dc3545;
+                    color: white;
                     border-radius: 4px;
                     cursor: pointer;
-                    font-size: 12px;
+                    font-size: 16px;
                     font-family: Helvetica, Arial, sans-serif;
-                ">Dismiss</button>
+                " title="Dismiss">❌</button>
             </div>
         `;
         
@@ -1168,21 +1167,23 @@ function createCodeEditModal(newCode, originalResponse) {
                 </div>
                 <div style="display: flex; gap: 8px;">
                     <button id="cancel-edit" style="
-                        background: var(--vscode-button-secondaryBackground, #5a5d5e);
-                        color: var(--vscode-button-secondaryForeground, #ffffff);
+                        background: #dc3545;
+                        color: #ffffff;
                         border: none;
-                        padding: 8px 16px;
+                        padding: 8px 12px;
                         border-radius: 4px;
                         cursor: pointer;
-                    ">Cancel</button>
+                        font-size: 16px;
+                    " title="Cancel">❌</button>
                     <button id="apply-edit" style="
-                        background: var(--vscode-button-background, #0e639c);
-                        color: var(--vscode-button-foreground, #ffffff);
+                        background: #28a745;
+                        color: #ffffff;
                         border: none;
-                        padding: 8px 16px;
+                        padding: 8px 12px;
                         border-radius: 4px;
                         cursor: pointer;
-                    ">Apply Changes</button>
+                        font-size: 16px;
+                    " title="Apply Changes">✔️</button>
                 </div>
             </div>
         </div>
@@ -1246,26 +1247,25 @@ function handlePopupCodeEdit(newCode, originalResponse) {
             </div>
             <div style="display: flex; gap: 8px;">
                 <button id="apply-subtle-edit" style="
-                    padding: 6px 16px;
+                    padding: 8px 12px;
                     border: none;
-                    background: #007acc;
+                    background: #28a745;
                     color: white;
                     border-radius: 4px;
                     cursor: pointer;
-                    font-size: 12px;
-                    font-weight: bold;
+                    font-size: 16px;
                     font-family: Helvetica, Arial, sans-serif;
-                ">Apply to Editor</button>
+                " title="Apply to Editor">✔️</button>
                 <button id="dismiss-subtle-edit" style="
-                    padding: 6px 16px;
-                    border: 1px solid #ccc;
-                    background: white;
-                    color: #666;
+                    padding: 8px 12px;
+                    border: none;
+                    background: #dc3545;
+                    color: white;
                     border-radius: 4px;
                     cursor: pointer;
-                    font-size: 12px;
+                    font-size: 16px;
                     font-family: Helvetica, Arial, sans-serif;
-                ">Dismiss</button>
+                " title="Dismiss">❌</button>
             </div>
         `;
         
