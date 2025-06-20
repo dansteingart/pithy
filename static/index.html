@@ -547,6 +547,10 @@ function sendClaudeMessage() {
     claudeChatHistory.push({ role: 'user', content: message, timestamp: Date.now() });
     displayChatHistory();
     
+    // Add placeholder for streaming response to history
+    claudeChatHistory.push({ role: 'assistant', content: '💭 Thinking...', timestamp: Date.now(), isStreaming: true });
+    displayChatHistory();
+    
     // Start streaming response
     streamClaudeResponse(contextualMessage, currentCode, selectedModel);
 }
@@ -596,6 +600,10 @@ function sendPopupClaudeMessage() {
             claudeChatHistory.push({ role: 'user', content: message, timestamp: Date.now() });
             displayChatHistory();
             
+            // Add placeholder for streaming response to history
+            claudeChatHistory.push({ role: 'assistant', content: '💭 Thinking...', timestamp: Date.now(), isStreaming: true });
+            displayChatHistory();
+            
             // Start streaming response
             streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel);
         }, 100);
@@ -606,6 +614,10 @@ function sendPopupClaudeMessage() {
         
         // Add user message to local history immediately for UI responsiveness
         claudeChatHistory.push({ role: 'user', content: message, timestamp: Date.now() });
+        displayChatHistory();
+        
+        // Add placeholder for streaming response to history
+        claudeChatHistory.push({ role: 'assistant', content: '💭 Thinking...', timestamp: Date.now(), isStreaming: true });
         displayChatHistory();
         
         // Start streaming response
@@ -623,25 +635,12 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
     const modelDisplayName = selectedModel.startsWith('ollama:') ? 
         selectedModel.replace('ollama:', '') : 'Claude';
     
-    // Create streaming response
-    const responseDiv = document.createElement('div');
-    responseDiv.style.cssText = `
-        width: 100%;
-        padding: 12px 16px;
-        background: #999999;
-        color: #000000;
-        font-family: Helvetica, Arial, sans-serif;
-        margin: 0;
-        border-top: 1px solid #333333;
-    `;
-    
-    responseDiv.innerHTML = `
-        <div style="font-weight: bold; color: #000000; margin-bottom: 4px;">${modelDisplayName}</div>
-        <div id="streaming-content" style="color: #000000;">💭 Thinking...</div>
-    `;
-    
-    messagesDiv.appendChild(responseDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    // Update the placeholder message with model info
+    const lastMessage = claudeChatHistory[claudeChatHistory.length - 1];
+    if (lastMessage && lastMessage.isStreaming) {
+        lastMessage.model = selectedModel;
+    }
+    displayChatHistory();
     
     let fullResponse = '';
     let hasStarted = false;
@@ -670,11 +669,13 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
         function readStream() {
             reader.read().then(({ done, value }) => {
                 if (done) {
-                    claudeChatHistory.push({ 
-                        role: 'assistant', 
-                        content: fullResponse, 
-                        timestamp: Date.now() 
-                    });
+                    // Update the streaming message in history with final content
+                    const lastMessage = claudeChatHistory[claudeChatHistory.length - 1];
+                    if (lastMessage && lastMessage.isStreaming) {
+                        lastMessage.content = fullResponse;
+                        lastMessage.isStreaming = false;
+                        delete lastMessage.model; // Remove temporary model property
+                    }
                     
                     // Reset button to send state when streaming is complete
                     resetSendButtons();
@@ -748,25 +749,12 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
     const modelDisplayName = selectedModel.startsWith('ollama:') ? 
         selectedModel.replace('ollama:', '') : 'Claude';
     
-    // Create streaming response
-    const responseDiv = document.createElement('div');
-    responseDiv.style.cssText = `
-        width: 100%;
-        padding: 12px 16px;
-        background: #999999;
-        color: #000000;
-        font-family: Helvetica, Arial, sans-serif;
-        margin: 0;
-        border-top: 1px solid #333333;
-    `;
-    
-    responseDiv.innerHTML = `
-        <div style="font-weight: bold; color: #000000; margin-bottom: 4px;">${modelDisplayName}</div>
-        <div id="popup-streaming-content" style="color: #000000;">💭 Thinking...</div>
-    `;
-    
-    messagesDiv.appendChild(responseDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    // Update the placeholder message with model info
+    const lastMessage = claudeChatHistory[claudeChatHistory.length - 1];
+    if (lastMessage && lastMessage.isStreaming) {
+        lastMessage.model = selectedModel;
+    }
+    displayChatHistory();
     
     let fullResponse = '';
     let hasStarted = false;
@@ -795,11 +783,13 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
         function readStream() {
             reader.read().then(({ done, value }) => {
                 if (done) {
-                    claudeChatHistory.push({ 
-                        role: 'assistant', 
-                        content: fullResponse, 
-                        timestamp: Date.now() 
-                    });
+                    // Update the streaming message in history with final content
+                    const lastMessage = claudeChatHistory[claudeChatHistory.length - 1];
+                    if (lastMessage && lastMessage.isStreaming) {
+                        lastMessage.content = fullResponse;
+                        lastMessage.isStreaming = false;
+                        delete lastMessage.model; // Remove temporary model property
+                    }
                     
                     // Reset button to send state when streaming is complete for popup
                     resetSendButtons();
@@ -1372,6 +1362,11 @@ function displayChatHistory() {
             ${index < claudeChatHistory.length - 1 ? 'border-bottom: 1px solid #333333;' : ''}
         `;
         
+        // Add ID for streaming messages so we can update them
+        if (msg.isStreaming) {
+            msgDiv.id = messagesDiv.id === 'claude-chat-messages' ? 'streaming-content-container' : 'popup-streaming-content-container';
+        }
+        
         const timestamp = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
         
         // Format the content to handle code blocks properly
@@ -1384,19 +1379,24 @@ function displayChatHistory() {
             if (questionMatch) {
                 formattedContent = questionMatch[1];
             }
-        } else {
-            // Handle code blocks in Claude's responses using the markdown formatter
+        } else if (!msg.isStreaming) {
+            // Handle code blocks in Claude's responses using the markdown formatter (but not for streaming)
             formattedContent = formatMarkdownText(formattedContent);
         }
+        
+        // Get model display name for assistant messages
+        const modelDisplayName = msg.role === 'assistant' && msg.model ? 
+            (msg.model.startsWith('ollama:') ? msg.model.replace('ollama:', '') : 'Claude') : 
+            (msg.role === 'user' ? 'You' : 'Claude');
         
         msgDiv.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                 <span style="font-weight: bold; color: ${msg.role === 'user' ? '#ffffff' : '#000000'};">
-                    ${msg.role === 'user' ? 'You' : 'Claude'}
+                    ${modelDisplayName}
                 </span>
                 ${timestamp ? `<span style="font-size: 11px; color: ${msg.role === 'user' ? '#cccccc' : '#333333'};">${timestamp}</span>` : ''}
             </div>
-            <div style="line-height: 1.4;">${formattedContent}</div>
+            <div id="${msg.isStreaming ? (messagesDiv.id === 'claude-chat-messages' ? 'streaming-content' : 'popup-streaming-content') : ''}" style="line-height: 1.4;">${formattedContent}</div>
         `;
         messagesDiv.appendChild(msgDiv);
     });
