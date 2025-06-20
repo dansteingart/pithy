@@ -149,6 +149,7 @@ wsProvider.on('status', event => {
 
 // Claude Chat Functions
 let claudeChatHistory = [];
+let currentStreamController = null;
 
 function formatMarkdownText(text) {
     return text
@@ -276,6 +277,16 @@ function createChatModal() {
                     cursor: pointer;
                     font-size: 12px;
                 ">Send</button>
+                <button id="claude-chat-stop" style="
+                    padding: 6px 12px; 
+                    background: #d73a49; 
+                    color: #ffffff; 
+                    border: none; 
+                    border-radius: 4px; 
+                    cursor: pointer;
+                    font-size: 12px;
+                    display: none;
+                ">Stop</button>
             </div>
             <div style="font-size: 10px; color: var(--vscode-descriptionForeground, #999);">
                 Real-time streaming • Direct code edits
@@ -286,6 +297,7 @@ function createChatModal() {
     // Add event listeners
     modal.querySelector('#claude-chat-close').onclick = () => modal.remove();
     modal.querySelector('#claude-chat-send').onclick = () => sendClaudeMessage();
+    modal.querySelector('#claude-chat-stop').onclick = () => stopClaudeStream();
     modal.querySelector('#claude-clear-history').onclick = () => clearChatHistory();
     modal.querySelector('#claude-chat-input').onkeypress = (e) => {
         if (e.key === 'Enter') sendClaudeMessage();
@@ -433,6 +445,16 @@ function createPopupChatInterface() {
                     font-family: Helvetica, Arial, sans-serif;
                 ">
                 <button id="popup-chat-send" style="background: none; border: none; color: black; font-size: 18px;">✈️</button>
+                <button id="popup-chat-stop" style="
+                    background: #d73a49; 
+                    border: none; 
+                    color: white; 
+                    padding: 8px 12px;
+                    font-size: 12px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    display: none;
+                ">Stop</button>
             </div>
             <div style="font-size: 11px; color: #666; text-align: center;">
                 Real-time streaming responses • Direct code editing • Press Enter to send
@@ -444,6 +466,7 @@ function createPopupChatInterface() {
     
     // Add event listeners for popup chat
     document.getElementById('popup-chat-send').onclick = () => sendPopupClaudeMessage();
+    document.getElementById('popup-chat-stop').onclick = () => stopClaudeStream();
     document.getElementById('popup-clear-history').onclick = () => clearChatHistory();
     document.getElementById('popup-chat-input').onkeypress = (e) => {
         if (e.key === 'Enter') sendPopupClaudeMessage();
@@ -604,6 +627,17 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
     let fullResponse = '';
     let hasStarted = false;
     
+    // Show stop button, hide send button
+    const sendButton = document.getElementById('claude-chat-send');
+    const stopButton = document.getElementById('claude-chat-stop');
+    if (sendButton && stopButton) {
+        sendButton.style.display = 'none';
+        stopButton.style.display = 'block';
+    }
+    
+    // Create abort controller for stopping the stream
+    currentStreamController = new AbortController();
+    
     fetch('/claude_chat_stream/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -612,7 +646,8 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
             page_name: modelPageName,
             current_code: currentCode,
             selected_model: selectedModel
-        })
+        }),
+        signal: currentStreamController.signal
     })
     .then(response => {
         const reader = response.body.getReader();
@@ -626,6 +661,15 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
                         content: fullResponse, 
                         timestamp: Date.now() 
                     });
+                    
+                    // Restore buttons when streaming is complete
+                    const sendButton = document.getElementById('claude-chat-send');
+                    const stopButton = document.getElementById('claude-chat-stop');
+                    if (sendButton && stopButton) {
+                        sendButton.style.display = 'block';
+                        stopButton.style.display = 'none';
+                    }
+                    currentStreamController = null;
                     return;
                 }
                 
@@ -678,6 +722,15 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
     })
     .catch(error => {
         document.getElementById('streaming-content').innerHTML = '<span style="color: #ff6b6b;">Error connecting to Claude</span>';
+        
+        // Restore buttons on error
+        const sendButton = document.getElementById('claude-chat-send');
+        const stopButton = document.getElementById('claude-chat-stop');
+        if (sendButton && stopButton) {
+            sendButton.style.display = 'block';
+            stopButton.style.display = 'none';
+        }
+        currentStreamController = null;
     });
 }
 
@@ -714,6 +767,17 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
     let fullResponse = '';
     let hasStarted = false;
     
+    // Show stop button, hide send button for popup
+    const sendButton = document.getElementById('popup-chat-send');
+    const stopButton = document.getElementById('popup-chat-stop');
+    if (sendButton && stopButton) {
+        sendButton.style.display = 'none';
+        stopButton.style.display = 'block';
+    }
+    
+    // Create abort controller for stopping the stream
+    currentStreamController = new AbortController();
+    
     fetch('/claude_chat_stream/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -722,7 +786,8 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
             page_name: modelPageName,
             current_code: currentCode,
             selected_model: selectedModel
-        })
+        }),
+        signal: currentStreamController.signal
     })
     .then(response => {
         const reader = response.body.getReader();
@@ -736,6 +801,15 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
                         content: fullResponse, 
                         timestamp: Date.now() 
                     });
+                    
+                    // Restore buttons when streaming is complete for popup
+                    const sendButton = document.getElementById('popup-chat-send');
+                    const stopButton = document.getElementById('popup-chat-stop');
+                    if (sendButton && stopButton) {
+                        sendButton.style.display = 'block';
+                        stopButton.style.display = 'none';
+                    }
+                    currentStreamController = null;
                     return;
                 }
                 
@@ -788,6 +862,15 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
     })
     .catch(error => {
         document.getElementById('popup-streaming-content').innerHTML = '<span style="color: #ff6b6b;">Error connecting to Claude</span>';
+        
+        // Restore buttons on error for popup
+        const sendButton = document.getElementById('popup-chat-send');
+        const stopButton = document.getElementById('popup-chat-stop');
+        if (sendButton && stopButton) {
+            sendButton.style.display = 'block';
+            stopButton.style.display = 'none';
+        }
+        currentStreamController = null;
     });
 }
 
@@ -851,6 +934,39 @@ function clearChatHistory() {
             console.error("Error clearing chat history:", error);
             alert("Failed to clear chat history. Please try again.");
         });
+    }
+}
+
+function stopClaudeStream() {
+    if (currentStreamController) {
+        currentStreamController.abort();
+        currentStreamController = null;
+        
+        // Hide stop button and show send button
+        const modalSend = document.getElementById('claude-chat-send');
+        const modalStop = document.getElementById('claude-chat-stop');
+        const popupSend = document.getElementById('popup-chat-send');
+        const popupStop = document.getElementById('popup-chat-stop');
+        
+        if (modalSend && modalStop) {
+            modalSend.style.display = 'block';
+            modalStop.style.display = 'none';
+        }
+        if (popupSend && popupStop) {
+            popupSend.style.display = 'block';
+            popupStop.style.display = 'none';
+        }
+        
+        // Update any streaming content to show it was stopped
+        const streamingContent = document.getElementById('streaming-content');
+        const popupStreamingContent = document.getElementById('popup-streaming-content');
+        
+        if (streamingContent && streamingContent.textContent.includes('💭')) {
+            streamingContent.innerHTML = '<span style="color: #999;">⏹️ Response stopped</span>';
+        }
+        if (popupStreamingContent && popupStreamingContent.textContent.includes('💭')) {
+            popupStreamingContent.innerHTML = '<span style="color: #999;">⏹️ Response stopped</span>';
+        }
     }
 }
 
