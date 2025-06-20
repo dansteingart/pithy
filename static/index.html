@@ -729,15 +729,24 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
                                     }
                                 }
                                 
-                                // If no explicit edit, check for any Python code blocks
+                                // If no explicit edit, check for any code blocks
                                 if (!hasCodeEdit) {
-                                    const codeMatches = fullResponse.match(/```(?:python)?\n([\s\S]*?)\n```/g);
-                                    if (codeMatches && codeMatches.length > 0) {
-                                        // Extract code from the first code block
-                                        const codeMatch = codeMatches[0].match(/```(?:python)?\n([\s\S]*?)\n```/);
-                                        if (codeMatch) {
-                                            hasCodeEdit = true;
-                                            codeEdit = codeMatch[1];
+                                    // Look for any code blocks with various patterns
+                                    const patterns = [
+                                        /```python\s*([\s\S]*?)\s*```/g,
+                                        /```\s*([\s\S]*?)\s*```/g
+                                    ];
+                                    
+                                    for (const pattern of patterns) {
+                                        const matches = fullResponse.match(pattern);
+                                        if (matches && matches.length > 0) {
+                                            const match = matches[0].match(/```(?:python)?\s*([\s\S]*?)\s*```/);
+                                            if (match && match[1].trim()) {
+                                                hasCodeEdit = true;
+                                                codeEdit = match[1].trim();
+                                                console.log('Found code block:', codeEdit);
+                                                break;
+                                            }
                                         }
                                     }
                                 }
@@ -875,15 +884,24 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
                                     }
                                 }
                                 
-                                // If no explicit edit, check for any Python code blocks
+                                // If no explicit edit, check for any code blocks
                                 if (!hasCodeEdit) {
-                                    const codeMatches = fullResponse.match(/```(?:python)?\n([\s\S]*?)\n```/g);
-                                    if (codeMatches && codeMatches.length > 0) {
-                                        // Extract code from the first code block
-                                        const codeMatch = codeMatches[0].match(/```(?:python)?\n([\s\S]*?)\n```/);
-                                        if (codeMatch) {
-                                            hasCodeEdit = true;
-                                            codeEdit = codeMatch[1];
+                                    // Look for any code blocks with various patterns
+                                    const patterns = [
+                                        /```python\s*([\s\S]*?)\s*```/g,
+                                        /```\s*([\s\S]*?)\s*```/g
+                                    ];
+                                    
+                                    for (const pattern of patterns) {
+                                        const matches = fullResponse.match(pattern);
+                                        if (matches && matches.length > 0) {
+                                            const match = matches[0].match(/```(?:python)?\s*([\s\S]*?)\s*```/);
+                                            if (match && match[1].trim()) {
+                                                hasCodeEdit = true;
+                                                codeEdit = match[1].trim();
+                                                console.log('Found code block:', codeEdit);
+                                                break;
+                                            }
                                         }
                                     }
                                 }
