@@ -150,6 +150,8 @@ wsProvider.on('status', event => {
 // Claude Chat Functions
 let claudeChatHistory = [];
 let currentStreamController = null;
+let inputHistory = [];
+let inputHistoryIndex = -1;
 
 function formatMarkdownText(text) {
     return text
@@ -299,8 +301,17 @@ function createChatModal() {
     modal.querySelector('#claude-chat-send').onclick = () => sendClaudeMessage();
     modal.querySelector('#claude-chat-stop').onclick = () => stopClaudeStream();
     modal.querySelector('#claude-clear-history').onclick = () => clearChatHistory();
-    modal.querySelector('#claude-chat-input').onkeypress = (e) => {
-        if (e.key === 'Enter') sendClaudeMessage();
+    modal.querySelector('#claude-chat-input').onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendClaudeMessage();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            navigateInputHistory(e.target, 'up');
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            navigateInputHistory(e.target, 'down');
+        }
     };
     
     // Make modal draggable
@@ -468,8 +479,17 @@ function createPopupChatInterface() {
     document.getElementById('popup-chat-send').onclick = () => sendPopupClaudeMessage();
     document.getElementById('popup-chat-stop').onclick = () => stopClaudeStream();
     document.getElementById('popup-clear-history').onclick = () => clearChatHistory();
-    document.getElementById('popup-chat-input').onkeypress = (e) => {
-        if (e.key === 'Enter') sendPopupClaudeMessage();
+    document.getElementById('popup-chat-input').onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendPopupClaudeMessage();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            navigateInputHistory(e.target, 'up');
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            navigateInputHistory(e.target, 'down');
+        }
     };
     
     // Load available models for the selector
@@ -515,6 +535,16 @@ function sendClaudeMessage() {
     const message = input.value.trim();
     if (!message) return;
     
+    // Add to input history
+    if (inputHistory[0] !== message) {
+        inputHistory.unshift(message);
+        // Keep history to last 50 entries
+        if (inputHistory.length > 50) {
+            inputHistory = inputHistory.slice(0, 50);
+        }
+    }
+    inputHistoryIndex = -1;
+    
     input.value = '';
     
     // Get selected model
@@ -546,6 +576,16 @@ function sendPopupClaudeMessage() {
     const input = document.querySelector('#popup-chat-input');
     const message = input.value.trim();
     if (!message) return;
+    
+    // Add to input history
+    if (inputHistory[0] !== message) {
+        inputHistory.unshift(message);
+        // Keep history to last 50 entries
+        if (inputHistory.length > 50) {
+            inputHistory = inputHistory.slice(0, 50);
+        }
+    }
+    inputHistoryIndex = -1;
     
     input.value = '';
     
@@ -966,6 +1006,29 @@ function stopClaudeStream() {
         }
         if (popupStreamingContent && popupStreamingContent.textContent.includes('💭')) {
             popupStreamingContent.innerHTML = '<span style="color: #999;">⏹️ Response stopped</span>';
+        }
+    }
+}
+
+function navigateInputHistory(inputElement, direction) {
+    if (direction === 'up') {
+        if (inputHistoryIndex < inputHistory.length - 1) {
+            // Save current input if we're at the beginning
+            if (inputHistoryIndex === -1 && inputElement.value.trim()) {
+                inputHistory.unshift(inputElement.value.trim());
+                inputHistoryIndex = 1;
+            } else {
+                inputHistoryIndex++;
+            }
+            inputElement.value = inputHistory[inputHistoryIndex] || '';
+        }
+    } else if (direction === 'down') {
+        if (inputHistoryIndex > 0) {
+            inputHistoryIndex--;
+            inputElement.value = inputHistory[inputHistoryIndex] || '';
+        } else if (inputHistoryIndex === 0) {
+            inputHistoryIndex = -1;
+            inputElement.value = '';
         }
     }
 }
