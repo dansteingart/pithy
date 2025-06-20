@@ -217,7 +217,7 @@ function createChatModal() {
             min-height: 60px;
         ">
             <div>
-                <h3 style="margin: 0; color: var(--vscode-editor-foreground, #d4d4d4);">💬 Claude</h3>
+                <h3 id="modal-chat-title" style="margin: 0; color: var(--vscode-editor-foreground, #d4d4d4);">💬 Claude</h3>
                 <div style="font-size: 11px; color: var(--vscode-descriptionForeground, #999); margin-top: 2px;">
                     ${code_name}
                 </div>
@@ -321,6 +321,35 @@ function createChatModal() {
     // Load available models for the selector
     loadAvailableModels();
     
+    // Add event listener for model changes to reload chat history
+    const modalSelector = modal.querySelector('#modal-model-selector');
+    if (modalSelector) {
+        modalSelector.addEventListener('change', function() {
+            claudeChatHistory = [];
+            displayChatHistory();
+            loadChatHistory(this.value);
+            
+            // Update chat title with current model
+            const modelDisplayName = this.value.startsWith('ollama:') ? 
+                this.value.replace('ollama:', '') : 'Claude';
+            const titleElement = modal.querySelector('#modal-chat-title');
+            if (titleElement) {
+                titleElement.textContent = `💬 ${modelDisplayName}`;
+            }
+        });
+        
+        // Load initial history and set title
+        setTimeout(() => {
+            loadChatHistory(modalSelector.value);
+            const modelDisplayName = modalSelector.value.startsWith('ollama:') ? 
+                modalSelector.value.replace('ollama:', '') : 'Claude';
+            const titleElement = modal.querySelector('#modal-chat-title');
+            if (titleElement) {
+                titleElement.textContent = `💬 ${modelDisplayName}`;
+            }
+        }, 100);
+    }
+    
     return modal;
 }
 
@@ -356,7 +385,7 @@ function createPopupChatInterface() {
             min-height: 60px;
         ">
             <div>
-                <span style="margin: 0; color: black; font-family:helvetica">💬 Claude connected to <span style="color:red;">${code_name}</span></span>
+                <span id="popup-chat-title" style="margin: 0; color: black; font-family:helvetica">💬 Claude connected to <span style="color:red;">${code_name}</span></span>
             </div>
             <div style="display: flex; gap: 8px; align-items: center;">
                 <button id="popup-clear-history" style="background: none; border: none; color: black; font-size: 18px;">🧹</button>
@@ -420,16 +449,42 @@ function createPopupChatInterface() {
         if (e.key === 'Enter') sendPopupClaudeMessage();
     };
     
-    // Load chat history
-    loadChatHistory();
-    
     // Load available models for the selector
     loadAvailableModels();
+    
+    // Add event listener for model changes to reload chat history and update title
+    const popupSelector = document.getElementById('popup-model-selector');
+    if (popupSelector) {
+        popupSelector.addEventListener('change', function() {
+            claudeChatHistory = [];
+            displayChatHistory();
+            loadChatHistory(this.value);
+            
+            // Update chat title with current model
+            const modelDisplayName = this.value.startsWith('ollama:') ? 
+                this.value.replace('ollama:', '') : 'Claude';
+            const titleElement = document.getElementById('popup-chat-title');
+            if (titleElement) {
+                titleElement.innerHTML = `💬 ${modelDisplayName} connected to <span style="color:red;">${code_name}</span>`;
+            }
+        });
+        
+        // Load initial history and set title
+        setTimeout(() => {
+            loadChatHistory(popupSelector.value);
+            const modelDisplayName = popupSelector.value.startsWith('ollama:') ? 
+                popupSelector.value.replace('ollama:', '') : 'Claude';
+            const titleElement = document.getElementById('popup-chat-title');
+            if (titleElement) {
+                titleElement.innerHTML = `💬 ${modelDisplayName} connected to <span style="color:red;">${code_name}</span>`;
+            }
+        }, 100);
+    }
     
     // Focus the input
     setTimeout(() => {
         document.getElementById('popup-chat-input').focus();
-    }, 100);
+    }, 200);
 }
 
 function sendClaudeMessage() {
@@ -519,6 +574,13 @@ function sendPopupClaudeMessage() {
 function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'claude') {
     const messagesDiv = document.querySelector('#claude-chat-messages');
     
+    // Create model-specific page name for separate conversations
+    const modelPageName = `${code_name}_${selectedModel.replace(':', '_')}`;
+    
+    // Get model display name
+    const modelDisplayName = selectedModel.startsWith('ollama:') ? 
+        selectedModel.replace('ollama:', '') : 'Claude';
+    
     // Create streaming response
     const responseDiv = document.createElement('div');
     responseDiv.style.cssText = `
@@ -532,7 +594,7 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
     `;
     
     responseDiv.innerHTML = `
-        <div style="font-weight: bold; color: #cc6600; margin-bottom: 4px;">Claude</div>
+        <div style="font-weight: bold; color: #cc6600; margin-bottom: 4px;">${modelDisplayName}</div>
         <div id="streaming-content" style="color: black;">💭 Thinking...</div>
     `;
     
@@ -547,7 +609,7 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             ask: contextualMessage,
-            page_name: code_name,
+            page_name: modelPageName,
             current_code: currentCode,
             selected_model: selectedModel
         })
@@ -622,6 +684,13 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
 function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel = 'claude') {
     const messagesDiv = document.querySelector('#popup-chat-messages');
     
+    // Create model-specific page name for separate conversations
+    const modelPageName = `${code_name}_${selectedModel.replace(':', '_')}`;
+    
+    // Get model display name
+    const modelDisplayName = selectedModel.startsWith('ollama:') ? 
+        selectedModel.replace('ollama:', '') : 'Claude';
+    
     // Create streaming response
     const responseDiv = document.createElement('div');
     responseDiv.style.cssText = `
@@ -635,7 +704,7 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
     `;
     
     responseDiv.innerHTML = `
-        <div style="font-weight: bold; color: #cc6600; margin-bottom: 4px;">Claude</div>
+        <div style="font-weight: bold; color: #cc6600; margin-bottom: 4px;">${modelDisplayName}</div>
         <div id="popup-streaming-content" style="color: black;">💭 Thinking...</div>
     `;
     
@@ -650,7 +719,7 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             ask: contextualMessage,
-            page_name: code_name,
+            page_name: modelPageName,
             current_code: currentCode,
             selected_model: selectedModel
         })
@@ -722,8 +791,11 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
     });
 }
 
-function loadChatHistory() {
-    $.post("/get_chat_history/", {'page_name': code_name}).then((data) => {
+function loadChatHistory(selectedModel = 'claude') {
+    // Create model-specific page name for separate conversations
+    const modelPageName = `${code_name}_${selectedModel.replace(':', '_')}`;
+    
+    $.post("/get_chat_history/", {'page_name': modelPageName}).then((data) => {
         claudeChatHistory = data.history.map(msg => ({
             role: msg.role,
             content: msg.content,
@@ -765,8 +837,14 @@ function loadAvailableModels() {
 }
 
 function clearChatHistory() {
-    if (confirm(`Clear all chat history for "${code_name}"? This cannot be undone.`)) {
-        $.post("/clear_chat_history/", {'page_name': code_name}).then((data) => {
+    // Get current model to clear its specific history
+    const modalSelector = document.getElementById('modal-model-selector');
+    const popupSelector = document.getElementById('popup-model-selector');
+    const selectedModel = modalSelector?.value || popupSelector?.value || 'claude';
+    const modelPageName = `${code_name}_${selectedModel.replace(':', '_')}`;
+    
+    if (confirm(`Clear chat history for "${selectedModel}" on "${code_name}"? This cannot be undone.`)) {
+        $.post("/clear_chat_history/", {'page_name': modelPageName}).then((data) => {
             claudeChatHistory = [];
             displayChatHistory();
         }).catch((error) => {
