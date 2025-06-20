@@ -279,16 +279,6 @@ function createChatModal() {
                     cursor: pointer;
                     font-size: 12px;
                 ">Send</button>
-                <button id="claude-chat-stop" style="
-                    padding: 6px 12px; 
-                    background: #d73a49; 
-                    color: #ffffff; 
-                    border: none; 
-                    border-radius: 4px; 
-                    cursor: pointer;
-                    font-size: 12px;
-                    display: none;
-                ">Stop</button>
             </div>
             <div style="font-size: 10px; color: var(--vscode-descriptionForeground, #999);">
                 Real-time streaming • Direct code edits
@@ -298,8 +288,7 @@ function createChatModal() {
     
     // Add event listeners
     modal.querySelector('#claude-chat-close').onclick = () => modal.remove();
-    modal.querySelector('#claude-chat-send').onclick = () => sendClaudeMessage();
-    modal.querySelector('#claude-chat-stop').onclick = () => stopClaudeStream();
+    modal.querySelector('#claude-chat-send').onclick = () => handleChatSendClick();
     modal.querySelector('#claude-clear-history').onclick = () => clearChatHistory();
     modal.querySelector('#claude-chat-input').onkeydown = (e) => {
         if (e.key === 'Enter') {
@@ -456,16 +445,6 @@ function createPopupChatInterface() {
                     font-family: Helvetica, Arial, sans-serif;
                 ">
                 <button id="popup-chat-send" style="background: none; border: none; color: black; font-size: 18px;">✈️</button>
-                <button id="popup-chat-stop" style="
-                    background: #d73a49; 
-                    border: none; 
-                    color: white; 
-                    padding: 8px 12px;
-                    font-size: 12px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    display: none;
-                ">Stop</button>
             </div>
             <div style="font-size: 11px; color: #666; text-align: center;">
                 Real-time streaming responses • Direct code editing • Press Enter to send
@@ -476,8 +455,7 @@ function createPopupChatInterface() {
     document.body.appendChild(chatContainer);
     
     // Add event listeners for popup chat
-    document.getElementById('popup-chat-send').onclick = () => sendPopupClaudeMessage();
-    document.getElementById('popup-chat-stop').onclick = () => stopClaudeStream();
+    document.getElementById('popup-chat-send').onclick = () => handlePopupChatSendClick();
     document.getElementById('popup-clear-history').onclick = () => clearChatHistory();
     document.getElementById('popup-chat-input').onkeydown = (e) => {
         if (e.key === 'Enter') {
@@ -667,13 +645,8 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
     let fullResponse = '';
     let hasStarted = false;
     
-    // Show stop button, hide send button
-    const sendButton = document.getElementById('claude-chat-send');
-    const stopButton = document.getElementById('claude-chat-stop');
-    if (sendButton && stopButton) {
-        sendButton.style.display = 'none';
-        stopButton.style.display = 'block';
-    }
+    // Change send button to stop state
+    setSendButtonToStopState();
     
     // Create abort controller for stopping the stream
     currentStreamController = new AbortController();
@@ -702,13 +675,8 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
                         timestamp: Date.now() 
                     });
                     
-                    // Restore buttons when streaming is complete
-                    const sendButton = document.getElementById('claude-chat-send');
-                    const stopButton = document.getElementById('claude-chat-stop');
-                    if (sendButton && stopButton) {
-                        sendButton.style.display = 'block';
-                        stopButton.style.display = 'none';
-                    }
+                    // Reset button to send state when streaming is complete
+                    resetSendButtons();
                     currentStreamController = null;
                     return;
                 }
@@ -763,13 +731,8 @@ function streamClaudeResponse(contextualMessage, currentCode, selectedModel = 'c
     .catch(error => {
         document.getElementById('streaming-content').innerHTML = '<span style="color: #ff6b6b;">Error connecting to Claude</span>';
         
-        // Restore buttons on error
-        const sendButton = document.getElementById('claude-chat-send');
-        const stopButton = document.getElementById('claude-chat-stop');
-        if (sendButton && stopButton) {
-            sendButton.style.display = 'block';
-            stopButton.style.display = 'none';
-        }
+        // Reset button to send state on error
+        resetSendButtons();
         currentStreamController = null;
     });
 }
@@ -807,13 +770,8 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
     let fullResponse = '';
     let hasStarted = false;
     
-    // Show stop button, hide send button for popup
-    const sendButton = document.getElementById('popup-chat-send');
-    const stopButton = document.getElementById('popup-chat-stop');
-    if (sendButton && stopButton) {
-        sendButton.style.display = 'none';
-        stopButton.style.display = 'block';
-    }
+    // Change send button to stop state
+    setSendButtonToStopState();
     
     // Create abort controller for stopping the stream
     currentStreamController = new AbortController();
@@ -842,13 +800,8 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
                         timestamp: Date.now() 
                     });
                     
-                    // Restore buttons when streaming is complete for popup
-                    const sendButton = document.getElementById('popup-chat-send');
-                    const stopButton = document.getElementById('popup-chat-stop');
-                    if (sendButton && stopButton) {
-                        sendButton.style.display = 'block';
-                        stopButton.style.display = 'none';
-                    }
+                    // Reset button to send state when streaming is complete for popup
+                    resetSendButtons();
                     currentStreamController = null;
                     return;
                 }
@@ -903,13 +856,8 @@ function streamPopupClaudeResponse(contextualMessage, currentCode, selectedModel
     .catch(error => {
         document.getElementById('popup-streaming-content').innerHTML = '<span style="color: #ff6b6b;">Error connecting to Claude</span>';
         
-        // Restore buttons on error for popup
-        const sendButton = document.getElementById('popup-chat-send');
-        const stopButton = document.getElementById('popup-chat-stop');
-        if (sendButton && stopButton) {
-            sendButton.style.display = 'block';
-            stopButton.style.display = 'none';
-        }
+        // Reset button to send state on error for popup
+        resetSendButtons();
         currentStreamController = null;
     });
 }
@@ -977,25 +925,33 @@ function clearChatHistory() {
     }
 }
 
+function handleChatSendClick() {
+    if (currentStreamController) {
+        // Currently streaming - stop it
+        stopClaudeStream();
+    } else {
+        // Not streaming - send message
+        sendClaudeMessage();
+    }
+}
+
+function handlePopupChatSendClick() {
+    if (currentStreamController) {
+        // Currently streaming - stop it
+        stopClaudeStream();
+    } else {
+        // Not streaming - send message
+        sendPopupClaudeMessage();
+    }
+}
+
 function stopClaudeStream() {
     if (currentStreamController) {
         currentStreamController.abort();
         currentStreamController = null;
         
-        // Hide stop button and show send button
-        const modalSend = document.getElementById('claude-chat-send');
-        const modalStop = document.getElementById('claude-chat-stop');
-        const popupSend = document.getElementById('popup-chat-send');
-        const popupStop = document.getElementById('popup-chat-stop');
-        
-        if (modalSend && modalStop) {
-            modalSend.style.display = 'block';
-            modalStop.style.display = 'none';
-        }
-        if (popupSend && popupStop) {
-            popupSend.style.display = 'block';
-            popupStop.style.display = 'none';
-        }
+        // Reset button to send state
+        resetSendButtons();
         
         // Update any streaming content to show it was stopped
         const streamingContent = document.getElementById('streaming-content');
@@ -1007,6 +963,42 @@ function stopClaudeStream() {
         if (popupStreamingContent && popupStreamingContent.textContent.includes('💭')) {
             popupStreamingContent.innerHTML = '<span style="color: #999;">⏹️ Response stopped</span>';
         }
+    }
+}
+
+function setSendButtonToStopState() {
+    const modalSend = document.getElementById('claude-chat-send');
+    const popupSend = document.getElementById('popup-chat-send');
+    
+    if (modalSend) {
+        modalSend.textContent = '🔴';
+        modalSend.style.background = '#d73a49';
+        modalSend.title = 'Stop response';
+    }
+    if (popupSend) {
+        popupSend.textContent = '🔴';
+        popupSend.style.background = '#d73a49';
+        popupSend.style.borderRadius = '4px';
+        popupSend.style.padding = '8px 12px';
+        popupSend.title = 'Stop response';
+    }
+}
+
+function resetSendButtons() {
+    const modalSend = document.getElementById('claude-chat-send');
+    const popupSend = document.getElementById('popup-chat-send');
+    
+    if (modalSend) {
+        modalSend.textContent = 'Send';
+        modalSend.style.background = 'var(--vscode-button-background, #0e639c)';
+        modalSend.title = '';
+    }
+    if (popupSend) {
+        popupSend.textContent = '✈️';
+        popupSend.style.background = 'none';
+        popupSend.style.borderRadius = '';
+        popupSend.style.padding = '';
+        popupSend.title = '';
     }
 }
 
