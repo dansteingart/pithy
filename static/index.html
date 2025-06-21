@@ -1172,8 +1172,13 @@ function handleCodeEdit(newCode, originalResponse) {
         
         messagesDiv.appendChild(codeEditOption);
         
-        // Add event listeners
-        document.getElementById('replace-modal-edit').onclick = () => {
+        // Add event listeners using querySelector on the specific element
+        const replaceBtn = codeEditOption.querySelector('#replace-modal-edit');
+        const insertBtn = codeEditOption.querySelector('#insert-modal-edit');
+        const appendBtn = codeEditOption.querySelector('#append-modal-edit');
+        const dismissBtn = codeEditOption.querySelector('#dismiss-modal-edit');
+        
+        replaceBtn.onclick = () => {
             codeEditOption.innerHTML = `
                 <div style="color: #007acc; font-size: 12px; font-weight: bold;">
                     ✅ Replacing editor content...
@@ -1182,7 +1187,7 @@ function handleCodeEdit(newCode, originalResponse) {
             applyCodeEdit(newCode);
         };
         
-        document.getElementById('insert-modal-edit').onclick = () => {
+        insertBtn.onclick = () => {
             codeEditOption.innerHTML = `
                 <div style="color: #007acc; font-size: 12px; font-weight: bold;">
                     ✅ Inserting code at cursor...
@@ -1191,7 +1196,7 @@ function handleCodeEdit(newCode, originalResponse) {
             insertCodeAtCursor(newCode);
         };
         
-        document.getElementById('append-modal-edit').onclick = () => {
+        appendBtn.onclick = () => {
             codeEditOption.innerHTML = `
                 <div style="color: #007acc; font-size: 12px; font-weight: bold;">
                     ✅ Appending code to end...
@@ -1200,7 +1205,7 @@ function handleCodeEdit(newCode, originalResponse) {
             appendCodeToEnd(newCode);
         };
         
-        document.getElementById('dismiss-modal-edit').onclick = () => {
+        dismissBtn.onclick = () => {
             codeEditOption.remove();
         };
     }
