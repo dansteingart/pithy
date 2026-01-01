@@ -55,42 +55,97 @@ db.run(`CREATE TABLE IF NOT EXISTS runs(id INTEGER PRIMARY KEY,
 
 function steaksauce(ask)
 {
-  // Check if required environment variables are set
-  if (!openwebuiserver) {
-    return Promise.reject(new Error('OPENWEBUISERVER environment variable is not set. Please configure it to use AI code generation.'));
-  }
-  if (!sk) {
-    return Promise.reject(new Error('OPENWEBUIAPI_KEY environment variable is not set. Please configure it to use AI code generation.'));
-  }
+  // Determine which endpoint to use
+  let url, headers, data, model;
 
-  const url = `${openwebuiserver}/api/chat/completions`;
-  const headers = {
+  if (!openwebuiserver) {
+    // Fall back to local Ollama using OpenAI-compatible endpoint
+    console.log('OPENWEBUISERVER not set, trying local Ollama...');
+    url = 'http://127.0.0.1:11434/v1/chat/completions';
+    headers = {
+      'Content-Type': 'application/json'
+    };
+    model = process.env.OLLAMA_MODEL || 'codellama';
+    data = {
+      model: model,
+      messages: [
+        {
+          role: "user",
+          content: `(only return python code and commented lines as this is going directly into a code editor, do not escape with a markdown code block) ${ask}`
+        }
+      ]
+    };
+  } else {
+    // Use OpenWebUI
+    if (!sk) {
+      return Promise.reject(new Error('OPENWEBUIAPI_KEY environment variable is not set. Please configure it to use OpenWebUI.'));
+    }
+    url = `${openwebuiserver}/api/chat/completions`;
+    headers = {
       'Authorization': `Bearer ${sk}`,
       'Content-Type': 'application/json'
-  };
-  const data = {
-      model: "gpt-4o-mini",
+    };
+    model = process.env.OPENWEBUI_MODEL || "gpt-4o-mini";
+    data = {
+      model: model,
       messages: [
-          {
-              role: "user",
-              content: `(only return python code and commented lines as this is going directly into a code editor, do not escape with a markdown code block) ${ask}`
-          }
+        {
+          role: "user",
+          content: `(only return python code and commented lines as this is going directly into a code editor, do not escape with a markdown code block) ${ask}`
+        }
       ]
-  };
+    };
+  }
+
+  console.log('Fetching URL:', url);
+  console.log('Request data:', JSON.stringify(data, null, 2));
 
   return fetch(url, {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(data)
   })
-  .then(response => response.json())
+  .then(response => {
+      console.log('Response status:', response.status, response.statusText);
+      if (!response.ok) {
+        return response.text().then(errorBody => {
+          console.error('Error response body:', errorBody);
+          throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorBody.substring(0, 100)}`);
+        });
+      }
+      return response.json();
+  })
   .then(foo => {
-      var clean = foo.choices[0].message.content;
+      console.log('API Response:', JSON.stringify(foo, null, 2));
+      // Handle both OpenAI-style and Ollama-style responses
+      let clean;
+      if (foo.choices && foo.choices[0] && foo.choices[0].message) {
+        // OpenAI/OpenWebUI format
+        clean = foo.choices[0].message.content;
+      } else if (foo.message && foo.message.content) {
+        // Ollama format
+        clean = foo.message.content;
+      } else if (foo.response) {
+        // Ollama generate format (some versions)
+        clean = foo.response;
+      } else {
+        console.error('Unexpected response structure:', foo);
+        throw new Error(`Unexpected API response format. Got: ${JSON.stringify(foo).substring(0, 100)}...`);
+      }
+
+      // Clean up the response
       clean = clean.replace(/plt\.show\(\)/g,"showme()")
+
+      // Remove markdown code blocks (```python, ```, etc.)
+      clean = clean.replace(/^```[\w]*\n?/gm, '').replace(/\n?```$/gm, '').trim();
+
       return clean;
   })
   .catch(err => {
-      console.error("Error:", err);
+      console.error("steaksauce error:", err);
+      if (!openwebuiserver && err.code === 'ECONNREFUSED') {
+        throw new Error('Could not connect to local Ollama. Please install and start Ollama (https://ollama.ai) or set OPENWEBUISERVER environment variable.');
+      }
       throw err;
   });
 }
