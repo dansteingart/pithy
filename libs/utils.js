@@ -28,52 +28,27 @@ const persistenceDir = "persist"
 /**
  * @type {{bindState: function(string,WSSharedDoc):void, writeState:function(string,WSSharedDoc):Promise<any>, provider: any}|null}
  */
-const fs = require('fs')
-const path = require('path')
+const { ClassicLevel } = require('classic-level')
 
 let persistence = null
 if (typeof persistenceDir === 'string') {
   console.info('Persisting documents to "' + persistenceDir + '"')
 
-  // Create persistence directory if it doesn't exist
-  if (!fs.existsSync(persistenceDir)) {
-    fs.mkdirSync(persistenceDir, { recursive: true })
-  }
+  const ldb = new ClassicLevel(persistenceDir, { valueEncoding: 'binary' })
 
-  // Simple file-based persistence
   persistence = {
-    provider: null,
+    provider: ldb,
     bindState: async (docName, ydoc) => {
-      const filePath = path.join(persistenceDir, `${docName}.yjs`)
-
-      // Load existing state if file exists
-      if (fs.existsSync(filePath)) {
-        try {
-          const data = fs.readFileSync(filePath)
-          Y.applyUpdate(ydoc, data)
-        } catch (err) {
-          console.error('Error loading persisted doc:', err)
-        }
+      const persistedYdoc = await ldb.get(docName).catch(() => null)
+      if (persistedYdoc) {
+        Y.applyUpdate(ydoc, persistedYdoc)
       }
-
-      // Save updates to file
       ydoc.on('update', update => {
-        try {
-          const state = Y.encodeStateAsUpdate(ydoc)
-          fs.writeFileSync(filePath, state)
-        } catch (err) {
-          console.error('Error saving doc:', err)
-        }
+        ldb.put(docName, Y.encodeStateAsUpdate(ydoc))
       })
     },
     writeState: async (docName, ydoc) => {
-      const filePath = path.join(persistenceDir, `${docName}.yjs`)
-      try {
-        const state = Y.encodeStateAsUpdate(ydoc)
-        fs.writeFileSync(filePath, state)
-      } catch (err) {
-        console.error('Error writing doc state:', err)
-      }
+      return ldb.put(docName, Y.encodeStateAsUpdate(ydoc))
     }
   }
 }

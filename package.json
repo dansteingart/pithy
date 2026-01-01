@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "abstract-level": "^2.0.0",
+    "classic-level": "^1.4.1",
     "cors": "^2.8.5",
     "express": "^5.2.1",
     "express-basic-auth": "^1.2.0",
