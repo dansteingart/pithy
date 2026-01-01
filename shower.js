@@ -2,7 +2,6 @@
 var http = require("http"); //HTTP Server
 var fs = require('fs'); // Filesystem Access (writing files)
 var express = require('express'); //App Framework (similar to web.py abstraction)
-var bodyParser = require('body-parser')
 
 var app = express();
 var os = require("os")
@@ -62,8 +61,8 @@ function makestyledoutput(strang)
 
 
 //Set Static Directories
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
+app.use(express.urlencoded({ extended: false }))
+app.use(express.json())
 app.use(cors());
 app.use("/static", express.static(__dirname + '/static'));
 app.use("/images", express.static(__dirname + '/images'));
@@ -112,100 +111,100 @@ app.post('/run',function(req,res)
 	}
 });
 
-app.post('/*',function(req,res)
+app.use(function(req,res)
 {
-
-	if (req.params[0] == "")
-	{
-		res.send("try harder");
-	}
-
-	else
-	{
-
-		//here's were we do a lot of fun stuff
-		try
+	if (req.method === 'POST') {
+		if (req.path === "/" || req.path === "")
 		{
-			nameo = req.url
-			parts = nameo.split("/");
-
-			estring = "";
-			console.log("foo foo foo")
-			to_run = parts[1]
-
-			console.log(req.body)
-
-			payload = req.body['payload']
-     		 fn = "post_payload/"+to_run+".json"
-
-			fs.writeFileSync(fn,JSON.stringify(req.body))
-
-			fullcmd = makecmd(parts[1])
-			fullcmd = fullcmd + fn
-
-			exec(fullcmd,{maxBuffer: 1024 * 10000},
-					function(error, stdout, stderr)
-					{
-						res.send(stdout+stderr);
-					}
-				)
-		}
-		catch (err)
-		{
-			console.log(err)
+			res.send("try harder");
 		}
 
-	}
-});
-
-app.get('/*', function(req, res)
-{
-	if (req.params[0] == "")
-	{
-		res.send("try harder");
-	}
-
-	else if (req.url == "/favicon.ico")
-	{
-		res.send("nothing to see here");
-	}
-
-	else
-	{
-		//here's were we do a lot of fun stuff
-		try
+		else
 		{
-			nameo = req.url
-			nameo = nameo.replace("?","/").replace(/&/g,"/")
-			console.log(nameo);
-			parts = nameo.split("/");
-			//console.log(parts)
 
-			estring = "";
-			for (var i=2; i < parts.length;i++)
+			//here's were we do a lot of fun stuff
+			try
 			{
-				estring += parts[i]+" ";
+				nameo = req.url
+				parts = nameo.split("/");
+
+				estring = "";
+				console.log("foo foo foo")
+				to_run = parts[1]
+
+				console.log(req.body)
+
+				payload = req.body['payload']
+				 fn = "post_payload/"+to_run+".json"
+
+				fs.writeFileSync(fn,JSON.stringify(req.body))
+
+				fullcmd = makecmd(parts[1])
+				fullcmd = fullcmd + fn
+
+				exec(fullcmd,{maxBuffer: 1024 * 10000},
+						function(error, stdout, stderr)
+						{
+							res.send(stdout+stderr);
+						}
+					)
 			}
-			//console.log(estring)
-
-			fullcmd = makecmd(parts[1])
-			console.log(fullcmd)
-			fullcmd = fullcmd + estring
-
-			if (fullcmd.search("python")> -1)
+			catch (err)
 			{
-				exec(fullcmd,{maxBuffer: 1024 * 10000},function(error, stdout, stderr){
-					var out;
-					if (styler) out = makestyledoutput(stdout);
-					else out = stdout;
-					res.send(out);
-				})}
+				console.log(err)
 			}
-		catch (err)
+
+		}
+	}
+	else if (req.method === 'GET')
+	{
+		if (req.path === "/" || req.path === "")
 		{
-			console.log(err)
+			res.send("try harder");
 		}
 
+		else if (req.url == "/favicon.ico")
+		{
+			res.send("nothing to see here");
+		}
+
+		else
+		{
+			//here's were we do a lot of fun stuff
+			try
+			{
+				nameo = req.url
+				nameo = nameo.replace("?","/").replace(/&/g,"/")
+				console.log(nameo);
+				parts = nameo.split("/");
+				//console.log(parts)
+
+				estring = "";
+				for (var i=2; i < parts.length;i++)
+				{
+					estring += parts[i]+" ";
+				}
+				//console.log(estring)
+
+				fullcmd = makecmd(parts[1])
+				console.log(fullcmd)
+				fullcmd = fullcmd + estring
+
+				if (fullcmd.search("python")> -1)
+				{
+					exec(fullcmd,{maxBuffer: 1024 * 10000},function(error, stdout, stderr){
+						var out;
+						if (styler) out = makestyledoutput(stdout);
+						else out = stdout;
+						res.send(out);
+					})}
+				}
+			catch (err)
+			{
+				console.log(err)
+			}
+
+		}
 	}
 });
 

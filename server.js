@@ -9,7 +9,6 @@ const utils = require('./libs/utils.js');
 const setupWSConnection = utils.setupWSConnection
 var express = require('express');
 const basicAuth = require('express-basic-auth')
-var bodyParser = require('body-parser')
 var fs = require('fs')
 const app = express();
 const host = process.env.HOST || '0.0.0.0'
@@ -128,7 +127,7 @@ function authentication(req, res, next) {
       err.status = 401;
       return next(err)
   }
-  var auth = new Buffer.from(authheader.split(' ')[1],'base64').toString().split(':');
+  var auth = Buffer.from(authheader.split(' ')[1],'base64').toString().split(':');
   var user = auth[0];
   var pass = auth[1];
   if(users.hasOwnProperty(user) && users[user]==pass){next();}
@@ -177,8 +176,8 @@ app.use('/static',express.static('static'));
 app.use('/images',express.static('images'));
 app.use('/node_modules',express.static('node_modules'));
 
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
+app.use(express.urlencoded({ extended: false }))
+app.use(express.json())
 app.use(authentication)
 
 ps = {}
@@ -191,18 +190,18 @@ tss = {}
 
 app.post("/code_list/",(req,res)=>{
 
-  data = req.body;
+  data = req.body || {};
 
-  files = glob.sync("code/*.py")
-  
+  files = glob.globSync("code/*.py")
+
   files = files.map(function (fileName) {
       return {
         name: fileName,
         time: fs.statSync(fileName).mtime.getTime()
       };
     }).map(function (v) {
-      return [v.name,v.time]; });  
-  
+      return [v.name,v.time]; });
+
 
 if (data['count'] != undefined) files = files.slice(0,data['count']);
 
@@ -211,13 +210,13 @@ res.send({'files':files})
 })
 
 app.post("/check_status/",(req,res)=>{
-  data = req.body;
+  data = req.body || {};
   res.send(utils.getYDoc(data['code']).getText('output').toString());
  });
 
 
 app.post("/check_exists/",(req,res)=>{
-  data = req.body;
+  data = req.body || {};
   codename = data['code'];
   action = "none"
   //first, see if we've got anything in memory/peristence
@@ -251,7 +250,7 @@ app.post("/check_exists/",(req,res)=>{
 
  
 app.post("/check_running/",(req,res)=>{
-  data = req.body;
+  data = req.body || {};
   out = {'running':true}
   if (ps[data['code']]==undefined) out['running'] = false
   else if (ps[data['code']]['exitCode']!= null) out['running'] = false
@@ -267,7 +266,7 @@ app.post("/check_running/",(req,res)=>{
 
  app.post("/steaksauce/",(req,res)=>
   {
-    data = req.body;
+    data = req.body || {};
     ask = data['ask']
     steaksauce(ask).then((code)=>
     {
@@ -282,7 +281,7 @@ app.post('/history/', function(req, res)
   var t1 = new Date().getTime();
   console.log(new Date().getTime() - t1);
 
-   data = req.body;
+   data = req.body || {};
    codename = data['code']
    length = "_1314970891000".length //get length of timestamp
    structure = `${histbase + codename}*`
@@ -332,7 +331,7 @@ app.post('/history/', function(req, res)
 
 app.post('/get_history/',function(req,res)
 {
-  data = req.body;
+  data = req.body || {};
   codename = data['code']
   histval  = data['history']
   old_code = fs.readFileSync(`${histbase+histval}`).toString();
@@ -345,21 +344,15 @@ app.post('/get_history/',function(req,res)
   res.send({'reverted':histval})
 })
 
-app.get('/*', (req, res) => {
-    if (req.params[0] == "") res.sendFile('homepage.html', { root: __dirname+"/static" })
-    else res.sendFile('index.html', { root: __dirname+"/static" });
-  });
-
-
 app.post("/get_user/",(req,res) =>{
-  foo = new Buffer.from(req.headers.authorization.split(' ')[1],'base64').toString().split(':')
+  foo = Buffer.from(req.headers.authorization.split(' ')[1],'base64').toString().split(':')
   res.send({'user':foo[0]})
 }
 )
 
 
 app.post("/copy_code/",(req,res)=>{
-  data = req.body;
+  data = req.body || {};
   codename = data['code']
   copyto = data['copy_to']
   nfn = `code/${copyto}.py`
@@ -375,8 +368,8 @@ app.post("/copy_code/",(req,res)=>{
 //Running Functions
 
 app.post("/run/",(req,res) => {
-  data = req.body
-  user = new Buffer.from(req.headers.authorization.split(' ')[1],'base64').toString().split(':')[0]
+  data = req.body || {}
+  user = Buffer.from(req.headers.authorization.split(' ')[1],'base64').toString().split(':')[0]
   getme = runner(data['code'],user)
   res.send({'state':getme});
 });
@@ -470,11 +463,17 @@ function runner(codename,user="user"){
 
  app.post("/kill/", (req,res)=>
  {
-    data = req.body;
+    data = req.body || {};
     ps[data['code']].kill();
     res.send({'state':ps[data['code']]});
  });
- 
+
+// Catch-all route - must be last
+app.use((req, res) => {
+    if (req.path === "/" || req.path === "") res.sendFile('homepage.html', { root: __dirname+"/static" })
+    else res.sendFile('index.html', { root: __dirname+"/static" });
+});
+
  //fire up server
 wss.on('connection', setupWSConnection)
 server.on('upgrade', (request, socket, head) => {

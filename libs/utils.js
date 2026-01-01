@@ -28,24 +28,53 @@ const persistenceDir = "persist"
 /**
  * @type {{bindState: function(string,WSSharedDoc):void, writeState:function(string,WSSharedDoc):Promise<any>, provider: any}|null}
  */
+const fs = require('fs')
+const path = require('path')
+
 let persistence = null
 if (typeof persistenceDir === 'string') {
   console.info('Persisting documents to "' + persistenceDir + '"')
-  // @ts-ignore
-  const LeveldbPersistence = require('y-leveldb').LeveldbPersistence
-  const ldb = new LeveldbPersistence(persistenceDir)
+
+  // Create persistence directory if it doesn't exist
+  if (!fs.existsSync(persistenceDir)) {
+    fs.mkdirSync(persistenceDir, { recursive: true })
+  }
+
+  // Simple file-based persistence
   persistence = {
-    provider: ldb,
+    provider: null,
     bindState: async (docName, ydoc) => {
-      const persistedYdoc = await ldb.getYDoc(docName)
-      const newUpdates = Y.encodeStateAsUpdate(ydoc)
-      ldb.storeUpdate(docName, newUpdates)
-      Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc))
+      const filePath = path.join(persistenceDir, `${docName}.yjs`)
+
+      // Load existing state if file exists
+      if (fs.existsSync(filePath)) {
+        try {
+          const data = fs.readFileSync(filePath)
+          Y.applyUpdate(ydoc, data)
+        } catch (err) {
+          console.error('Error loading persisted doc:', err)
+        }
+      }
+
+      // Save updates to file
       ydoc.on('update', update => {
-        ldb.storeUpdate(docName, update)
+        try {
+          const state = Y.encodeStateAsUpdate(ydoc)
+          fs.writeFileSync(filePath, state)
+        } catch (err) {
+          console.error('Error saving doc:', err)
+        }
       })
     },
-    writeState: async (docName, ydoc) => {}
+    writeState: async (docName, ydoc) => {
+      const filePath = path.join(persistenceDir, `${docName}.yjs`)
+      try {
+        const state = Y.encodeStateAsUpdate(ydoc)
+        fs.writeFileSync(filePath, state)
+      } catch (err) {
+        console.error('Error writing doc state:', err)
+      }
+    }
   }
 }
 
