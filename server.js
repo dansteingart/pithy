@@ -55,7 +55,14 @@ db.run(`CREATE TABLE IF NOT EXISTS runs(id INTEGER PRIMARY KEY,
 
 function steaksauce(ask)
 {
-  console.log(sk)
+  // Check if required environment variables are set
+  if (!openwebuiserver) {
+    return Promise.reject(new Error('OPENWEBUISERVER environment variable is not set. Please configure it to use AI code generation.'));
+  }
+  if (!sk) {
+    return Promise.reject(new Error('OPENWEBUIAPI_KEY environment variable is not set. Please configure it to use AI code generation.'));
+  }
+
   const url = `${openwebuiserver}/api/chat/completions`;
   const headers = {
       'Authorization': `Bearer ${sk}`,
@@ -271,6 +278,11 @@ app.post("/check_running/",(req,res)=>{
     steaksauce(ask).then((code)=>
     {
       res.send({'code':code})
+    })
+    .catch((err) => {
+      console.error('Steaksauce error:', err.message);
+      const errorComment = `# ERROR: ${err.message}\n# Please check your environment configuration.`;
+      res.send({'code': errorComment})
     })
   })
 
