@@ -288,48 +288,34 @@ app.post("/check_status/",(req,res)=>{
  });
 
 
+// Ensure a Yjs doc is populated — loads from disk if empty (used by browser and API)
+function ensureDocLoaded(codename) {
+  const ycm = utils.getYDoc(codename).getText('codemirror');
+  if (ycm.toString().length > 0) return;
+  if (_checkExistsLock.has(codename)) return;
+  _checkExistsLock.add(codename);
+  if (fs.existsSync(`code/${codename}.py`)) {
+    const bits = fs.readFileSync(`code/${codename}.py`).toString();
+    ycm.delete(0, ycm.length);
+    ycm.insert(0, bits);
+  } else {
+    const bits = fs.readFileSync(`static/template.txt`).toString();
+    ycm.delete(0, ycm.length);
+    ycm.insert(0, bits);
+  }
+  _checkExistsLock.delete(codename);
+}
+
 const _checkExistsLock = new Set();
 app.post("/check_exists/",(req,res)=>{
   const data = req.body;
   const codename = data['code'];
-  let action = "none"
-
-  // Prevent concurrent inserts for the same doc
-  if (_checkExistsLock.has(codename)) {
-    DEBUG.log(`${codename} check_exists already in progress, skipping`);
-    res.send({'action':'already loading'});
-    return;
-  }
-
-  //first, see if we've got anything in memory/peristence
-  const foo = utils.getYDoc(codename).getText('codemirror').toString();
-    if (foo.length == 0){
-      _checkExistsLock.add(codename);
-      DEBUG.log(`cannot find ${codename}.py in persistence, looking in code`);
-      //if not, try to open up file from code and inject into codemirror
-      if (fs.existsSync(`code/${codename}.py`))
-      {
-        DEBUG.log(`inserting from code/${codename}.py`);
-        const bits = fs.readFileSync(`code/${codename}.py`).toString();
-        const mem = utils.getYDoc(codename).getText('codemirror')
-        mem.delete(0,mem.length);
-        mem.insert(0,bits);
-        action = "pulled from code"
-      }
-      //if nothing, send template
-      else
-      {
-        DEBUG.log(`doesn't seem to exist, inserting template`);
-        const bits = fs.readFileSync(`static/template.txt`).toString()
-        const mem = utils.getYDoc(codename).getText('codemirror')
-        mem.delete(0,mem.length);
-        mem.insert(0,bits);
-        action = "inserted template"
-      }
-      _checkExistsLock.delete(codename);
-    }
-    else { DEBUG.log(`found ${codename} in persistence`) }
-  res.send({'action':action})
+  const before = utils.getYDoc(codename).getText('codemirror').toString().length;
+  ensureDocLoaded(codename);
+  const after = utils.getYDoc(codename).getText('codemirror').toString().length;
+  const action = before === 0 && after > 0 ? "loaded from disk" : before > 0 ? "already in persistence" : "inserted template";
+  DEBUG.log(`check_exists ${codename}: ${action}`);
+  res.send({'action': action});
 })
 
  
@@ -645,9 +631,10 @@ app.get('/api/codes', (req, res) => {
   res.json({ codes: files });
 });
 
-// Read current code (live from Yjs doc)
+// Read current code (live from Yjs doc, loads from disk if not yet open in browser)
 app.get('/api/:codename/code', (req, res) => {
   const codename = req.params.codename;
+  ensureDocLoaded(codename);
   const code = utils.getYDoc(codename).getText('codemirror').toString();
   res.json({ name: codename, code: code, length: code.length });
 });
@@ -847,6 +834,7 @@ function editrow(ti,rt,ec,et)
 
 function runner(codename,user="user"){
 
+  ensureDocLoaded(codename);
   const code = utils.getYDoc(codename).getText('codemirror').toString();
   let have;
   try { have = fs.readFileSync("code/"+codename+".py").toString();}
