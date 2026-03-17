@@ -9,6 +9,7 @@ const utils = require('./libs/utils.js');
 const setupWSConnection = utils.setupWSConnection
 const express = require('express');
 const fs = require('fs')
+const crypto = require('crypto')
 const app = express();
 const host = process.env.HOST || '0.0.0.0'
 const port = process.env.PORT || 1234
@@ -116,26 +117,46 @@ function writecdbhist(name,code)
 }
 
 
-function authentication(req, res, next) {
-  const users = JSON.parse(fs.readFileSync("assets/pass.json").toString())
+function getPassData() {
+  return JSON.parse(fs.readFileSync("assets/pass.json").toString())
+}
+
+// Resolve auth header to username, or null if invalid
+function resolveAuth(req) {
   const authheader = req.headers.authorization;
-  if (!authheader) {
-      const err = new Error('You are not authenticated!');
-      res.setHeader('WWW-Authenticate', 'Basic');
-      err.status = 401;
-      return next(err)
-  }
-  const auth = Buffer.from(authheader.split(' ')[1],'base64').toString().split(':');
-  const user = auth[0];
-  const pass = auth[1];
-  if(users.hasOwnProperty(user) && users[user]==pass){next();}
-  else {
-      const err = new Error('You are not authenticated!');
-      res.setHeader('WWW-Authenticate', 'Basic');
-      err.status = 401;
-      return next(err);
+  if (!authheader) return null;
+  const passData = getPassData();
+
+  // Bearer token (API key)
+  if (authheader.startsWith('Bearer ')) {
+    const token = authheader.slice(7);
+    const apiKeys = passData._api_keys || {};
+    if (apiKeys[token]) return apiKeys[token] + "_bot";
+    return null;
   }
 
+  // Basic auth
+  if (authheader.startsWith('Basic ')) {
+    const auth = Buffer.from(authheader.split(' ')[1],'base64').toString().split(':');
+    const user = auth[0];
+    const pass = auth[1];
+    if (passData.hasOwnProperty(user) && passData[user] == pass) return user;
+  }
+
+  return null;
+}
+
+function authentication(req, res, next) {
+  const user = resolveAuth(req);
+  if (user) {
+    req.authUser = user;
+    next();
+  } else {
+    const err = new Error('You are not authenticated!');
+    res.setHeader('WWW-Authenticate', 'Basic');
+    err.status = 401;
+    return next(err);
+  }
 }
 
 //folders
@@ -364,6 +385,42 @@ app.post('/get_history/',function(req,res)
 })
 
 // ============================================================
+// API Key management
+// ============================================================
+
+// Generate (or regenerate) an API key for the authenticated user
+app.post('/api/generate_key', (req, res) => {
+  const user = req.authUser;
+  const passData = getPassData();
+  if (!passData._api_keys) passData._api_keys = {};
+
+  // Remove any existing key for this user
+  for (const [key, val] of Object.entries(passData._api_keys)) {
+    if (val === user) delete passData._api_keys[key];
+  }
+
+  // Generate new key
+  const apiKey = "pk_" + crypto.randomBytes(24).toString('hex');
+  passData._api_keys[apiKey] = user;
+  fs.writeFileSync("assets/pass.json", JSON.stringify(passData, null, 2));
+
+  res.json({ user: user, api_key: apiKey });
+});
+
+// List API key for current user (shows masked key)
+app.get('/api/key', (req, res) => {
+  const user = req.authUser;
+  const passData = getPassData();
+  const apiKeys = passData._api_keys || {};
+  for (const [key, val] of Object.entries(apiKeys)) {
+    if (val === user) {
+      return res.json({ user: user, api_key: key.slice(0,7) + "..." + key.slice(-4) });
+    }
+  }
+  res.json({ user: user, api_key: null });
+});
+
+// ============================================================
 // Agent/AI API — interact with code, output, and history
 // ============================================================
 
@@ -374,8 +431,8 @@ app.get('/api/agent', (req, res) => {
     name: "Pithy",
     description: "A collaborative, real-time Python code editor. You are a co-user — your edits appear live in the browser for human collaborators. Use this API to read, write, run, and debug Python code together.",
     auth: {
-      type: "Basic",
-      note: "All endpoints require HTTP Basic Auth. Use the same credentials as the web UI."
+      type: "Bearer (API key) or Basic",
+      note: "All endpoints require auth. Use 'Authorization: Bearer <api_key>' (preferred for agents) or HTTP Basic Auth. Generate an API key via POST /api/generate_key with Basic auth."
     },
     workflow: {
       summary: "Read → Edit → Run → Check Output → Iterate",
@@ -644,7 +701,7 @@ app.get('/api/:codename/status', (req, res) => {
 // Run code
 app.post('/api/:codename/run', (req, res) => {
   const codename = req.params.codename;
-  const user = Buffer.from(req.headers.authorization.split(' ')[1], 'base64').toString().split(':')[0];
+  const user = req.authUser;
   runner(codename, user);
   res.json({ name: codename, status: 'started' });
 });
@@ -704,8 +761,7 @@ app.get('/*', (req, res) => {
 
 
 app.post("/get_user/",(req,res) =>{
-  const creds = Buffer.from(req.headers.authorization.split(' ')[1],'base64').toString().split(':')
-  res.send({'user':creds[0]})
+  res.send({'user': req.authUser})
 })
 
 
@@ -726,7 +782,7 @@ app.post("/copy_code/",(req,res)=>{
 
 app.post("/run/",(req,res) => {
   const data = req.body
-  const user = Buffer.from(req.headers.authorization.split(' ')[1],'base64').toString().split(':')[0]
+  const user = req.authUser
   const getme = runner(data['code'],user)
   res.send({'state':getme});
 });
