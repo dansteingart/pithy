@@ -203,6 +203,60 @@ res.send({'files':files})
 
 })
 
+// DataTables server-side processing endpoint
+app.post("/code_list_dt/",(req,res)=>{
+  const data = req.body;
+  const draw = parseInt(data.draw) || 1;
+  const start = parseInt(data.start) || 0;
+  const length = parseInt(data.length) || 100;
+  const searchVal = (data.search && data.search.value) ? data.search.value.toLowerCase() : "";
+
+  // column sort: 0=name, 1=date
+  let sortCol = 1;
+  let sortDir = "desc";
+  if (data.order && data.order[0]) {
+    sortCol = parseInt(data.order[0].column) || 1;
+    sortDir = data.order[0].dir === "asc" ? "asc" : "desc";
+  }
+
+  let files = fs.readdirSync("code")
+    .filter(f => f.endsWith(".py"))
+    .map(f => {
+      const core = f.replace(".py","");
+      const mtime = fs.statSync("code/" + f).mtime.getTime();
+      return [core, mtime];
+    });
+
+  const recordsTotal = files.length;
+
+  // filter by search
+  if (searchVal) {
+    files = files.filter(f => f[0].toLowerCase().includes(searchVal));
+  }
+  const recordsFiltered = files.length;
+
+  // sort
+  const dir = sortDir === "asc" ? 1 : -1;
+  files.sort((a,b) => (a[sortCol] > b[sortCol] ? dir : a[sortCol] < b[sortCol] ? -dir : 0));
+
+  // paginate
+  const page = files.slice(start, start + length);
+
+  // format for DataTables: each row is an array of display values
+  const tableData = page.map(f => {
+    const link = `<a attr='code' href="${f[0]}">${f[0]}</a>`;
+    const ts = new Date(f[1]).toISOString().slice(0,19).replace('T',' ');
+    return [link, ts];
+  });
+
+  res.json({
+    draw: draw,
+    recordsTotal: recordsTotal,
+    recordsFiltered: recordsFiltered,
+    data: tableData
+  });
+})
+
 app.post("/check_status/",(req,res)=>{
   data = req.body;
   res.send(utils.getYDoc(data['code']).getText('output').toString());

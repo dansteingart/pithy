@@ -140,47 +140,40 @@ $("#headface").html("pithy")
 $("#news").prepend("new page -> "+pathname+"/<span id='newpage'></span> </input><button class='goButton' onclick='goThere()'>go</button>")
 
 console.log("Let's Get Data")
-$.post("/code_list/",function(data){console.log("Got Data");table_maker(data)})
 
-function table_maker(data)
-{
-	out = "<table id='tabler'>\n"
-	out+= `<thead>
-            <tr>
-                <th></th>
-                <th></th>
-            </tr>
-        </thead>`
-	for (i in data['files'])
-	{
-		core = data['files'][i][0].split("/")[1].replace(".py","")
-		//ts  = new Date(data['files'][i][1]).toLocaleString('en-US', { timeZone: "MST" });
-		ts = new Date(data['files'][i][1]).toISOString().slice(0,19).replace('T',' ')
-		link = `<a attr='code' href="${core}">${core}</a>`
+// Server-side DataTables: only fetches one page at a time
+$("#code").html(`<table id='tabler'>
+  <thead><tr><th></th><th></th></tr></thead>
+</table>`);
 
-		out += `<tr><td>${link}</td><td>${ts}</tr></td>\n`
+var dt = $('#tabler').DataTable({
+	serverSide: true,
+	ajax: {
+		url: "/code_list_dt/",
+		type: "POST",
+		contentType: "application/json",
+		data: function(d) { return JSON.stringify(d); }
+	},
+	columns: [
+		{ title: "" },
+		{ title: "" }
+	],
+	order: [[1,'desc']],
+	pageLength: 100,
+	bLengthChange: false,
+	bInfo: true,
+	deferRender: true,
+	scrollY: 800,
+	scrollCollapse: true,
+	scroller: true,
+	searchDelay: 300
+});
 
-	}
-	out+='</table>'
-	options = {
-                    paging: true, //turn off paging
-					bPaginate: false,
-                    bLengthChange: false, //selectbox for pagination extent
-					bInfo : true, //show total number of entries
-					order: [[1,'desc']],
-					deferRender:    true,
-					scrollY:        800, //length of scrollbar
-					scrollCollapse: true, //hide scrollbar 
-					scroller:       true
-                }
-	$("#code").html(out)
-	$('#tabler').DataTable(options);
-	$("#newpage").html($(".dataTables_filter"));
-	$("#tabler_filter").css("display","inline")
-	$("#tabler_filter").children().css("font-size",0)
-	$("#tabler_filter").children().children().addClass("newpagebox") 
-
-}
+// Move the search box into the "new page" area
+$("#newpage").html($(".dataTables_filter"));
+$("#tabler_filter").css("display","inline")
+$("#tabler_filter").children().css("font-size",0)
+$("#tabler_filter").children().children().addClass("newpagebox")
 
 function goThere()
 {
