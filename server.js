@@ -617,13 +617,13 @@ app.get('/api/agent', (req, res) => {
     quickstart: {
       description: "Copy-paste example: create a file, write code, run it, get output",
       example_curl: [
-        `curl -u user:pass ${baseUrl}/api/agent`,
-        `curl -u user:pass ${baseUrl}/api/codes`,
-        `curl -u user:pass ${baseUrl}/api/myfile/code`,
-        `curl -u user:pass -X PUT -H 'Content-Type: application/json' -d '{"code":"from pithy3 import *\\nplot([1,2,3],[1,4,9])\\nshowme()"}' ${baseUrl}/api/myfile/code`,
-        `curl -u user:pass -X POST ${baseUrl}/api/myfile/run`,
-        `curl -u user:pass ${baseUrl}/api/myfile/status`,
-        `curl -u user:pass ${baseUrl}/api/myfile/output`
+        `curl -H 'Authorization: Bearer <api_key>' ${baseUrl}/api/agent`,
+        `curl -H 'Authorization: Bearer <api_key>' ${baseUrl}/api/codes`,
+        `curl -H 'Authorization: Bearer <api_key>' ${baseUrl}/api/myfile/code`,
+        `curl -H 'Authorization: Bearer <api_key>' -X PUT -H 'Content-Type: application/json' -d '{"code":"from pithy3 import *\\nplot([1,2,3],[1,4,9])\\nshowme()"}' ${baseUrl}/api/myfile/code`,
+        `curl -H 'Authorization: Bearer <api_key>' -X POST ${baseUrl}/api/myfile/run`,
+        `curl -H 'Authorization: Bearer <api_key>' ${baseUrl}/api/myfile/status`,
+        `curl -H 'Authorization: Bearer <api_key>' ${baseUrl}/api/myfile/output`
       ]
     }
   });

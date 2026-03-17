@@ -147,24 +147,24 @@ Pithy has a REST API that lets AI agents collaborate as co-users. All edits go t
 | `GET` | `/api/:name/history/:time` | Get a history snapshot |
 | `POST` | `/api/:name/history/:time/revert` | Revert to a snapshot |
 
-All endpoints use HTTP Basic Auth (same credentials as the web UI).
+Auth: use `Authorization: Bearer <api_key>`. Get your key at `/api/user_key`.
 
 ### Example: AI writes and runs code
 
 ```bash
 # Read current code
-curl -u user:pass http://localhost:8080/api/myfile/code
+curl -H 'Authorization: Bearer <api_key>' http://localhost:8080/api/myfile/code
 
 # Write new code (appears live in browser)
-curl -u user:pass -X PUT -H 'Content-Type: application/json' \
+curl -H 'Authorization: Bearer <api_key>' -X PUT -H 'Content-Type: application/json' \
   -d '{"code":"from pithy3 import *\nplot([1,2,3],[1,4,9])\nshowme()"}' \
   http://localhost:8080/api/myfile/code
 
 # Run it
-curl -u user:pass -X POST http://localhost:8080/api/myfile/run
+curl -H 'Authorization: Bearer <api_key>' -X POST http://localhost:8080/api/myfile/run
 
 # Check output
-curl -u user:pass http://localhost:8080/api/myfile/output
+curl -H 'Authorization: Bearer <api_key>' http://localhost:8080/api/myfile/output
 ```
 
 ## More details
