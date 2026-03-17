@@ -227,7 +227,7 @@ const send = (doc, conn, m) => {
   }
 }
 
-const pingTimeout = 30000
+const pingTimeout = 5000
 
 /**
  * @param {any} conn

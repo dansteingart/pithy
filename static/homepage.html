@@ -5,7 +5,6 @@
 	<link rel=StyleSheet HREF="/static/style/main-style.css">
 	<link rel=StyleSheet HREF="/static/style/jquery.dataTables.min.css">	
     <script src="/static/js/jquery-3.6.0.min.js"></script>
-	<script src="/static/js/moment.min.js"></script>
 	<script src="/static/js/jquery.dataTables.min.js"></script>
 	<script src="/static/js/dataTables.scroller.min.js"></script>
 
@@ -156,7 +155,7 @@ function table_maker(data)
 	{
 		core = data['files'][i][0].split("/")[1].replace(".py","")
 		//ts  = new Date(data['files'][i][1]).toLocaleString('en-US', { timeZone: "MST" });
-		ts = moment(data['files'][i][1]).format("YYYY-MM-DD HH:mm:ss")
+		ts = new Date(data['files'][i][1]).toISOString().slice(0,19).replace('T',' ')
 		link = `<a attr='code' href="${core}">${core}</a>`
 
 		out += `<tr><td>${link}</td><td>${ts}</tr></td>\n`

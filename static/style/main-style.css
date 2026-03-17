@@ -214,10 +214,11 @@ input:focus {outline: none; }
 }
 .right
 {
-	float:right;
-	width:50%;
+	position:absolute;
+	right:0; top:0;
+	left:calc(50% + 3px);
+	width:calc(50% - 3px);
 	height:98%;
-
 }
 
 .images
