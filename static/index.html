@@ -102,20 +102,25 @@ document.title = code_name
 cdk = code_name+"_keys";
 const ydoc = new Y.Doc()
 const wsProvider = new WebsocketProvider(window.location.origin.replace("http","ws"), code_name, ydoc)
+let hasInitialized = false;
 wsProvider.on('status', event => {
   console.log(event.status)
   if (event.status == "connected")
   {
     check_running();
-    setTimeout(()=>{ check_exists(); history(); }, 500);
+    if (!hasInitialized) {
+      hasInitialized = true;
+      setTimeout(()=>{ check_exists(); }, 500);
+    }
+    setTimeout(()=>{ history(); }, 600);
     $("#status").html("connected")
 
     editor.updateOptions({ readOnly: false })
     editor.focus();
   }
-  else if (event.status == "disconnected") 
+  else if (event.status == "disconnected")
   {
-    editor.updateOptions({ readOnly: true }) 
+    editor.updateOptions({ readOnly: true })
     $("#status").html("<span style='color:red'>Disconnected</span> ")
 
   }

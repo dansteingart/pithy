@@ -284,13 +284,23 @@ app.post("/check_status/",(req,res)=>{
  });
 
 
+const _checkExistsLock = new Set();
 app.post("/check_exists/",(req,res)=>{
   const data = req.body;
   const codename = data['code'];
   let action = "none"
+
+  // Prevent concurrent inserts for the same doc
+  if (_checkExistsLock.has(codename)) {
+    DEBUG.log(`${codename} check_exists already in progress, skipping`);
+    res.send({'action':'already loading'});
+    return;
+  }
+
   //first, see if we've got anything in memory/peristence
   const foo = utils.getYDoc(codename).getText('codemirror').toString();
     if (foo.length == 0){
+      _checkExistsLock.add(codename);
       DEBUG.log(`cannot find ${codename}.py in persistence, looking in code`);
       //if not, try to open up file from code and inject into codemirror
       if (fs.existsSync(`code/${codename}.py`))
@@ -312,6 +322,7 @@ app.post("/check_exists/",(req,res)=>{
         mem.insert(0,bits);
         action = "inserted template"
       }
+      _checkExistsLock.delete(codename);
     }
     else { DEBUG.log(`found ${codename} in persistence`) }
   res.send({'action':action})
@@ -349,7 +360,7 @@ app.post('/history/', function(req, res)
    const data = req.body;
    const codename = data['code']
 
-   cdb.all(`SELECT time FROM history WHERE name = ? ORDER BY time DESC`, [codename], (err, rows) => {
+   cdb.all(`SELECT time FROM history WHERE name IN (?, ?) ORDER BY time DESC`, [codename, codename+'.py'], (err, rows) => {
      if (err) { res.json({'history':[]}); return; }
      const hist_list = rows.map(r => [r.time, new Date(r.time).toISOString()])
      res.json({'history':hist_list})
@@ -362,7 +373,7 @@ app.post('/get_history/',function(req,res)
   const codename = data['code']
   const histval  = data['history']
 
-  cdb.get(`SELECT code FROM history WHERE time = ? AND name = ?`, [histval, codename], (err, row) => {
+  cdb.get(`SELECT code FROM history WHERE time = ? AND name IN (?, ?)`, [histval, codename, codename+'.py'], (err, row) => {
     if (row) {
       const ycm = utils.getYDoc(codename).getText('codemirror')
       ycm.delete(0,ycm.length);
@@ -418,6 +429,35 @@ app.get('/api/key', (req, res) => {
     }
   }
   res.json({ user: user, api_key: null });
+});
+
+// Browser page to view/generate API key
+app.get('/api/user_key', (req, res) => {
+  const user = req.authUser;
+  const passData = getPassData();
+  const apiKeys = passData._api_keys || {};
+  let existingKey = null;
+  for (const [key, val] of Object.entries(apiKeys)) {
+    if (val === user) { existingKey = key; break; }
+  }
+
+  res.send(`<html><head><title>API Key - ${user}</title>
+<style>body{font-family:Helvetica,sans-serif;margin:40px;color:#333;}
+code{background:#eee;padding:4px 8px;font-size:14px;user-select:all;word-break:break-all;}
+button{font-size:14px;padding:6px 12px;cursor:pointer;margin-top:10px;}
+</style></head><body>
+<h2>API Key for ${user}</h2>
+<p>Use this key with <code>Authorization: Bearer &lt;key&gt;</code> for agent/bot access.</p>
+<div id="key">${existingKey ? '<p>Your key: <code>' + existingKey + '</code></p>' : '<p>No key yet.</p>'}</div>
+<button onclick="gen()">Generate new key</button>
+<script>
+function gen(){
+  if(${existingKey ? 'true' : 'false'} && !confirm('This will invalidate your current key. Continue?')) return;
+  fetch('/api/generate_key',{method:'POST'}).then(r=>r.json()).then(d=>{
+    document.getElementById('key').innerHTML='<p>Your key: <code>'+d.api_key+'</code></p>';
+  });
+}
+</script></body></html>`);
 });
 
 // ============================================================
@@ -721,7 +761,7 @@ app.post('/api/:codename/kill', (req, res) => {
 app.get('/api/:codename/history', (req, res) => {
   const codename = req.params.codename;
   const limit = parseInt(req.query.limit) || 50;
-  cdb.all(`SELECT time, name FROM history WHERE name = ? ORDER BY time DESC LIMIT ?`, [codename, limit], (err, rows) => {
+  cdb.all(`SELECT time, name FROM history WHERE name IN (?, ?) ORDER BY time DESC LIMIT ?`, [codename, codename+'.py', limit], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ name: codename, history: rows.map(r => ({ time: r.time, date: new Date(r.time).toISOString() })) });
   });
@@ -731,7 +771,7 @@ app.get('/api/:codename/history', (req, res) => {
 app.get('/api/:codename/history/:time', (req, res) => {
   const codename = req.params.codename;
   const time = parseInt(req.params.time);
-  cdb.get(`SELECT time, code FROM history WHERE time = ? AND name = ?`, [time, codename], (err, row) => {
+  cdb.get(`SELECT time, code FROM history WHERE time = ? AND name IN (?, ?)`, [time, codename, codename+'.py'], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!row) return res.status(404).json({ error: 'not found' });
     res.json({ name: codename, time: row.time, date: new Date(row.time).toISOString(), code: row.code });
@@ -742,7 +782,7 @@ app.get('/api/:codename/history/:time', (req, res) => {
 app.post('/api/:codename/history/:time/revert', (req, res) => {
   const codename = req.params.codename;
   const time = parseInt(req.params.time);
-  cdb.get(`SELECT code FROM history WHERE time = ? AND name = ?`, [time, codename], (err, row) => {
+  cdb.get(`SELECT code FROM history WHERE time = ? AND name IN (?, ?)`, [time, codename, codename+'.py'], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!row) return res.status(404).json({ error: 'not found' });
     const ycm = utils.getYDoc(codename).getText('codemirror');
@@ -755,6 +795,7 @@ app.post('/api/:codename/history/:time/revert', (req, res) => {
 // ============================================================
 
 app.get('/*', (req, res) => {
+    if (req.params[0].startsWith("api/")) return res.status(404).json({ error: 'not found' });
     if (req.params[0] == "") res.sendFile('homepage.html', { root: __dirname+"/static" })
     else res.sendFile('index.html', { root: __dirname+"/static" });
   });
