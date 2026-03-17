@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>pithy — help</title>
+<style>
+  body { font-family: Helvetica, Arial, sans-serif; max-width: 800px; margin: 60px auto; padding: 0 20px; color: #333; line-height: 1.6; }
+  h1 { font-size: 2em; margin-bottom: 0; }
+  h1 span { color: #aaa; font-weight: normal; }
+  h2 { margin-top: 2em; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+  code, pre { background: #f5f5f5; font-family: monospace; font-size: 13px; }
+  code { padding: 2px 5px; border-radius: 3px; }
+  pre { padding: 12px 16px; border-radius: 5px; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid #eee; font-size: 14px; }
+  th { background: #f9f9f9; }
+  a { color: #0070f3; }
+  .note { background: #fffbe6; border-left: 3px solid #f0c040; padding: 10px 14px; border-radius: 3px; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<h1>🐍 pithy <span>— collaborative python</span></h1>
+<p>A minimal, real-time collaborative Python editor. Code on the left, output on the right. Every URL is a page. Every page is a Python script.</p>
+
+<h2>Getting started</h2>
+<p>Go to <code>pithy.steingart.ceec.echem.io/<strong>your_page_name</strong></code>. If it doesn't exist, it'll be created. If it does, you'll see the current code.</p>
+<p>Avoid spaces and special characters in page names.</p>
+
+<h2>Keyboard shortcuts</h2>
+<table>
+  <tr><th>Shortcut</th><th>Action</th></tr>
+  <tr><td><code>Cmd+Enter</code></td><td>Run code</td></tr>
+  <tr><td><code>Shift+Cmd+Enter</code></td><td>Kill running code</td></tr>
+  <tr><td><code>c</code> button</td><td>Fork / copy page</td></tr>
+  <tr><td><code>F9</code></td><td>Pop out output into a new window</td></tr>
+  <tr><td><code>F10</code></td><td>Toggle layout (50/50 → all code → all output)</td></tr>
+  <tr><td><code>F2</code></td><td>Toggle word-based autocomplete</td></tr>
+  <tr><td><code>F4</code></td><td>AI code assist (select code first)</td></tr>
+</table>
+
+<h2>The pithy3 library</h2>
+<p>Start your code with:</p>
+<pre>from pithy3 import *</pre>
+<p>This gives you numpy, matplotlib/pylab, and:</p>
+<table>
+  <tr><th>Function</th><th>What it does</th></tr>
+  <tr><td><code>showme()</code></td><td>Render the current matplotlib figure to the output pane</td></tr>
+  <tr><td><code>showimg(pil_image)</code></td><td>Render a PIL image</td></tr>
+  <tr><td><code>smooth(array, window_len)</code></td><td>Moving average smoothing</td></tr>
+  <tr><td><code>clf()</code></td><td>Clear the figure between plots</td></tr>
+  <tr><td><code>go(cmd)</code></td><td>Run a shell command and return output</td></tr>
+</table>
+
+<h2>Sharing code between pages</h2>
+<p>Any <code>.py</code> file can import any other by name:</p>
+<pre># in page "helpers"
+def greet(name):
+    print("hello", name)
+
+# in any other page
+import helpers
+helpers.greet("world")</pre>
+
+<h2>Version history</h2>
+<p>A snapshot is saved every time you run code (if the code changed). Use the history dropdown in the top-right to view and revert to previous versions.</p>
+
+<h2>Custom Python / timeout</h2>
+<pre># custom python binary (first line)
+#!/root/.pyenv/shims/python3
+
+# custom timeout in seconds
+##pithytimeout=120</pre>
+
+<h2>Agent / Bot API</h2>
+<p>Pithy has a REST API for AI agents. Agents can read, write, run, and monitor code — all edits appear live in the browser.</p>
+<div class="note">Get your API key at <a href="/api/user_key"><code>/api/user_key</code></a> (requires login). Use it as <code>Authorization: Bearer &lt;api_key&gt;</code>.</div>
+<p>Full self-documenting API guide (for AI agents):</p>
+<pre>curl -H 'Authorization: Bearer &lt;api_key&gt;' https://pithy.steingart.ceec.echem.io/api/agent</pre>
+
+<table>
+  <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+  <tr><td><code>GET</code></td><td><code>/api/agent</code></td><td>Full API guide for AI agents</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/codes</code></td><td>List all pages</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/:name/code</code></td><td>Read live code</td></tr>
+  <tr><td><code>PUT</code></td><td><code>/api/:name/code</code></td><td>Replace code (creates page if new)</td></tr>
+  <tr><td><code>PATCH</code></td><td><code>/api/:name/code</code></td><td>Surgical edit (find/replace or positional)</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/:name/run</code></td><td>Execute code</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/:name/status</code></td><td>Check if running</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/:name/output</code></td><td>Read output</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/:name/output/stream</code></td><td>Live SSE output stream</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/:name/history</code></td><td>List version history</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/:name/history/:time/revert</code></td><td>Revert to a snapshot</td></tr>
+</table>
+
+<p style="margin-top:3em;color:#aaa;font-size:13px;">
+  <a href="https://github.com/dansteingart/pithy">github.com/dansteingart/pithy</a>
+</p>
+
+</body>
+</html>

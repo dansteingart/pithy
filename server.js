@@ -197,6 +197,10 @@ app.use('/node_modules',express.static('node_modules'));
 
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
+
+// Public routes (no auth)
+app.get('/help', (req, res) => res.sendFile('help.html', { root: __dirname+"/static" }));
+
 app.use(authentication)
 
 const ps = {}
